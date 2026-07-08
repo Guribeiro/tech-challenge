@@ -1,7 +1,8 @@
-import { Servico } from '../entities/servico.js'
+import { Servico, CategoriaServico } from '@/modules/os-orcamento/domain/entities/servico.js'
 
 export type CriarServicoInput = {
   nome: string
+  categoria: CategoriaServico
   descricao?: string
   valorReferencia?: number
 }
@@ -11,6 +12,7 @@ export class CriarServico {
     const servico = Servico.criar({
       nome: input.nome,
       descricao: input.descricao,
+      categoria: input.categoria,
       valorReferencia: input.valorReferencia,
     })
 

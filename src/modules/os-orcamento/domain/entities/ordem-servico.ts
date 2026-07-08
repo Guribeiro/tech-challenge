@@ -1,7 +1,8 @@
-import { Servico } from '@/domain/entities/servico.js'
+import { Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { Entity } from '@/core/entities/entity.js'
 import { Optional } from '@/core/types/optional.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -27,6 +28,8 @@ export type OrdemServicoProps = {
   clienteId: UniqueEntityID
   veiculoId: UniqueEntityID
   descricao: string
+  prioridade: Prioridade
+  eGarantia: boolean
   servicos?: ServicoSolicitado[]
   itens?: ItemOrdemServico[]
   status: StatusOS
@@ -105,6 +108,7 @@ export class OrdemServico extends Entity<OrdemServicoProps> {
       servicos: this.props.servicos?.map((servicoSolicitado) => ({
         id: servicoSolicitado.servico.getId(),
         nome: servicoSolicitado.servico.getNome(),
+        categoria: servicoSolicitado.servico.getCategoria(),
         descricao: servicoSolicitado.servico.getDescricao(),
         valorReferencia: servicoSolicitado.servico.getValorReferencia(),
         observacao: servicoSolicitado.observacao,

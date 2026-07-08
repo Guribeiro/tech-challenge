@@ -1,5 +1,5 @@
-import { Veiculo } from '@/domain/entities/veiculo.js'
-import { Placa } from '@/domain/entities/value-objects/placa.js'
+import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
+import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 
 export type CriarVeiculoInput = {
   id: string

@@ -1,7 +1,9 @@
 import { Entity } from '@/core/entities/entity.js'
 
+export type CategoriaServico = 'SEGURANCA' | 'MANUTENCAO_PREVENTIVA' | 'ESTETICA' | 'MECANICA_GERAL';
+
 export type ServicoProps = {
-  id?: string
+  categoria: CategoriaServico
   nome: string
   descricao?: string
   valorReferencia?: number
@@ -9,19 +11,32 @@ export type ServicoProps = {
 
 export class Servico extends Entity<ServicoProps> {
   public static criar(props: ServicoProps, id?: string): Servico {
+
+    this.validar(props)
+    return new Servico(props, id)
+  }
+
+  private static validar(props: ServicoProps) {
     if (!props.nome?.trim()) {
       throw new Error('Nome do serviço é obrigatório.')
+    }
+
+    if (!props.categoria) {
+      throw new Error('A categoria do serviço é obrigatória para fins de priorização e enturmação.')
     }
 
     if (props.valorReferencia !== undefined && props.valorReferencia < 0) {
       throw new Error('Valor de referência não pode ser negativo.')
     }
 
-    return new Servico(props, id)
   }
 
   public getNome(): string {
     return this.props.nome
+  }
+
+  public getCategoria(): CategoriaServico {
+    return this.props.categoria
   }
 
   public getDescricao(): string | undefined {

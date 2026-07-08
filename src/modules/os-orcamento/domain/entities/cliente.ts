@@ -1,12 +1,13 @@
 import { Entity } from '@/core/entities/entity.js'
-import { Email } from '@/domain/entities/value-objects/email.js'
-import { Telefone } from '@/domain/entities/value-objects/telefone.js'
-import { NomeCompleto } from '@/domain/entities/value-objects/nome-completo.js'
+import { Email } from '@/modules/os-orcamento/domain/entities/value-objects/email.js'
+import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
+import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 
 interface ClienteProps {
   nome: NomeCompleto
   email: Email
   telefone: Telefone
+  tipo: 'PF' | 'PJ'
 }
 
 export class Cliente extends Entity<ClienteProps> {
@@ -31,6 +32,10 @@ export class Cliente extends Entity<ClienteProps> {
 
   public getTelefone(): string | undefined {
     return this.props.telefone?.getValor()
+  }
+
+  public getTipo(): 'PF' | 'PJ' {
+    return this.props.tipo
   }
 
   public toJSON(): Record<string, unknown> {

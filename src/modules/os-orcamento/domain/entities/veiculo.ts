@@ -1,6 +1,6 @@
 import { Entity } from '@/core/entities/entity.js'
 import { Optional } from '@/core/types/optional.js'
-import { Placa } from '@/domain/entities/value-objects/placa.js'
+import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 
 export type VeiculoProps = {
   placa: Placa
