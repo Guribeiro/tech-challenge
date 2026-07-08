@@ -1,20 +1,20 @@
 export class NomeCompleto {
-  private readonly valor: string;
+  private readonly valor: string
 
   private constructor(valor: string) {
-    this.valor = valor;
+    this.valor = valor
   }
 
   public static criar(nome: string): NomeCompleto {
     if (!nome) {
-      throw new Error("O nome do cliente não pode estar vazio.");
+      throw new Error('O nome do cliente não pode estar vazio.')
     }
 
-    const nomeLimpo = nome.trim();
+    const nomeLimpo = nome.trim()
 
-    NomeCompleto.validar(nomeLimpo);
+    NomeCompleto.validar(nomeLimpo)
 
-    return new NomeCompleto(nomeLimpo);
+    return new NomeCompleto(nomeLimpo)
   }
 
   /**
@@ -22,26 +22,30 @@ export class NomeCompleto {
    */
   public static validar(nome: string): void {
     // Regra 1: Deve conter pelo menos nome e um sobrenome (mínimo de 2 palavras)
-    const partesDoNome = nome.split(/\s+/);
+    const partesDoNome = nome.split(/\s+/)
     if (partesDoNome.length < 2) {
-      throw new Error("O cliente deve ser cadastrado com o nome completo (nome e sobrenome).");
+      throw new Error(
+        'O cliente deve ser cadastrado com o nome completo (nome e sobrenome).',
+      )
     }
 
     if (nome.length < 5) {
-      throw new Error("O nome completo deve conter pelo menos 5 caracteres.");
+      throw new Error('O nome completo deve conter pelo menos 5 caracteres.')
     }
 
-    const nomeValidoRegex = /^[A-Za-zÀ-ÿ\s]+$/;
+    const nomeValidoRegex = /^[A-Za-zÀ-ÿ\s]+$/
     if (!nomeValidoRegex.test(nome)) {
-      throw new Error("O nome do cliente não deve conter números ou caracteres especiais.");
+      throw new Error(
+        'O nome do cliente não deve conter números ou caracteres especiais.',
+      )
     }
   }
 
   public getValor(): string {
-    return this.valor;
+    return this.valor
   }
 
   public equals(outroNome: NomeCompleto): boolean {
-    return this.valor.toLowerCase() === outroNome.getValor().toLowerCase();
+    return this.valor.toLowerCase() === outroNome.getValor().toLowerCase()
   }
 }

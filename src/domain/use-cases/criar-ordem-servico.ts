@@ -13,28 +13,31 @@ export type CriarOrdemServicoInput = {
     valorReferencia?: number
     observacao?: string
   }>
-  itens?: Array<{ tipo: 'PECA' | 'INSUMO'; descricao: string; quantidade: number }>
+  itens?: Array<{
+    tipo: 'PECA' | 'INSUMO'
+    descricao: string
+    quantidade: number
+  }>
 }
 
 export class CriaOrdemServico {
   public execute(input: CriarOrdemServicoInput): OrdemServico {
-
-    const servicos = input.servicos?.map(servicoInput => ({
+    const servicos = input.servicos?.map((servicoInput) => ({
       servico: Servico.criar({
         id: servicoInput.id,
         nome: servicoInput.nome ?? servicoInput.descricao ?? 'Serviço sem nome',
         descricao: servicoInput.descricao,
-        valorReferencia: servicoInput.valorReferencia
+        valorReferencia: servicoInput.valorReferencia,
       }),
-      observacao: servicoInput.observacao
+      observacao: servicoInput.observacao,
     }))
 
     const ordemServico = OrdemServico.criar({
       clienteId: new UniqueEntityID(input.clienteId),
       veiculoId: new UniqueEntityID(input.veiculoId),
       descricao: input.descricao,
-      servicos: servicos,
-      itens: input.itens
+      servicos,
+      itens: input.itens,
     })
 
     return ordemServico

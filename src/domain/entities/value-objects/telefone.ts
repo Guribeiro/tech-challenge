@@ -1,8 +1,8 @@
 export class Telefone {
-  private readonly valor: string;
+  private readonly valor: string
 
   private constructor(valor: string) {
-    this.valor = valor;
+    this.valor = valor
   }
 
   /**
@@ -10,16 +10,16 @@ export class Telefone {
    */
   public static criar(numero: string): Telefone {
     if (!numero) {
-      throw new Error("O número de telefone não pode estar vazio.");
+      throw new Error('O número de telefone não pode estar vazio.')
     }
 
     // Remove qualquer caractere não numérico (parênteses, hifens, espaços)
-    const apenasNumeros = numero.replace(/\D/g, "");
+    const apenasNumeros = numero.replace(/\D/g, '')
 
     // Executa a validação do formato limpo
-    this.validar(apenasNumeros);
+    this.validar(apenasNumeros)
 
-    return new Telefone(apenasNumeros);
+    return new Telefone(apenasNumeros)
   }
 
   /**
@@ -28,29 +28,33 @@ export class Telefone {
   private static validar(numeroLimpo: string): void {
     // Regra 1: Deve ter 10 dígitos (fixo) ou 11 dígitos (celular), incluindo o DDD
     if (numeroLimpo.length < 10 || numeroLimpo.length > 11) {
-      throw new Error("O telefone deve conter um DDD válido seguido de 8 ou 9 dígitos.");
+      throw new Error(
+        'O telefone deve conter um DDD válido seguido de 8 ou 9 dígitos.',
+      )
     }
 
     // Regra 2: Impedir números falsos repetidos comuns (ex: 1111111111, 00000000000)
-    const todosDigitosIguais = /^(.)\1+$/;
+    const todosDigitosIguais = /^(.)\1+$/
     if (todosDigitosIguais.test(numeroLimpo)) {
-      throw new Error("Número de telefone inválido (padrão repetitivo).");
+      throw new Error('Número de telefone inválido (padrão repetitivo).')
     }
 
     // Regra 3: Validar os primeiros dígitos do DDD (Não existem DDDs começando com 0 ou menores que 11)
-    const ddd = parseInt(numeroLimpo.substring(0, 2), 10);
+    const ddd = parseInt(numeroLimpo.substring(0, 2), 10)
     if (ddd < 11 || ddd > 99) {
-      throw new Error("O código de área (DDD) informado é inválido.");
+      throw new Error('O código de área (DDD) informado é inválido.')
     }
 
     // Regra 4: Se for celular (11 dígitos), obrigatoriamente deve começar com o dígito 9
-    if (numeroLimpo.length === 11 && numeroLimpo.charAt(2) !== "9") {
-      throw new Error("Números de celular com 11 dígitos devem iniciar com o dígito 9 após o DDD.");
+    if (numeroLimpo.length === 11 && numeroLimpo.charAt(2) !== '9') {
+      throw new Error(
+        'Números de celular com 11 dígitos devem iniciar com o dígito 9 após o DDD.',
+      )
     }
   }
 
   public getValor(): string {
-    return this.valor;
+    return this.valor
   }
 
   /**
@@ -58,12 +62,12 @@ export class Telefone {
    */
   public getValorFormatado(): string {
     if (this.valor.length === 11) {
-      return `(${this.valor.substring(0, 2)}) ${this.valor.substring(2, 7)}-${this.valor.substring(7)}`;
+      return `(${this.valor.substring(0, 2)}) ${this.valor.substring(2, 7)}-${this.valor.substring(7)}`
     }
-    return `(${this.valor.substring(0, 2)}) ${this.valor.substring(2, 6)}-${this.valor.substring(6)}`;
+    return `(${this.valor.substring(0, 2)}) ${this.valor.substring(2, 6)}-${this.valor.substring(6)}`
   }
 
   public equals(outroTelefone: Telefone): boolean {
-    return this.valor === outroTelefone.getValor();
+    return this.valor === outroTelefone.getValor()
   }
 }

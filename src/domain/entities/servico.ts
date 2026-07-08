@@ -8,8 +8,7 @@ export type ServicoProps = {
 }
 
 export class Servico extends Entity<ServicoProps> {
-
-  public static criar(props: ServicoProps): Servico {
+  public static criar(props: ServicoProps, id?: string): Servico {
     if (!props.nome?.trim()) {
       throw new Error('Nome do serviço é obrigatório.')
     }
@@ -18,7 +17,7 @@ export class Servico extends Entity<ServicoProps> {
       throw new Error('Valor de referência não pode ser negativo.')
     }
 
-    return new Servico(props)
+    return new Servico(props, id)
   }
 
   public getNome(): string {
@@ -38,7 +37,7 @@ export class Servico extends Entity<ServicoProps> {
       id: this.getId(),
       nome: this.props.nome,
       descricao: this.props.descricao,
-      valorReferencia: this.props.valorReferencia
+      valorReferencia: this.props.valorReferencia,
     }
   }
 }

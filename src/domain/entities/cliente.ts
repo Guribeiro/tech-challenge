@@ -1,7 +1,7 @@
-import { Entity } from "@/core/entities/entity.js"
-import { Email } from "@/domain/entities/value-objects/email.js"
-import { Telefone } from "@/domain/entities/value-objects/telefone.js"
-import { NomeCompleto } from "@/domain/entities/value-objects/nome-completo.js"
+import { Entity } from '@/core/entities/entity.js'
+import { Email } from '@/domain/entities/value-objects/email.js'
+import { Telefone } from '@/domain/entities/value-objects/telefone.js'
+import { NomeCompleto } from '@/domain/entities/value-objects/nome-completo.js'
 
 interface ClienteProps {
   nome: NomeCompleto
@@ -10,7 +10,6 @@ interface ClienteProps {
 }
 
 export class Cliente extends Entity<ClienteProps> {
-
   public static criar(props: ClienteProps, id?: string): Cliente {
     if (!props.nome.getValor()?.trim()) {
       throw new Error('Nome do cliente é obrigatório.')
@@ -19,7 +18,7 @@ export class Cliente extends Entity<ClienteProps> {
     if (!props.email.getValor()?.trim()) {
       throw new Error('Email do cliente é obrigatório.')
     }
-    return new Cliente(props)
+    return new Cliente(props, id)
   }
 
   public getNome(): string {
@@ -38,8 +37,7 @@ export class Cliente extends Entity<ClienteProps> {
     return {
       nome: this.getNome(),
       email: this.getEmail(),
-      telefone: this.getTelefone()
+      telefone: this.getTelefone(),
     }
   }
-
 }

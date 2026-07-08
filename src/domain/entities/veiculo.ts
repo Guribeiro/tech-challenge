@@ -1,6 +1,6 @@
-import { Entity } from "@/core/entities/entity.js"
-import { Optional } from "@/core/types/optional.js"
-import { Placa } from "@/domain/entities/value-objects/placa.js"
+import { Entity } from '@/core/entities/entity.js'
+import { Optional } from '@/core/types/optional.js'
+import { Placa } from '@/domain/entities/value-objects/placa.js'
 
 export type VeiculoProps = {
   placa: Placa
@@ -16,13 +16,21 @@ export type VeiculoProps = {
 }
 
 export class Veiculo extends Entity<VeiculoProps> {
-  public static criar(props: Optional<VeiculoProps, 'criadoEm' | 'atualizadoEm'>): Veiculo {
-
+  public static criar(
+    props: Optional<VeiculoProps, 'criadoEm' | 'atualizadoEm'>,
+    id?: string,
+  ): Veiculo {
     if (!props.marca?.trim() || !props.modelo?.trim()) {
-      throw new Error('Marca e modelo são obrigatórios para o cadastro do veículo.')
+      throw new Error(
+        'Marca e modelo são obrigatórios para o cadastro do veículo.',
+      )
     }
 
-    if (!Number.isInteger(props.ano) || props.ano < 1900 || props.ano > new Date().getFullYear() + 1) {
+    if (
+      !Number.isInteger(props.ano) ||
+      props.ano < 1900 ||
+      props.ano > new Date().getFullYear() + 1
+    ) {
       throw new Error('Ano do veículo inválido.')
     }
 
@@ -30,10 +38,13 @@ export class Veiculo extends Entity<VeiculoProps> {
       throw new Error('Quilometragem não pode ser negativa.')
     }
 
-    return new Veiculo({
-      ...props,
-      criadoEm: props.criadoEm ?? new Date(),
-    })
+    return new Veiculo(
+      {
+        ...props,
+        criadoEm: props.criadoEm ?? new Date(),
+      },
+      id,
+    )
   }
 
   public getPlaca(): string {
@@ -77,7 +88,7 @@ export class Veiculo extends Entity<VeiculoProps> {
       cor: this.props.cor,
       quilometragem: this.props.quilometragem,
       combustivel: this.props.combustivel,
-      observacoes: this.props.observacoes
+      observacoes: this.props.observacoes,
     }
   }
 }

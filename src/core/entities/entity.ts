@@ -1,4 +1,4 @@
-import { UniqueEntityID } from "./unique-entity-id.js"
+import { UniqueEntityID } from './unique-entity-id.js'
 
 export class Entity<TProps> {
   private _id: UniqueEntityID

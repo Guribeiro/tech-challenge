@@ -1,4 +1,4 @@
-import { Servico } from "../entities/servico.js"
+import { Servico } from '../entities/servico.js'
 
 export type CriarServicoInput = {
   nome: string
@@ -11,7 +11,7 @@ export class CriarServico {
     const servico = Servico.criar({
       nome: input.nome,
       descricao: input.descricao,
-      valorReferencia: input.valorReferencia
+      valorReferencia: input.valorReferencia,
     })
 
     return servico.toJSON()

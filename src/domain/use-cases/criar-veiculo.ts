@@ -1,5 +1,5 @@
-import { Veiculo } from "@/domain/entities/veiculo.js"
-import { Placa } from "@/domain/entities/value-objects/placa.js"
+import { Veiculo } from '@/domain/entities/veiculo.js'
+import { Placa } from '@/domain/entities/value-objects/placa.js'
 
 export type CriarVeiculoInput = {
   id: string
@@ -23,7 +23,7 @@ export class CriarVeiculo {
       cor: input.cor,
       quilometragem: input.quilometragem,
       combustivel: input.combustivel,
-      observacoes: input.observacoes
+      observacoes: input.observacoes,
     })
 
     return veiculo.toJSON()

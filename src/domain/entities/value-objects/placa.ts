@@ -23,6 +23,6 @@ export class Placa {
   }
 
   public equals(other: Placa): boolean {
-    return this.valor === other.getValor();
+    return this.valor === other.getValor()
   }
 }
