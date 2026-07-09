@@ -99,6 +99,10 @@ export class OrdemServico extends Entity<OrdemServicoProps> {
     return this.props.status
   }
 
+  public getPrioridade(): Prioridade {
+    return this.props.prioridade
+  }
+
   public toJSON(): Record<string, unknown> {
     return {
       id: this.getId(),
