@@ -3,7 +3,7 @@ import { Email } from '@/modules/os-orcamento/domain/entities/value-objects/emai
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 
-interface ClienteProps {
+export interface ClienteProps {
   nome: NomeCompleto
   email: Email
   telefone: Telefone

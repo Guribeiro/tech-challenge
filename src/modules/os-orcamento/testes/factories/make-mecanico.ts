@@ -1,0 +1,16 @@
+import { faker } from "@faker-js/faker";
+import { generate as gerarCpf } from 'gerador-validador-cpf'
+
+import { Mecanico, MecanicoProps } from "@/modules/os-orcamento/domain/entities/mecanico.js";
+import { Cpf } from "@/modules/os-orcamento/domain/entities/value-objects/cpf.js";
+import { NomeCompleto } from "@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js";
+
+export function makeMecanico(override: Partial<MecanicoProps> = {}): Mecanico {
+  const mecanico = Mecanico.criar({
+    nome: NomeCompleto.criar(faker.person.fullName()),
+    cpf: Cpf.criar(gerarCpf()), //
+    especialidade: 'Mecânica',
+    ...override
+  })
+  return mecanico
+}

@@ -27,6 +27,7 @@ export type ItemOrdemServico = {
 export type OrdemServicoProps = {
   clienteId: UniqueEntityID
   veiculoId: UniqueEntityID
+  mecanicoId?: UniqueEntityID
   descricao: string
   prioridade: Prioridade
   eGarantia: boolean
@@ -37,7 +38,7 @@ export type OrdemServicoProps = {
 
 export class OrdemServico extends Entity<OrdemServicoProps> {
   public static criar(
-    props: Optional<OrdemServicoProps, 'status'>,
+    props: Optional<OrdemServicoProps, 'status' | 'mecanicoId'>,
     id?: string,
   ): OrdemServico {
     const propriedadesCompletas: OrdemServicoProps = {
@@ -101,6 +102,19 @@ export class OrdemServico extends Entity<OrdemServicoProps> {
 
   public getPrioridade(): Prioridade {
     return this.props.prioridade
+  }
+
+  public getMecanicoId(): UniqueEntityID | undefined {
+    return this.props.mecanicoId
+  }
+
+  public iniciarDiagnóstico(mecanicoId: UniqueEntityID): void {
+    if (this.props.status !== 'RECEBIDA') {
+      throw new Error('O diagnóstico só pode ser iniciado para ordens de serviço recebidas.')
+    }
+
+    this.props.status = 'EM_DIAGNOSTICO'
+    this.props.mecanicoId = mecanicoId
   }
 
   public toJSON(): Record<string, unknown> {

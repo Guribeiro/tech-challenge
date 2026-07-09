@@ -33,12 +33,6 @@ export class NomeCompleto {
       throw new Error('O nome completo deve conter pelo menos 5 caracteres.')
     }
 
-    const nomeValidoRegex = /^[A-Za-zÀ-ÿ\s]+$/
-    if (!nomeValidoRegex.test(nome)) {
-      throw new Error(
-        'O nome do cliente não deve conter números ou caracteres especiais.',
-      )
-    }
   }
 
   public getValor(): string {
