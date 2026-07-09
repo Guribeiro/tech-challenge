@@ -21,8 +21,8 @@ describe('Criar cliente', () => {
 
     const output = await sut.execute(input)
 
-    expect(output.cliente.getNome()).toBe(input.nome)
-    expect(output.cliente.getEmail()).toBe(input.email)
-    expect(output.cliente.getTelefone()).toBe(input.telefone)
+    expect(output.cliente.getNome().getValor()).toBe(input.nome)
+    expect(output.cliente.getEmail().getValor()).toBe(input.email)
+    expect(output.cliente.getTelefone().getValor()).toBe(input.telefone)
   })
 })

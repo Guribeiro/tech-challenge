@@ -7,25 +7,50 @@ import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects
 import { makeMecanico } from '../../factories/make-mecanico.js'
 import { makeCliente } from '../../factories/make-cliente.js'
 import { makeVeiculo } from '../../factories/make-veiculo.js'
+import { OnDiagnosticoInicializado } from '@/modules/os-orcamento/application/subscribers/on-diagnostico-inicializado.js'
+import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
+import { InMemoryNotificacaoService } from '../../services/in-memory-notificacao-service.js'
+import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
 
+let notificacaoService: InMemoryNotificacaoService
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let mecanicoRepository: InMemoryMecanicosRepository
+let clienteRepository: InMemoryClienteRepository
+let veiculoRepository: InMemoryVeiculoRepository
 let sut: IniciarDiagnosticoeCase
 
-describe('Iniciar inspeção', () => {
+
+describe('Iniciar diagnostico', () => {
   beforeEach(() => {
+    notificacaoService = new InMemoryNotificacaoService()
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
     mecanicoRepository = new InMemoryMecanicosRepository()
-    sut = new IniciarDiagnosticoeCase(ordemServicoRepository, mecanicoRepository)
+    clienteRepository = new InMemoryClienteRepository()
+    veiculoRepository = new InMemoryVeiculoRepository()
+
+    sut = new IniciarDiagnosticoeCase(
+      ordemServicoRepository,
+      mecanicoRepository,
+      clienteRepository,
+      veiculoRepository
+    )
+
+    new OnDiagnosticoInicializado(clienteRepository, notificacaoService)
   })
 
-  it('deve iniciar a inspeção de uma ordem de serviço', async () => {
+  it('deve iniciar o diagnostico e disparar politica de notificacao', async () => {
     const mecanico = makeMecanico()
     mecanicoRepository.create(mecanico)
 
     const cliente = makeCliente()
 
+    clienteRepository.create(cliente)
+
     const veiculo = makeVeiculo()
+
+    veiculoRepository.create(veiculo)
+
+    const spy = vi.spyOn(notificacaoService, 'enviar')
 
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente.getId()),
@@ -50,6 +75,13 @@ describe('Iniciar inspeção', () => {
 
     expect(ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
     expect(ordemServico.getMecanicoId()?.toValue()).toBe(mecanico.getId())
+
+    expect(spy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        destinatario: cliente.getTelefone().getValor(),
+        mensagem: expect.stringContaining(ordemServicoBaixaPrioridade.getId())
+      })
+    )
   })
 
   it('não deve iniciar inspeção se o mecanico não existir', async () => {
@@ -57,7 +89,11 @@ describe('Iniciar inspeção', () => {
 
     const cliente = makeCliente()
 
+    clienteRepository.create(cliente)
+
     const veiculo = makeVeiculo()
+
+    const spy = vi.spyOn(notificacaoService, 'enviar')
 
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente.getId()),
@@ -79,5 +115,44 @@ describe('Iniciar inspeção', () => {
       ordemServicoId: ordemServicoBaixaPrioridade.getId(),
       mecanicoId: mecanicoId.toValue()
     })).rejects.toBeInstanceOf(Error)
+
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('não deve iniciar inspeção se o veiculo não existir', async () => {
+    const mecanico = makeMecanico()
+
+    mecanicoRepository.create(mecanico)
+
+    const cliente = makeCliente()
+
+    clienteRepository.create(cliente)
+
+    const veiculo = makeVeiculo()
+
+    const spy = vi.spyOn(notificacaoService, 'enviar')
+
+    const ordemServicoBaixaPrioridade = OrdemServico.criar({
+      clienteId: new UniqueEntityID(cliente.getId()),
+      veiculoId: new UniqueEntityID(veiculo.getId()),
+      descricao: 'Ordem de serviço 1',
+      eGarantia: false,
+      servicos: [],
+      prioridade: Prioridade.calcular({
+        eGarantia: false,
+        eClienteCorporativo: cliente.getTipo() === 'PJ',
+        anoVeiculo: veiculo.getAno(),
+        categoriasDosServicos: ['MECANICA'],
+      }),
+    })
+
+    await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
+
+    await expect(sut.executar({
+      ordemServicoId: ordemServicoBaixaPrioridade.getId(),
+      mecanicoId: mecanico.getId()
+    })).rejects.toBeInstanceOf(Error)
+
+    expect(spy).not.toHaveBeenCalled()
   })
 })

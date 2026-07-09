@@ -22,16 +22,16 @@ export class Cliente extends Entity<ClienteProps> {
     return new Cliente(props, id)
   }
 
-  public getNome(): string {
-    return this.props.nome.getValor()
+  public getNome(): NomeCompleto {
+    return this.props.nome
   }
 
-  public getEmail(): string {
-    return this.props.email.getValor()
+  public getEmail(): Email {
+    return this.props.email
   }
 
-  public getTelefone(): string | undefined {
-    return this.props.telefone?.getValor()
+  public getTelefone(): Telefone {
+    return this.props.telefone
   }
 
   public getTipo(): 'PF' | 'PJ' {
