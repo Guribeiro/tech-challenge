@@ -9,6 +9,7 @@ import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
+import { makeOrdemServicoServicoList } from '../../factories/make-ordem-servico-servico-list.js'
 
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let sut: ObterFilaTrabalhoUseCase
@@ -52,31 +53,35 @@ describe('Obter fila de trabalho', () => {
     })
 
 
+    const osServiceBaixaPrioridadeList = makeOrdemServicoServicoList()
+
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente.getId()),
       veiculoId: new UniqueEntityID(veiculo.getId()),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
-      servicos: [],
+      servicos: osServiceBaixaPrioridadeList,
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
         anoVeiculo: veiculo.getAno(),
-        categoriasDosServicos: ['MECANICA'],
+        categoriasDosServicos: osServiceBaixaPrioridadeList.getItems().map(servico => servico.getCategoria()),
       }),
     })
+
+    const osServiceAltaPrioridadeList = makeOrdemServicoServicoList([{ categoria: 'MECANICA_GERAL' }, { categoria: 'SEGURANCA' }, { categoria: 'MANUTENCAO_PREVENTIVA' }])
 
     const ordemServicoAltaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente2.getId()),
       veiculoId: new UniqueEntityID(veiculo2.getId()),
       descricao: 'Ordem de serviço 2',
       eGarantia: false,
-      servicos: [],
+      servicos: osServiceAltaPrioridadeList,
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente2.getTipo() === 'PJ',
         anoVeiculo: veiculo2.getAno(),
-        categoriasDosServicos: ['MECANICA', 'SEGURANCA', 'MANUTENCAO_PREVENTIVA'],
+        categoriasDosServicos: osServiceBaixaPrioridadeList.getItems().map(servico => servico.getCategoria()),
       }),
     })
 

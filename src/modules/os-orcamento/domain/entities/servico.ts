@@ -1,12 +1,12 @@
 import { Entity } from '@/core/entities/entity.js'
 
-export type CategoriaServico = 'SEGURANCA' | 'MANUTENCAO_PREVENTIVA' | 'ESTETICA' | 'MECANICA_GERAL';
+export type CategoriaServico = 'SEGURANCA' | 'MANUTENCAO_PREVENTIVA' | 'ESTETICA' | 'ELETRICA' | 'MECANICA_GERAL';
 
 export type ServicoProps = {
   categoria: CategoriaServico
   nome: string
   descricao?: string
-  valorReferencia?: number
+  valorReferencia: number
 }
 
 export class Servico extends Entity<ServicoProps> {
@@ -43,7 +43,7 @@ export class Servico extends Entity<ServicoProps> {
     return this.props.descricao
   }
 
-  public getValorReferencia(): number | undefined {
+  public getValorReferencia(): number {
     return this.props.valorReferencia
   }
 

@@ -6,19 +6,21 @@ import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/cl
 import { ServicoRepository } from '@/modules/os-orcamento/domain/repositories/servicos-repository.js'
 import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
 
+interface OrdemServicoServico {
+  servicoId: string // ◄── Removido o '?' (Agora é obrigatório!)
+  nome: string
+  descricao?: string
+  categoria: CategoriaServico
+  precoUnitario: number
+  observacao?: string
+}
+
 export type CriarOrdemServicoInput = {
   clienteId: string
   veiculoId: string
   descricao: string
   eGarantia: boolean
-  servicos: Array<{
-    id?: string
-    nome: string
-    descricao?: string
-    categoria: CategoriaServico
-    valorReferencia?: number
-    observacao?: string
-  }>
+  servicos: Array<OrdemServicoServico>
   itens?: Array<{
     tipo: 'PECA' | 'INSUMO'
     descricao: string
@@ -51,7 +53,7 @@ export class CriaOrdemServico {
         nome: servicoInput.nome,
         descricao: servicoInput.descricao,
         categoria: servicoInput.categoria,
-        valorReferencia: servicoInput.valorReferencia,
+        valorReferencia: servicoInput.precoUnitario,
       }),
       observacao: servicoInput.observacao,
     }))

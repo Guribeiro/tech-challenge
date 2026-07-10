@@ -11,6 +11,9 @@ import { OnDiagnosticoInicializado } from '@/modules/os-orcamento/application/su
 import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
 import { InMemoryNotificacaoService } from '../../services/in-memory-notificacao-service.js'
 import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
+import { makeServico } from '../../factories/make-servico.js'
+import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'
+import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
 
 let notificacaoService: InMemoryNotificacaoService
 let ordemServicoRepository: InMemoryOrdemServicoRepository
@@ -52,12 +55,27 @@ describe('Iniciar diagnostico', () => {
 
     const spy = vi.spyOn(notificacaoService, 'enviar')
 
+    const servico = makeServico({
+      categoria: 'ELETRICA'
+    })
+
+    const osServico = new OrdemServicoServico({
+      servicoId: new UniqueEntityID(servico.getId()),
+      categoria: servico.getCategoria(),
+      nome: servico.getNome(),
+      precoUnitario: servico.getValorReferencia(),
+      descricao: servico.getDescricao(),
+      observacao: 'Reparos nos sistema eletrico'
+    })
+
+    const osServicoList = new OrdemServicoServicoList([osServico])
+
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente.getId()),
       veiculoId: new UniqueEntityID(veiculo.getId()),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
-      servicos: [],
+      servicos: osServicoList,
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
@@ -95,12 +113,27 @@ describe('Iniciar diagnostico', () => {
 
     const spy = vi.spyOn(notificacaoService, 'enviar')
 
+    const servico = makeServico({
+      categoria: 'ELETRICA'
+    })
+
+    const osServico = new OrdemServicoServico({
+      servicoId: new UniqueEntityID(servico.getId()),
+      categoria: servico.getCategoria(),
+      nome: servico.getNome(),
+      precoUnitario: servico.getValorReferencia(),
+      descricao: servico.getDescricao(),
+      observacao: 'Reparos nos sistema eletrico'
+    })
+
+    const osServicoList = new OrdemServicoServicoList([osServico])
+
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente.getId()),
       veiculoId: new UniqueEntityID(veiculo.getId()),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
-      servicos: [],
+      servicos: osServicoList,
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
@@ -132,12 +165,27 @@ describe('Iniciar diagnostico', () => {
 
     const spy = vi.spyOn(notificacaoService, 'enviar')
 
+    const servico = makeServico({
+      categoria: 'ELETRICA'
+    })
+
+    const osServico = new OrdemServicoServico({
+      servicoId: new UniqueEntityID(servico.getId()),
+      categoria: servico.getCategoria(),
+      nome: servico.getNome(),
+      precoUnitario: servico.getValorReferencia(),
+      descricao: servico.getDescricao(),
+      observacao: 'Reparos nos sistema eletrico'
+    })
+
+    const osServicoList = new OrdemServicoServicoList([osServico])
+
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
       clienteId: new UniqueEntityID(cliente.getId()),
       veiculoId: new UniqueEntityID(veiculo.getId()),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
-      servicos: [],
+      servicos: osServicoList,
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',

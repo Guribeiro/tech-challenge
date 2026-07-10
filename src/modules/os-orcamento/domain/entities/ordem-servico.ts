@@ -1,8 +1,9 @@
 import { Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
-import { Entity } from '@/core/entities/entity.js'
 import { Optional } from '@/core/types/optional.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
+import { AggregateRoot } from '@/core/entities/aggregate-root.js'
+import { OrdemServicoServicoList } from './value-objects/ordem-servico-servico-list.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -31,18 +32,19 @@ export type OrdemServicoProps = {
   descricao: string
   prioridade: Prioridade
   eGarantia: boolean
-  servicos?: ServicoSolicitado[]
+  servicos: OrdemServicoServicoList
   itens?: ItemOrdemServico[]
   status: StatusOS
 }
 
-export class OrdemServico extends Entity<OrdemServicoProps> {
+export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public static criar(
     props: Optional<OrdemServicoProps, 'status' | 'mecanicoId'>,
     id?: string,
   ): OrdemServico {
     const propriedadesCompletas: OrdemServicoProps = {
       ...props,
+      servicos: props.servicos ?? new OrdemServicoServicoList(),
       status: props.status ?? 'RECEBIDA',
     }
 
@@ -58,7 +60,7 @@ export class OrdemServico extends Entity<OrdemServicoProps> {
       )
     }
 
-    if (props.servicos && props.servicos.some((item) => !item.servico)) {
+    if (props.servicos && props.servicos.getItems().some((item) => !item)) {
       throw new Error(
         'Cada serviço solicitado precisa apontar para uma entidade de serviço válida.',
       )
@@ -88,7 +90,7 @@ export class OrdemServico extends Entity<OrdemServicoProps> {
     return this.props.descricao
   }
 
-  public getServicos(): ServicoSolicitado[] | undefined {
+  public getServicos(): OrdemServicoServicoList {
     return this.props.servicos
   }
 
@@ -123,15 +125,8 @@ export class OrdemServico extends Entity<OrdemServicoProps> {
       clienteId: this.props.clienteId,
       veiculoId: this.props.veiculoId,
       descricao: this.props.descricao,
-      servicos: this.props.servicos?.map((servicoSolicitado) => ({
-        id: servicoSolicitado.servico.getId(),
-        nome: servicoSolicitado.servico.getNome(),
-        categoria: servicoSolicitado.servico.getCategoria(),
-        descricao: servicoSolicitado.servico.getDescricao(),
-        valorReferencia: servicoSolicitado.servico.getValorReferencia(),
-        observacao: servicoSolicitado.observacao,
-      })),
       itens: this.props.itens,
+      services: this.getServicos().getItems()
     }
   }
 }
