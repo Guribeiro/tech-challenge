@@ -1,19 +1,10 @@
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
-import { CategoriaServico, Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
+import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
+import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
-import { ServicoRepository } from '@/modules/os-orcamento/domain/repositories/servicos-repository.js'
 import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
-
-interface OrdemServicoServico {
-  servicoId: string // ◄── Removido o '?' (Agora é obrigatório!)
-  nome: string
-  descricao?: string
-  categoria: CategoriaServico
-  precoUnitario: number
-  observacao?: string
-}
 
 export type CriarOrdemServicoInput = {
   clienteId: string
@@ -21,18 +12,12 @@ export type CriarOrdemServicoInput = {
   descricao: string
   eGarantia: boolean
   servicos: Array<OrdemServicoServico>
-  itens?: Array<{
-    tipo: 'PECA' | 'INSUMO'
-    descricao: string
-    quantidade: number
-  }>
 }
 
 export class CriaOrdemServico {
   constructor(
     private clienteRepository: ClienteRepository,
     private veiculoRepository: VeiculoRepository,
-    private servicoRepository: ServicoRepository
   ) { }
   public async execute(input: CriarOrdemServicoInput): Promise<OrdemServico> {
 
@@ -48,21 +33,11 @@ export class CriaOrdemServico {
       throw new Error(`Veículo com ID ${input.veiculoId} não encontrado.`)
     }
 
-    const servicos = input.servicos?.map((servicoInput) => ({
-      servico: Servico.criar({
-        nome: servicoInput.nome,
-        descricao: servicoInput.descricao,
-        categoria: servicoInput.categoria,
-        valorReferencia: servicoInput.precoUnitario,
-      }),
-      observacao: servicoInput.observacao,
-    }))
-
     const prioridadeCalculada = Prioridade.calcular({
       eGarantia: input.eGarantia,
       eClienteCorporativo: cliente.getTipo() === 'PJ',
       anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: servicos.map(s => s.servico.getCategoria())
+      categoriasDosServicos: input.servicos.map(s => s.getCategoria())
     });
 
     const ordemServico = OrdemServico.criar({
@@ -71,8 +46,7 @@ export class CriaOrdemServico {
       descricao: input.descricao,
       eGarantia: input.eGarantia,
       prioridade: prioridadeCalculada,
-      servicos,
-      itens: input.itens,
+      servicos: new OrdemServicoServicoList(input.servicos),
     })
 
     return ordemServico

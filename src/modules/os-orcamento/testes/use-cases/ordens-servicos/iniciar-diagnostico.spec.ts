@@ -140,6 +140,7 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: ['MECANICA'],
       }),
+
     })
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)

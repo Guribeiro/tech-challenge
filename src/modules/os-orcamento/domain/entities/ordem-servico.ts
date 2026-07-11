@@ -4,6 +4,7 @@ import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { OrdemServicoServicoList } from './value-objects/ordem-servico-servico-list.js'
+import { OrdemServicoComponenteList } from './value-objects/ordem-servico-componente-list.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -33,7 +34,7 @@ export type OrdemServicoProps = {
   prioridade: Prioridade
   eGarantia: boolean
   servicos: OrdemServicoServicoList
-  itens?: ItemOrdemServico[]
+  componentes: OrdemServicoComponenteList
   status: StatusOS
 }
 
@@ -67,9 +68,9 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     }
 
     if (
-      props.itens &&
-      props.itens.some(
-        (item) => !item.descricao?.trim() || item.quantidade <= 0,
+      props.componentes &&
+      props.componentes.getItems().some(
+        (item) => !item.getDescricao()?.trim() || item.getQuantidade() <= 0,
       )
     ) {
       throw new Error(
@@ -94,8 +95,8 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     return this.props.servicos
   }
 
-  public getItens(): ItemOrdemServico[] | undefined {
-    return this.props.itens
+  public getComponents(): OrdemServicoComponenteList {
+    return this.props.componentes
   }
 
   public getStatus(): StatusOS {
@@ -119,14 +120,26 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     this.props.mecanicoId = mecanicoId
   }
 
+  public getValorTotalCalculado(): number {
+    const totalServicos = this.props.servicos.getItems().reduce((acc, osServico) => {
+      return acc + osServico.getPrecoUnitario()
+    }, 0)
+
+    const totalComponentes = this.props.componentes.getItems().reduce((acc, item) => {
+      return acc + item.getSubtotal() // ◄── Invoca o método encapsulado no VO
+    }, 0)
+
+    return totalServicos + totalComponentes
+  }
+
   public toJSON(): Record<string, unknown> {
     return {
       id: this.getId(),
       clienteId: this.props.clienteId,
       veiculoId: this.props.veiculoId,
       descricao: this.props.descricao,
-      itens: this.props.itens,
-      services: this.getServicos().getItems()
+      services: this.getServicos().getItems(),
+      componentes: this.getComponents().getItems()
     }
   }
 }
