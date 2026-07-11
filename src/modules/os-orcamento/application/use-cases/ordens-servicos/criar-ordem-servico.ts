@@ -1,5 +1,7 @@
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
+import { OrdemServicoComponente } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente'
+import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list'
 import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
 import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
@@ -11,7 +13,8 @@ export type CriarOrdemServicoInput = {
   veiculoId: string
   descricao: string
   eGarantia: boolean
-  servicos: Array<OrdemServicoServico>
+  servicos?: Array<OrdemServicoServico>
+  components?: Array<OrdemServicoComponente>
 }
 
 export class CriaOrdemServico {
@@ -33,11 +36,11 @@ export class CriaOrdemServico {
       throw new Error(`Veículo com ID ${input.veiculoId} não encontrado.`)
     }
 
-    const prioridadeCalculada = Prioridade.calcular({
+    const prioridade = Prioridade.calcular({
       eGarantia: input.eGarantia,
       eClienteCorporativo: cliente.getTipo() === 'PJ',
       anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: input.servicos.map(s => s.getCategoria())
+      categoriasDosServicos: input.servicos ? input.servicos.map(s => s.getCategoria()) : []
     });
 
     const ordemServico = OrdemServico.criar({
@@ -45,8 +48,9 @@ export class CriaOrdemServico {
       veiculoId: new UniqueEntityID(input.veiculoId),
       descricao: input.descricao,
       eGarantia: input.eGarantia,
-      prioridade: prioridadeCalculada,
+      prioridade,
       servicos: new OrdemServicoServicoList(input.servicos),
+      componentes: new OrdemServicoComponenteList(input.components)
     })
 
     return ordemServico
