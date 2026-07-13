@@ -5,6 +5,9 @@ import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { OrdemServicoServicoList } from './value-objects/ordem-servico-servico-list.js'
 import { OrdemServicoComponenteList } from './value-objects/ordem-servico-componente-list.js'
+import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
+import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
+import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -14,17 +17,6 @@ export type StatusOS =
   | 'FINALIZADA'
   | 'ENTREGUE'
   | 'ENCERRADA_REJEICAO'
-
-export type ServicoSolicitado = {
-  servico: Servico
-  observacao?: string
-}
-
-export type ItemOrdemServico = {
-  tipo: 'PECA' | 'INSUMO'
-  descricao: string
-  quantidade: number
-}
 
 export type OrdemServicoProps = {
   clienteId: UniqueEntityID
@@ -46,6 +38,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     const propriedadesCompletas: OrdemServicoProps = {
       ...props,
       servicos: props.servicos ?? new OrdemServicoServicoList(),
+      componentes: props.componentes ?? new OrdemServicoComponenteList(),
       status: props.status ?? 'RECEBIDA',
     }
 
@@ -95,7 +88,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     return this.props.servicos
   }
 
-  public getComponents(): OrdemServicoComponenteList {
+  public getComponentes(): OrdemServicoComponenteList {
     return this.props.componentes
   }
 
@@ -120,6 +113,22 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     this.props.mecanicoId = mecanicoId
   }
 
+  public concluirDiagnostico(
+    novosServicos: OrdemServicoServico[],
+    novosComponentes: OrdemServicoComponente[]
+  ): void {
+    if (this.props.status !== 'EM_DIAGNOSTICO') {
+      throw new Error('A ordem de serviço precisa estar EM_DIAGNOSTICO para concluir esta etapa.')
+    }
+
+    this.props.servicos.update(novosServicos)
+    this.props.componentes.update(novosComponentes)
+
+    this.props.status = 'AGUARDANDO_APROVACAO'
+
+    this.addDomainEvent(new DiagnosticoConcluidoEvent(this))
+  }
+
   public getValorTotalCalculado(): number {
     const totalServicos = this.props.servicos.getItems().reduce((acc, osServico) => {
       return acc + osServico.getPrecoUnitario()
@@ -139,7 +148,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
       veiculoId: this.props.veiculoId,
       descricao: this.props.descricao,
       services: this.getServicos().getItems(),
-      componentes: this.getComponents().getItems()
+      componentes: this.getComponentes().getItems()
     }
   }
 }

@@ -12,4 +12,8 @@ export class Entity<TProps> {
   public getId(): string {
     return this._id.toValue()
   }
+
+  public equals(otherId: string): boolean {
+    return this._id === new UniqueEntityID(otherId)
+  }
 }
