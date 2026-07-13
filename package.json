@@ -6,7 +6,9 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "test": "vitest"
+    "test": "vitest",
+    "test:cov": "vitest run --coverage",
+    "test:cov:ui": "vitest --coverage --ui"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +19,8 @@
     "@faker-js/faker": "^10.5.0",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^26.1.1",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/ui": "^4.1.10",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "typescript": "^6.0.3",
