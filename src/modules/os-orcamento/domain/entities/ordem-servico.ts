@@ -8,6 +8,7 @@ import { OrdemServicoComponenteList } from './value-objects/ordem-servico-compon
 import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
 import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
 import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event.js'
+import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -104,25 +105,34 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     return this.props.mecanicoId
   }
 
-  public iniciarDiagnóstico(mecanicoId: UniqueEntityID): void {
+  public iniciarDiagnostico(mecanicoId: UniqueEntityID): void {
     if (this.props.status !== 'RECEBIDA') {
       throw new Error('O diagnóstico só pode ser iniciado para ordens de serviço recebidas.')
     }
 
     this.props.status = 'EM_DIAGNOSTICO'
     this.props.mecanicoId = mecanicoId
+
+    this.addDomainEvent(
+      new DiagnosticoInicializadoEvent(new UniqueEntityID(this.getId()), this.getClienteId())
+    )
   }
 
   public concluirDiagnostico(
-    novosServicos: OrdemServicoServico[],
-    novosComponentes: OrdemServicoComponente[]
+    servicos?: OrdemServicoServico[],
+    componentes?: OrdemServicoComponente[]
   ): void {
     if (this.props.status !== 'EM_DIAGNOSTICO') {
       throw new Error('A ordem de serviço precisa estar EM_DIAGNOSTICO para concluir esta etapa.')
     }
 
-    this.props.servicos.update(novosServicos)
-    this.props.componentes.update(novosComponentes)
+    if (servicos) {
+      this.props.servicos.update(servicos)
+    }
+
+    if (componentes) {
+      this.props.componentes.update(componentes)
+    }
 
     this.props.status = 'AGUARDANDO_APROVACAO'
 

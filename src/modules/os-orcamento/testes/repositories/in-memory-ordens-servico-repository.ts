@@ -1,5 +1,6 @@
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
 import { OrdemServico } from "../../domain/entities/ordem-servico.js"
+import { DomainEvents } from "@/core/events/domain-events.js"
 
 export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
   private ordensServico: OrdemServico[] = []
@@ -13,6 +14,9 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
     if (index !== -1) {
       this.ordensServico[index] = ordemServico
     }
+    ordemServico.domainEvents.forEach(event => DomainEvents.dispatch(event))
+
+    ordemServico.clearEvents()
   }
 
   async findById(id: string): Promise<OrdemServico | null> {

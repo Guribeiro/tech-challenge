@@ -4,5 +4,6 @@ export interface ServicoRepository {
   create(servico: Servico): Promise<void>
   save(servico: Servico): Promise<void>
   findById(id: string): Promise<Servico | null>
+  findManyByIds(ids: string[]): Promise<Servico[]>
   delete(id: string): Promise<void>
 }

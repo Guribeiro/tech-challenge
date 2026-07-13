@@ -1,4 +1,4 @@
-import { NotificacaoService } from "../../application/services/notificacao-service.js"
+import { NotificacaoService } from "../../domain/services/notificacao-service.js"
 
 export interface EnviarNotificacaoInput {
   destinatario: string

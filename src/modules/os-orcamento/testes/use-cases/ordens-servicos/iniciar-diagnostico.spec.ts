@@ -1,4 +1,4 @@
-import { IniciarDiagnosticoeCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/iniciar-diagnostico.js'
+import { IniciarDiagnosticoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/iniciar-diagnostico.js'
 import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js'
 import { InMemoryMecanicosRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-mecanicos-repository.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
@@ -9,18 +9,19 @@ import { makeCliente } from '../../factories/make-cliente.js'
 import { makeVeiculo } from '../../factories/make-veiculo.js'
 import { OnDiagnosticoInicializado } from '@/modules/os-orcamento/application/subscribers/on-diagnostico-inicializado.js'
 import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
-import { InMemoryNotificacaoService } from '../../services/in-memory-notificacao-service.js'
+import { InMemoryNotificacaoService } from '@/modules/notificacoes/testes/services/in-memory-notificacao-service.js'
 import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
 import { makeServico } from '../../factories/make-servico.js'
 import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'
 import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
+import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
 
 let notificacaoService: InMemoryNotificacaoService
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let mecanicoRepository: InMemoryMecanicosRepository
 let clienteRepository: InMemoryClienteRepository
 let veiculoRepository: InMemoryVeiculoRepository
-let sut: IniciarDiagnosticoeCase
+let sut: IniciarDiagnosticoUseCase
 
 
 describe('Iniciar diagnostico', () => {
@@ -31,7 +32,7 @@ describe('Iniciar diagnostico', () => {
     clienteRepository = new InMemoryClienteRepository()
     veiculoRepository = new InMemoryVeiculoRepository()
 
-    sut = new IniciarDiagnosticoeCase(
+    sut = new IniciarDiagnosticoUseCase(
       ordemServicoRepository,
       mecanicoRepository,
       clienteRepository,
@@ -76,11 +77,12 @@ describe('Iniciar diagnostico', () => {
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServicoList,
+      componentes: new OrdemServicoComponenteList(),
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
         anoVeiculo: veiculo.getAno(),
-        categoriasDosServicos: ['MECANICA'],
+        categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
     })
 
@@ -134,11 +136,12 @@ describe('Iniciar diagnostico', () => {
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServicoList,
+      componentes: new OrdemServicoComponenteList(),
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
         anoVeiculo: veiculo.getAno(),
-        categoriasDosServicos: ['MECANICA'],
+        categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
 
     })
@@ -187,11 +190,12 @@ describe('Iniciar diagnostico', () => {
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServicoList,
+      componentes: new OrdemServicoComponenteList(),
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
         anoVeiculo: veiculo.getAno(),
-        categoriasDosServicos: ['MECANICA'],
+        categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
     })
 

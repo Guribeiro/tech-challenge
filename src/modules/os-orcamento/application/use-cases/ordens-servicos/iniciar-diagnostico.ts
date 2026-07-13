@@ -16,7 +16,7 @@ export type IniciarDiagnosticoutput = {
   ordemServico: OrdemServico
 }
 
-export class IniciarDiagnosticoeCase {
+export class IniciarDiagnosticoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
     private readonly mecanicoRepository: MecanicoRepository,
@@ -43,13 +43,13 @@ export class IniciarDiagnosticoeCase {
       throw new Error(`Veiculo na OS não encontrado`)
     }
 
-    ordemServico.iniciarDiagnóstico(new UniqueEntityID(mecanico.getId()))
+    ordemServico.iniciarDiagnostico(new UniqueEntityID(mecanico.getId()))
 
     await this.ordemServicoRepository.save(ordemServico)
 
-    DomainEvents.dispatch(
-      new DiagnosticoInicializadoEvent(new UniqueEntityID(ordemServico.getId()), ordemServico.getClienteId())
-    );
+    // DomainEvents.dispatch(
+    //   new DiagnosticoInicializadoEvent(new UniqueEntityID(ordemServico.getId()), ordemServico.getClienteId())
+    // );
 
     return {
       ordemServico
