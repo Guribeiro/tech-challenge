@@ -5,4 +5,5 @@ export interface OrdemServicoRepository {
   save(ordem: OrdemServico): Promise<void>
   findById(id: string): Promise<OrdemServico | null>
   listServiceQueue(): Promise<OrdemServico[]>
+  findManyReadyToInitialize(mecanicoId?: string): Promise<OrdemServico[]>
 }

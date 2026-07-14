@@ -2,7 +2,7 @@ import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servi
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
 
 export type ObterFilaTrabalhoOutput = {
-  fila: Array<OrdemServico>
+  fila: OrdemServico[]
 }
 
 export class ObterFilaTrabalhoUseCase {
@@ -11,10 +11,10 @@ export class ObterFilaTrabalhoUseCase {
   ) { }
 
   public async executar(): Promise<ObterFilaTrabalhoOutput> {
-    const ordensServico = await this.ordemServicoRepository.listServiceQueue()
+    const fila = await this.ordemServicoRepository.listServiceQueue()
 
     return {
-      fila: ordensServico
+      fila
     }
   }
 }

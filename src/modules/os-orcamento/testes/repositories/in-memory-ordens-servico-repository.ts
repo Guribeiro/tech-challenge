@@ -3,16 +3,16 @@ import { OrdemServico } from "../../domain/entities/ordem-servico.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
 
 export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
-  private ordensServico: OrdemServico[] = []
+  private items: OrdemServico[] = []
 
   async create(ordemServico: OrdemServico): Promise<void> {
-    this.ordensServico.push(ordemServico)
+    this.items.push(ordemServico)
   }
 
   async save(ordemServico: OrdemServico): Promise<void> {
-    const index = this.ordensServico.findIndex(os => os.getId() === ordemServico.getId())
+    const index = this.items.findIndex(os => os.getId() === ordemServico.getId())
     if (index !== -1) {
-      this.ordensServico[index] = ordemServico
+      this.items[index] = ordemServico
     }
     ordemServico.domainEvents.forEach(event => DomainEvents.dispatch(event))
 
@@ -20,14 +20,35 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
   }
 
   async findById(id: string): Promise<OrdemServico | null> {
-    return this.ordensServico.find(os => os.getId() === id) || null
+    return this.items.find(os => os.getId() === id) || null
   }
 
   async listServiceQueue(): Promise<OrdemServico[]> {
-    return this.ordensServico.sort((a, b) => {
+    return this.items.sort((a, b) => {
       const prioridadeA = a.getPrioridade().getPeso()
       const prioridadeB = b.getPrioridade().getPeso()
       return prioridadeB - prioridadeA
+    })
+  }
+
+  async findManyReadyToInitialize(mecanicoId?: string): Promise<OrdemServico[]> {
+    // 1. Filtra os registros com base nas regras de negócio
+    const ordensFiltradas = this.items.filter(item => {
+      const statusValido = item.getStatus() === 'PRONTA_PARA_INICIAR'
+
+      if (mecanicoId) {
+        const temMecanicoAtribuido = item.getMecanicoId()?.toValue() === mecanicoId
+        return statusValido && temMecanicoAtribuido
+      }
+
+      return statusValido
+    })
+
+    return ordensFiltradas.sort((a, b) => {
+      const pesoA = a.getPrioridade().getPeso()
+      const pesoB = b.getPrioridade().getPeso()
+
+      return pesoB - pesoA
     })
   }
 }
