@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { DiagnosticoInicializadoEvent } from '@/modules/os-orcamento/domain/events/diagnostico-inicializado-event.js'
 import { ClienteRepository } from '../../domain/repositories/clientes-repository.js';
-import { NotificacaoService } from '../services/notificacao-service.js';
+import { NotificacaoService } from '@/modules/notificacoes/domain/services/notificacao-service.js';
 
 // Interface simples apenas para simular o serviço de envio no seu domínio
 

@@ -4,7 +4,7 @@ import { TipoProduto } from '@/modules/estoque/domain/entities/produto.js'
 export interface OrdemServicoComponenteProps {
   produtoId: UniqueEntityID
   tipo: TipoProduto
-  descricao: string
+  descricao?: string
   quantidade: number
   precoUnitario: number // Congela o preço praticado no momento
 }
@@ -32,7 +32,7 @@ export class OrdemServicoComponente {
   /* Getters */
   public getProdutoId(): UniqueEntityID { return this.props.produtoId }
   public getTipo(): TipoProduto { return this.props.tipo }
-  public getDescricao(): string { return this.props.descricao }
+  public getDescricao(): string | undefined { return this.props.descricao }
   public getQuantidade(): number { return this.props.quantidade }
   public getValorUnitario(): number { return this.props.precoUnitario }
 }

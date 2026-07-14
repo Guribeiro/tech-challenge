@@ -9,12 +9,15 @@ import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
 import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
 import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event.js'
 import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
+import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
 
 export type StatusOS =
   | 'RECEBIDA'
   | 'EM_DIAGNOSTICO'
   | 'AGUARDANDO_APROVACAO'
   | 'EM_EXECUCAO'
+  | 'AUTORIZADA'
+  | 'PRONTA_PARA_INICIAR'
   | 'FINALIZADA'
   | 'ENTREGUE'
   | 'ENCERRADA_REJEICAO'
@@ -29,11 +32,13 @@ export type OrdemServicoProps = {
   servicos: OrdemServicoServicoList
   componentes: OrdemServicoComponenteList
   status: StatusOS
+  criadoEm: Date
+  atualizadoEm?: Date
 }
 
 export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public static criar(
-    props: Optional<OrdemServicoProps, 'status' | 'mecanicoId'>,
+    props: Optional<OrdemServicoProps, 'status' | 'mecanicoId' | 'criadoEm'>,
     id?: string,
   ): OrdemServico {
     const propriedadesCompletas: OrdemServicoProps = {
@@ -41,6 +46,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
       servicos: props.servicos ?? new OrdemServicoServicoList(),
       componentes: props.componentes ?? new OrdemServicoComponenteList(),
       status: props.status ?? 'RECEBIDA',
+      criadoEm: new Date()
     }
 
     this.validar(propriedadesCompletas)
@@ -137,6 +143,42 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     this.props.status = 'AGUARDANDO_APROVACAO'
 
     this.addDomainEvent(new DiagnosticoConcluidoEvent(this))
+  }
+
+  public autorizaExecucao(): void {
+    // 1. Regra de Transição de Estado (Guarda de segurança)
+    if (this.props.status !== 'AGUARDANDO_APROVACAO') {
+      throw new Error(
+        `Não é possível iniciar a execução de uma ordem de serviço com o status atual: ${this.props.status}. ` +
+        `A OS precisa estar no status AGUARDANDO_APROVACAO.`
+      )
+    }
+
+    // 2. Aplica a alteração de estado
+    this.props.status = 'AUTORIZADA'
+    this.props.atualizadoEm = new Date()
+
+    // Opcional: Se no seu Event Storming houver alguma consequência física que precise 
+    // acontecer imediatamente quando o mecânico começa a trabalhar (ex: reservar peças no estoque),
+    // você registraria um evento aqui:
+    this.addDomainEvent(new OSExecucaoAutorizadaEvent(this))
+  }
+
+  public marcarComoProntaParaIniciar(): void {
+    // Garante a consistência: ela só pode ficar pronta se já foi autorizada previamente
+    if (this.props.status !== 'AUTORIZADA') {
+      throw new Error(
+        `Não é possível marcar a OS como pronta a partir do status: ${this.props.status}. ` +
+        `A OS precisa estar no status AUTORIZADA.`
+      )
+    }
+
+    this.props.status = 'PRONTA_PARA_INICIAR'
+    this.props.atualizadoEm = new Date()
+
+    // Se você quiser notificar o frontend em tempo real (via WebSockets/SSE) 
+    // que uma nova OS surgiu na fila do mecânico, você poderia registrar um evento aqui:
+    // this.addDomainEvent(new OrdemServicoProntaParaIniciarEvent(this))
   }
 
   public getValorTotalCalculado(): number {

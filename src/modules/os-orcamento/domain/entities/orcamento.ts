@@ -4,6 +4,7 @@ import { Optional } from '@/core/types/optional.js'
 import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
 import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
 import { OrcamentoEnviadoEvent } from '../events/orcamento-enviado-event.js'
+import { OrcamentoAprovadoEvent } from '../events/orcamento-aprovado-event.js'
 
 export type StatusOrcamento =
   | 'CRIADO'
@@ -58,7 +59,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
     this.props.status = 'APROVADO'
 
     // Evento: "Cliente aprovou orçamento" -> Ouvinte vai na OS e muda para EM_EXECUCAO
-    // this.addDomainEvent(new OrcamentoAprovadoEvent(this))
+    this.addDomainEvent(new OrcamentoAprovadoEvent(this))
   }
 
   public recusar(): void {

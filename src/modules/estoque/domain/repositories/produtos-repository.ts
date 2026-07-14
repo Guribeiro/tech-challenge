@@ -7,4 +7,5 @@ export interface ProdutoRepository {
   findByNome(nome: string): Promise<Produto | null>
   delete(id: string): Promise<void>
   list(): Promise<Produto[]>
+  findManyByIds(ids: string[]): Promise<Produto[]>
 }

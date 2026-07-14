@@ -30,4 +30,10 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
   async list(): Promise<Produto[]> {
     return this.produtos
   }
+
+  async findManyByIds(ids: string[]): Promise<Produto[]> {
+    return this.produtos.filter(produto =>
+      ids.includes(produto.getId())
+    )
+  }
 }
