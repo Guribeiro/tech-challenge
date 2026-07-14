@@ -47,11 +47,9 @@ describe('Iniciar diagnostico', () => {
     mecanicoRepository.create(mecanico)
 
     const cliente = makeCliente()
-
     clienteRepository.create(cliente)
 
     const veiculo = makeVeiculo()
-
     veiculoRepository.create(veiculo)
 
     const spy = vi.spyOn(notificacaoService, 'enviar')

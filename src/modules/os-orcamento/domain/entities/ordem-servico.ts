@@ -10,6 +10,7 @@ import { OrdemServicoComponente } from './value-objects/ordem-servico-componente
 import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event.js'
 import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
 import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
+import { OSExecucaoIniciadaEvent } from '../events/os-execucao-iniciada-event.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -179,6 +180,23 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     // Se você quiser notificar o frontend em tempo real (via WebSockets/SSE) 
     // que uma nova OS surgiu na fila do mecânico, você poderia registrar um evento aqui:
     // this.addDomainEvent(new OrdemServicoProntaParaIniciarEvent(this))
+  }
+
+  public iniciaExecucao(): void {
+    // Garante a consistência: ela só pode ficar pronta se já foi autorizada previamente
+    if (this.props.status !== 'PRONTA_PARA_INICIAR') {
+      throw new Error(
+        `Não é possível iniciar OS a partir do status: ${this.props.status}. ` +
+        `A OS precisa estar no status PRONTA_PARA_INICIAR.`
+      )
+    }
+
+    this.props.status = 'EM_EXECUCAO'
+    this.props.atualizadoEm = new Date()
+
+    // Se você quiser notificar o frontend em tempo real (via WebSockets/SSE) 
+    // que uma nova OS surgiu na fila do mecânico, você poderia registrar um evento aqui:
+    this.addDomainEvent(new OSExecucaoIniciadaEvent(this))
   }
 
   public getValorTotalCalculado(): number {

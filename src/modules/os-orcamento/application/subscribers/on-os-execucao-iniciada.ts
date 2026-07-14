@@ -1,11 +1,13 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSExecucaoIniciadaEvent } from '../../domain/events/os-execucao-iniciada-event.js'
-import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js' // Caminho fictício do seu outro módulo
+import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-case/enviar-notificacao.js'
+import { ClienteRepository } from '../../domain/repositories/clientes-repository.js'
 
-export class OnExecucaoAutorizada implements EventHandler {
+export class OnExecucaoIniciada implements EventHandler {
   constructor(
-    private readonly reservarPecas: ReservarProdutosEstoqueUseCase
+    private readonly enviarNotificacao: EnviarNotificacaoUseCase,
+    private readonly clienteRepository: ClienteRepository
   ) {
     this.setupSubscriptions()
   }
@@ -20,26 +22,21 @@ export class OnExecucaoAutorizada implements EventHandler {
   private async executar(event: OSExecucaoIniciadaEvent): Promise<void> {
     const { ordemServico } = event
 
-    // ⚡ Filtra se a OS de fato possui componentes/peças para serem reservados
-    const componentes = ordemServico.getComponentes().getItems()
-    if (componentes.length === 0) {
-      console.log(`[Subscriber Info]: OS ${ordemServico.getId()} autorizada sem peças para reservar.`)
-      return
-    }
-
     try {
-      // ⚡ O COMANDO NO INVENTÁRIO: Manda o módulo de inventário reservar as peças
-      await this.reservarPecas.execute({
-        ordemServicoId: ordemServico.getId(),
-        itens: componentes.map(c => ({
-          produtoId: c.getProdutoId().toValue(),
-          quantidade: c.getQuantidade()
-        }))
+
+      const cliente = await this.clienteRepository.findById(ordemServico.getClienteId().toValue())
+
+      if (!cliente) return
+
+      // ⚡ Chama o seu caso de uso de notificação de forma limpa e desacoplada!
+      await this.enviarNotificacao.execute({
+        destinatario: cliente?.getTelefone().getValor(),
+        mensagem: `Olá! O mecânico já iniciou a execução dos serviços no seu veículo (OS: ${ordemServico.getId()}).`
       })
 
-      console.log(`[Subscriber Success]: Comando de reserva enviado ao Inventário para a OS ${ordemServico.getId()}`)
+      console.log(`[Notification Success]: Notificação de início de OS enviada para o cliente da OS ${ordemServico.getId()}`)
     } catch (error) {
-      console.error(`[Subscriber Error]: Erro ao solicitar reserva de peças para a OS ${ordemServico.getId()}`, error)
+      console.error(`[Notification Error]: Falha ao disparar notificação para o cliente da OS ${ordemServico.getId()}`, error)
     }
   }
 }

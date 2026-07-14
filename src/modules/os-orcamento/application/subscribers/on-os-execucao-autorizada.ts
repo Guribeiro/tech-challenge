@@ -28,7 +28,6 @@ export class OnExecucaoAutorizada implements EventHandler {
     }
 
     try {
-      // ⚡ O COMANDO NO INVENTÁRIO: Manda o módulo de inventário reservar as peças
       await this.reservarPecas.execute({
         ordemServicoId: ordemServico.getId(),
         itens: componentes.map(c => ({
