@@ -1,5 +1,6 @@
 import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js"
 import { Produto } from "@/modules/estoque/domain/entities/produto.js"
+import { DomainEvents } from "@/core/events/domain-events.js"
 
 export class InMemoryProdutoRepository implements ProdutoRepository {
   private produtos: Produto[] = []
@@ -13,6 +14,10 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
     if (index !== -1) {
       this.produtos[index] = produto
     }
+
+    produto.domainEvents.forEach(event => DomainEvents.dispatch(event))
+
+    produto.clearEvents()
   }
 
   async findById(id: string): Promise<Produto | null> {

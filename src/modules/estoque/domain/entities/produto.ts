@@ -1,3 +1,4 @@
+import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { Entity } from '@/core/entities/entity.js'
 import { Optional } from '@/core/types/optional.js'
 
@@ -15,11 +16,13 @@ export interface ProdutoProps {
   desativadoEm?: Date | null
 }
 
-export class Produto extends Entity<ProdutoProps> {
-  public static criar(props: Optional<ProdutoProps, 'criadoEm' | 'quantidadeReservada'>, id?: string): Produto {
+export class Produto extends AggregateRoot<ProdutoProps> {
+  public static criar(props: Optional<ProdutoProps, 'criadoEm' | 'quantidadeReservada' | 'quantidadeEstoque'>, id?: string): Produto {
     const produto: ProdutoProps = {
       ...props,
+      quantidadeEstoque: props.quantidadeEstoque ?? 0,
       quantidadeReservada: props.quantidadeReservada ?? 0,
+      desativadoEm: null,
       criadoEm: new Date()
     }
     this.validar(produto)
@@ -114,19 +117,6 @@ export class Produto extends Entity<ProdutoProps> {
       throw new Error('O novo preço não pode ser negativo.')
     }
     this.props.precoUnitario = novoPreco
-  }
-
-  /**
-   * Abate a quantidade do estoque quando a OS for executada
-   */
-  public deduzirEstoque(quantidade: number): void {
-    if (quantidade <= 0) {
-      throw new Error('A quantidade a ser deduzida deve ser maior que zero.')
-    }
-    if (this.props.quantidadeEstoque < quantidade) {
-      throw new Error(`Estoque insuficiente para o produto "${this.props.nome}".`)
-    }
-    this.props.quantidadeEstoque -= quantidade
   }
 
   /**

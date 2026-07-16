@@ -12,6 +12,8 @@ import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado
 import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
 import { OSExecucaoIniciadaEvent } from '../events/os-execucao-iniciada-event.js'
 import { OSEncerradaPorRejeicaoEvent } from '../events/os-encerrada-por-rejeicao.js'
+import { OSExecucaoFinalizadaEvent } from '../events/os-execucao-finalizada-event.js'
+import { OSEncerradaEvent } from '../events/os-encerrada-event.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -23,6 +25,7 @@ export type StatusOS =
   | 'FINALIZADA'
   | 'ENTREGUE'
   | 'ENCERRADA_REJEICAO'
+  | 'ENCERRADA'
 
 export type OrdemServicoProps = {
   clienteId: UniqueEntityID
@@ -148,7 +151,6 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   }
 
   public autorizaExecucao(): void {
-    // 1. Regra de Transição de Estado (Guarda de segurança)
     if (this.props.status !== 'AGUARDANDO_APROVACAO') {
       throw new Error(
         `Não é possível iniciar a execução de uma ordem de serviço com o status atual: ${this.props.status}. ` +
@@ -156,18 +158,13 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
       )
     }
 
-    // 2. Aplica a alteração de estado
     this.props.status = 'AUTORIZADA'
     this.props.atualizadoEm = new Date()
 
-    // Opcional: Se no seu Event Storming houver alguma consequência física que precise 
-    // acontecer imediatamente quando o mecânico começa a trabalhar (ex: reservar peças no estoque),
-    // você registraria um evento aqui:
     this.addDomainEvent(new OSExecucaoAutorizadaEvent(this))
   }
 
   public marcarComoProntaParaIniciar(): void {
-    // Garante a consistência: ela só pode ficar pronta se já foi autorizada previamente
     if (this.props.status !== 'AUTORIZADA') {
       throw new Error(
         `Não é possível marcar a OS como pronta a partir do status: ${this.props.status}. ` +
@@ -177,14 +174,9 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
     this.props.status = 'PRONTA_PARA_INICIAR'
     this.props.atualizadoEm = new Date()
-
-    // Se você quiser notificar o frontend em tempo real (via WebSockets/SSE) 
-    // que uma nova OS surgiu na fila do mecânico, você poderia registrar um evento aqui:
-    // this.addDomainEvent(new OrdemServicoProntaParaIniciarEvent(this))
   }
 
   public iniciaExecucao(): void {
-    // Garante a consistência: ela só pode ficar pronta se já foi autorizada previamente
     if (this.props.status !== 'PRONTA_PARA_INICIAR') {
       throw new Error(
         `Não é possível iniciar OS a partir do status: ${this.props.status}. ` +
@@ -195,23 +187,46 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     this.props.status = 'EM_EXECUCAO'
     this.props.atualizadoEm = new Date()
 
-    // Se você quiser notificar o frontend em tempo real (via WebSockets/SSE) 
-    // que uma nova OS surgiu na fila do mecânico, você poderia registrar um evento aqui:
     this.addDomainEvent(new OSExecucaoIniciadaEvent(this))
   }
 
-  // No seu arquivo da entidade OrdemServico
+  public finalizaExecucao(): void {
+    if (this.props.status !== 'EM_EXECUCAO') {
+      throw new Error(
+        `Não é possível iniciar OS a partir do status: ${this.props.status}. ` +
+        `A OS precisa estar no status EM_EXECUCAO.`
+      )
+    }
+
+    this.props.status = 'FINALIZADA'
+    this.props.atualizadoEm = new Date()
+
+    this.addDomainEvent(new OSExecucaoFinalizadaEvent(this))
+  }
+
+
   public encerrarPorRejeicao(): void {
-    // Regra de negócio: Você não pode rejeitar uma OS que já foi finalizada ou faturada
     if (this.props.status === 'FINALIZADA') {
       throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
     }
 
-    this.props.status = 'ENCERRADA_REJEICAO' // Ou o termo exacto que usou no seu Enum
+    this.props.status = 'ENCERRADA_REJEICAO'
     this.props.atualizadoEm = new Date()
 
     this.addDomainEvent(new OSEncerradaPorRejeicaoEvent(this))
   }
+
+  public encerrarPorFaturaPaga(): void {
+    if (this.props.status === 'FINALIZADA') {
+      throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
+    }
+
+    this.props.status = 'ENCERRADA'
+    this.props.atualizadoEm = new Date()
+
+    this.addDomainEvent(new OSEncerradaEvent(this))
+  }
+
 
   public getValorTotalCalculado(): number {
     const totalServicos = this.props.servicos.getItems().reduce((acc, osServico) => {

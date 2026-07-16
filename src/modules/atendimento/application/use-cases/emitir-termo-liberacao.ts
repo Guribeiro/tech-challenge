@@ -1,23 +1,24 @@
-// src/modules/atendimento/application/use-cases/gerar-termo-rejeicao.ts
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
-import { TermoLiberacao } from "../../domain/value-objects/termo-liberacao.js"
+import { TermoLiberacao } from "../../domain/entities/termo-liberacao.js"
 import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js"
+import { TermoLiberacaoRepository } from "../../domain/repositories/termoRepository.js"
 
-interface GerarTermoRejeicaoInput {
+interface EmitirTermoInput {
   ordemServicoId: string
 }
 
-interface GerarTermoRejeicaoOutput {
+interface EmitirTermoOutput {
   termo: TermoLiberacao
 }
 
-export class GerarTermoRejeicaoUseCase {
+export class EmitirTermoLiberacaoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
     private readonly veiculoRepository: VeiculoRepository,
+    private readonly termoLiberacao: TermoLiberacaoRepository
   ) { }
 
-  public async execute(input: GerarTermoRejeicaoInput): Promise<GerarTermoRejeicaoOutput> {
+  public async execute(input: EmitirTermoInput): Promise<EmitirTermoOutput> {
     const os = await this.ordemServicoRepository.findById(input.ordemServicoId)
 
     if (!os) {
@@ -29,12 +30,13 @@ export class GerarTermoRejeicaoUseCase {
       throw new Error(`Veículo ${os.getVeiculoId()} não encontrado`)
     }
 
-    // O Value Object monta e valida o documento em memória
     const termo = TermoLiberacao.criar({
       ordemServicoId: os.getId(),
       placaVeiculo: veiculo.getPlaca().getFormatada(),
-      motivo: 'REJEICAO_ORCAMENTO'
+      motivo: 'PAGAMENTO_APROVADO'
     })
+
+    await this.termoLiberacao.create(termo)
 
     return {
       termo

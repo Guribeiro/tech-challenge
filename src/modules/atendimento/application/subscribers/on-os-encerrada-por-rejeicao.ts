@@ -1,0 +1,30 @@
+import { DomainEvents } from '@/core/events/domain-events.js'
+import { EventHandler } from '@/core/events/event-handler.js'
+import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao.js'
+import { GerarTermoRejeicaoUseCase } from '@/modules/atendimento/application/use-cases/emitir-termo-liberacao-rejeicao.js'
+
+export class OnOrdemServicoEncerradaPorRejeicao implements EventHandler {
+  constructor(
+    private readonly gerarTermoRejeicao: GerarTermoRejeicaoUseCase,
+  ) {
+    this.setupSubscriptions()
+  }
+
+  public setupSubscriptions(): void {
+    DomainEvents.register(
+      this.executar.bind(this),
+      OSEncerradaPorRejeicaoEvent.name
+    )
+  }
+
+  private async executar(event: OSEncerradaPorRejeicaoEvent): Promise<void> {
+    const { ordemServico } = event
+    try {
+      await this.gerarTermoRejeicao.execute({
+        ordemServicoId: ordemServico.getId()
+      })
+    } catch (error) {
+      console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId()}`, error)
+    }
+  }
+}
