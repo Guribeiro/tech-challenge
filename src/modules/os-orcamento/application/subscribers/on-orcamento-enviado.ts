@@ -22,7 +22,7 @@ export class OnOrcamentoEnviado implements EventHandler {
 
   // 2. Ação que será executada automaticamente quando o orçamento for enviado
   private async executar({ orcamento }: OrcamentoEnviadoEvent): Promise<void> {
-    const clienteId = orcamento.getClientId().toValue()
+    const clienteId = orcamento.getClienteId().toValue()
 
     const cliente = await this.clienteRepository.findById(clienteId)
 

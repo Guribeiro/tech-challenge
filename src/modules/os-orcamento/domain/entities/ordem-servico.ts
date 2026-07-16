@@ -11,6 +11,7 @@ import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event
 import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
 import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
 import { OSExecucaoIniciadaEvent } from '../events/os-execucao-iniciada-event.js'
+import { OSEncerradaPorRejeicaoEvent } from '../events/os-encerrada-por-rejeicao.js'
 
 export type StatusOS =
   | 'RECEBIDA'
@@ -197,6 +198,19 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     // Se você quiser notificar o frontend em tempo real (via WebSockets/SSE) 
     // que uma nova OS surgiu na fila do mecânico, você poderia registrar um evento aqui:
     this.addDomainEvent(new OSExecucaoIniciadaEvent(this))
+  }
+
+  // No seu arquivo da entidade OrdemServico
+  public encerrarPorRejeicao(): void {
+    // Regra de negócio: Você não pode rejeitar uma OS que já foi finalizada ou faturada
+    if (this.props.status === 'FINALIZADA') {
+      throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
+    }
+
+    this.props.status = 'ENCERRADA_REJEICAO' // Ou o termo exacto que usou no seu Enum
+    this.props.atualizadoEm = new Date()
+
+    this.addDomainEvent(new OSEncerradaPorRejeicaoEvent(this))
   }
 
   public getValorTotalCalculado(): number {

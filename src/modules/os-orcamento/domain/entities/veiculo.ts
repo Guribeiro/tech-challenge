@@ -47,8 +47,8 @@ export class Veiculo extends Entity<VeiculoProps> {
     )
   }
 
-  public getPlaca(): string {
-    return this.props.placa.getValor()
+  public getPlaca(): Placa {
+    return this.props.placa
   }
 
   public getMarca(): string {
