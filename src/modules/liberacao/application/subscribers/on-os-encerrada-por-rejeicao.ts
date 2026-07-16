@@ -1,11 +1,11 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao.js'
-import { EmitirTermoLiberacaoUseCase } from '@/modules/atendimento/application/use-cases/emitir-termo-liberacao.js'
+import { EmitirTermoRejeicaoUseCase } from '@/modules/liberacao/application/use-cases/emitir-termo-liberacao-rejeicao.js'
 
-export class OnOrdemServicoEncerrada implements EventHandler {
+export class OnOrdemServicoEncerradaPorRejeicao implements EventHandler {
   constructor(
-    private readonly emitirTermoLiberacao: EmitirTermoLiberacaoUseCase,
+    private readonly emitirTermoRejeicao: EmitirTermoRejeicaoUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -19,9 +19,8 @@ export class OnOrdemServicoEncerrada implements EventHandler {
 
   private async executar(event: OSEncerradaPorRejeicaoEvent): Promise<void> {
     const { ordemServico } = event
-
     try {
-      await this.emitirTermoLiberacao.execute({
+      await this.emitirTermoRejeicao.execute({
         ordemServicoId: ordemServico.getId()
       })
     } catch (error) {

@@ -1,4 +1,4 @@
-import { TermoLiberacao } from "@/modules/atendimento/domain/entities/termo-liberacao.js"
+import { TermoLiberacao } from "@/modules/liberacao/domain/entities/termo-liberacao.js"
 
 export interface TermoLiberacaoRepository {
   findById(id: string): Promise<TermoLiberacao | null>

@@ -18,7 +18,7 @@
 - [x] Enviar notificação com orçamento
 
 ## ✅ Aprovação de Orçamento
-- [ ] Aprovar orçamento (cliente)
+- [x] Aprovar orçamento (cliente)
 - [x] Recusar orçamento (cliente)
 - [x] Renegociar orçamento (recepcionista)
 - [x] Recusar orçamento renegociado (cliente)
@@ -27,27 +27,27 @@
 ## 🔨 Execução do Serviço
 - [x] Iniciar execução da OS
 - [x] Notificar cliente quando status mudar para EM_EXECUCAO
-- [ ] Finalizar ordem de serviço
-- [ ] Deduzir produtos do estoque após finalização da OS
+- [x] Finalizar ordem de serviço
+- [x] Deduzir produtos do estoque após finalização da OS
 
 ## 📦 Gestão de Estoque e Inventário
 - [x] Reservar produtos para a OS
-- [ ] Deduzir quantidade do estoque
+- [x] Deduzir quantidade do estoque
 - [ ] Verificar estoque mínimo e solicitar compra de reposição
 - [ ] Criar ordem de compra
 - [ ] Dar entrada em nota fiscal de compra
 - [ ] Incrementar quantidade de itens no inventário
 
 ## 💰 Faturamento e Pagamento
-- [ ] Gerar faturamento após finalização da OS
-- [ ] Emitir fatura de pagamento
-- [ ] Notificar cliente quando fatura for emitida
-- [ ] Efetuar pagamento (cliente)
-- [ ] Liberar veículo para entrega após pagamento realizado
+- [x] Gerar faturamento após finalização da OS
+- [x] Emitir fatura de pagamento
+- [x] Notificar cliente quando fatura for emitida
+- [x] Efetuar pagamento (cliente)
+- [x] Liberar veículo para entrega após pagamento realizado
 
 ## 📄 Liberação e Entrega
-- [ ] Emitir termo de liberação
-- [ ] Notificar recepção para entrega física após termo emitido
+- [x] Emitir termo de liberação
+- [x] Notificar recepção para entrega física após termo emitido
 - [x] Emitir termo de liberação por rejeição
 - [x] Gerar documento de recusa e liberação de pátio
 - [x] Notificar cliente para retirada do veículo (caso rejeição)
@@ -56,7 +56,7 @@
 - [x] Enviar notificação de início de serviço
 - [x] Enviar notificação de diagnóstico concluído
 - [x] Enviar notificação de orçamento
-- [ ] Enviar notificação de fatura emitida
+- [x] Enviar notificação de fatura emitida
 - [x] Enviar notificação de status EM_EXECUCAO
 - [x] Enviar notificação para retirada (rejeição)
 
