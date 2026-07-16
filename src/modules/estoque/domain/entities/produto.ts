@@ -22,7 +22,7 @@ export class Produto extends AggregateRoot<ProdutoProps> {
       ...props,
       quantidadeEstoque: props.quantidadeEstoque ?? 0,
       quantidadeReservada: props.quantidadeReservada ?? 0,
-      desativadoEm: null,
+      desativadoEm: props.desativadoEm ?? null,
       criadoEm: new Date()
     }
     this.validar(produto)
@@ -130,7 +130,7 @@ export class Produto extends AggregateRoot<ProdutoProps> {
   }
 
   public desativar(): void {
-    if (this.props.desativadoEm !== null) {
+    if (this.props.desativadoEm) {
       throw new Error('Este produto já está desativado.')
     }
     this.props.desativadoEm = new Date() // Grava o timestamp atual
@@ -173,6 +173,7 @@ export class Produto extends AggregateRoot<ProdutoProps> {
       tipo: this.props.tipo,
       precoUnitario: this.props.precoUnitario,
       quantidadeEstoque: this.props.quantidadeEstoque,
+      desativadoEm: this.props.desativadoEm,
       descricao: this.props.descricao,
     }
   }
