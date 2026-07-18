@@ -12,6 +12,6 @@ export class OrcamentoRecusadoEvent implements DomainEvent {
   }
 
   public getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.orcamento.getId())
+    return this.orcamento.getId()
   }
 }

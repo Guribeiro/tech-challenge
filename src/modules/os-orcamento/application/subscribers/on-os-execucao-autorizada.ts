@@ -29,7 +29,7 @@ export class OnExecucaoAutorizada implements EventHandler {
 
     try {
       await this.reservarPecas.execute({
-        ordemServicoId: ordemServico.getId(),
+        ordemServicoId: ordemServico.getId().toValue(),
         itens: componentes.map(c => ({
           produtoId: c.getProdutoId().toValue(),
           quantidade: c.getQuantidade()

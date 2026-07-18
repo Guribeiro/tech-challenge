@@ -1,4 +1,5 @@
 import { Entity } from '@/core/entities/entity.js'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 
@@ -18,7 +19,7 @@ export type VeiculoProps = {
 export class Veiculo extends Entity<VeiculoProps> {
   public static criar(
     props: Optional<VeiculoProps, 'criadoEm' | 'atualizadoEm'>,
-    id?: string,
+    id?: UniqueEntityID,
   ): Veiculo {
     if (!props.marca?.trim() || !props.modelo?.trim()) {
       throw new Error(

@@ -20,7 +20,7 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
   }
 
   async findById(id: string): Promise<OrdemServico | null> {
-    return this.items.find(os => os.getId() === id) || null
+    return this.items.find(os => os.getId().toValue() === id) || null
   }
 
   async listServiceQueue(): Promise<OrdemServico[]> {

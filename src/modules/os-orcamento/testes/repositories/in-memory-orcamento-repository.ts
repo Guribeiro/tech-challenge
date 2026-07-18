@@ -7,7 +7,7 @@ export class InMemoryOrcamentoRepository implements OrcamentoRepository {
   public items: Orcamento[] = []
 
   async findById(id: string): Promise<Orcamento | null> {
-    const orcamento = this.items.find(item => item.getId() === id)
+    const orcamento = this.items.find(item => item.getId().toValue() === id)
 
     if (!orcamento) return null
     return orcamento
@@ -29,7 +29,7 @@ export class InMemoryOrcamentoRepository implements OrcamentoRepository {
   }
 
   async save(orcamento: Orcamento): Promise<void> {
-    const itemIndex = this.items.findIndex(item => item.equals(orcamento.getId()))
+    const itemIndex = this.items.findIndex(item => item.equals(orcamento))
 
     if (itemIndex >= 0) {
       this.items[itemIndex] = orcamento
@@ -37,11 +37,7 @@ export class InMemoryOrcamentoRepository implements OrcamentoRepository {
       this.items.push(orcamento)
     }
 
-    // ⚡ O momento mais importante do Repositório:
-    // Dispara os eventos acumulados na entidade LOGO APÓS "salvar no banco"
     orcamento.domainEvents.forEach(event => DomainEvents.dispatch(event))
-
-    // Limpa a sacola para evitar envios duplicados no futuro
     orcamento.clearEvents()
   }
 }

@@ -16,10 +16,10 @@ export class InMemoryClienteRepository implements ClienteRepository {
   }
 
   async findById(id: string): Promise<Cliente | null> {
-    return this.clientes.find(c => c.getId() === id) || null
+    return this.clientes.find(c => c.getId().toValue() === id) || null
   }
 
   async delete(id: string): Promise<void> {
-    this.clientes = this.clientes.filter(c => c.getId() !== id)
+    this.clientes = this.clientes.filter(c => c.getId().toValue() !== id)
   }
 }

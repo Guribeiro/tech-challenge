@@ -28,7 +28,7 @@ export class ReservarProdutosEstoqueUseCase {
 
     // 3. Efetua a reserva no domínio em memória
     for (const item of input.itens) {
-      const produto = produtos.find(p => p.getId() === item.produtoId)
+      const produto = produtos.find(p => p.getId().toValue() === item.produtoId)
 
       if (produto) {
         produto.reservar(item.quantidade)

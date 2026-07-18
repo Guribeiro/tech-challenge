@@ -61,7 +61,7 @@ describe('Concluir diagnostico', () => {
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
     })
 
     const servicos = new OrdemServicoServicoList([osServicos])
@@ -75,21 +75,21 @@ describe('Concluir diagnostico', () => {
 
 
     const ordemServico = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
+      clienteId: cliente.getId(),
       eGarantia: true,
       descricao: 'Veiculo com problemas na eletrica',
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      veiculoId: veiculo.getId(),
       prioridade,
       servicos,
       componentes: new OrdemServicoComponenteList(),
     })
 
-    ordemServico.iniciarDiagnostico(new UniqueEntityID(mecanico.getId()))
+    ordemServico.iniciarDiagnostico(mecanico.getId())
 
     await ordemServicoRepository.create(ordemServico)
 
     await sut.execute({
-      ordemServicoId: ordemServico.getId(),
+      ordemServicoId: ordemServico.getId().toValue(),
     })
 
   })

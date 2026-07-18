@@ -39,7 +39,7 @@ export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler {
 
       // 2. ⚡ A REAÇÃO: Delegamos para o Caso de Uso processar a baixa
       await this.deduzirEstoque.execute({
-        ordemServicoId: ordemServico.getId(),
+        ordemServicoId: ordemServico.getId().toValue(),
         itens: itensUtilizados
       })
 

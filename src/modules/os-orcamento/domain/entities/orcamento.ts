@@ -32,7 +32,7 @@ export interface OrcamentoProps {
 export class Orcamento extends AggregateRoot<OrcamentoProps> {
   public static criar(
     props: Optional<OrcamentoProps, 'status' | 'versao' | 'criadoEm' | 'descontoPorcentagem'>,
-    id?: string
+    id?: UniqueEntityID
   ): Orcamento {
     return new Orcamento({
       ...props,

@@ -48,7 +48,7 @@ export class IniciarDiagnosticoUseCase {
     await this.ordemServicoRepository.save(ordemServico)
 
     // DomainEvents.dispatch(
-    //   new DiagnosticoInicializadoEvent(new UniqueEntityID(ordemServico.getId()), ordemServico.getClienteId())
+    //   new DiagnosticoInicializadoEvent(ordemServico.getId(), ordemServico.getClienteId())
     // );
 
     return {

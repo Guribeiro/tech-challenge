@@ -2,7 +2,7 @@ import { ObterFilaTrabalhoUseCase } from '@/modules/os-orcamento/application/use
 import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordens-servico-repository.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
 import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
-import { Email } from '@/modules/os-orcamento/domain/entities/value-objects/email.js'
+import { Email } from '@/shared/domain/value-objects/email.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
@@ -10,6 +10,7 @@ import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/plac
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { makeOrdemServicoServicoList } from '../../factories/make-ordem-servico-servico-list.js'
+import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
 
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let sut: ObterFilaTrabalhoUseCase
@@ -56,11 +57,12 @@ describe('Obter fila de trabalho', () => {
     const osServiceBaixaPrioridadeList = makeOrdemServicoServicoList()
 
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      clienteId: cliente.getId(),
+      veiculoId: veiculo.getId(),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServiceBaixaPrioridadeList,
+      componentes: new OrdemServicoComponenteList([]),
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente.getTipo() === 'PJ',
@@ -72,11 +74,12 @@ describe('Obter fila de trabalho', () => {
     const osServiceAltaPrioridadeList = makeOrdemServicoServicoList([{ categoria: 'MECANICA_GERAL' }, { categoria: 'SEGURANCA' }, { categoria: 'MANUTENCAO_PREVENTIVA' }])
 
     const ordemServicoAltaPrioridade = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente2.getId()),
-      veiculoId: new UniqueEntityID(veiculo2.getId()),
+      clienteId: cliente2.getId(),
+      veiculoId: veiculo2.getId(),
       descricao: 'Ordem de serviço 2',
       eGarantia: false,
       servicos: osServiceAltaPrioridadeList,
+      componentes: new OrdemServicoComponenteList([]),
       prioridade: Prioridade.calcular({
         eGarantia: false,
         eClienteCorporativo: cliente2.getTipo() === 'PJ',

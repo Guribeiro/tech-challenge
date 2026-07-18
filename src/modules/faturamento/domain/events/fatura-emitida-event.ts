@@ -12,6 +12,6 @@ export class FaturaEmitidaEvent implements DomainEvent {
   }
 
   public getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.fatura.getId())
+    return this.fatura.getId()
   }
 }

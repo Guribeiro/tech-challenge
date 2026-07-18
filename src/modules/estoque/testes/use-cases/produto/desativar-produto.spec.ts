@@ -16,7 +16,7 @@ describe('Desativar produto', () => {
 
     await produtoRepository.create(produto)
 
-    const { produto: produtoDesativado } = await sut.execute({ produtoId: produto.getId() })
+    const { produto: produtoDesativado } = await sut.execute({ produtoId: produto.getId().toValue() })
 
     expect(produtoDesativado.isAtivo()).toBe(false)
   })
@@ -24,7 +24,7 @@ describe('Desativar produto', () => {
   it('não deve desativar um produto inexistente', async () => {
     const produto = makeProduto()
     await expect(
-      sut.execute({ produtoId: produto.getId() })
+      sut.execute({ produtoId: produto.getId().toValue() })
     ).rejects.toBeInstanceOf(Error)
   })
 
@@ -34,7 +34,7 @@ describe('Desativar produto', () => {
     await produtoRepository.create(produto)
 
     await expect(
-      sut.execute({ produtoId: produto.getId() })
+      sut.execute({ produtoId: produto.getId().toValue() })
     ).rejects.toBeInstanceOf(Error)
   })
 })

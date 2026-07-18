@@ -59,7 +59,7 @@ describe('Iniciar diagnostico', () => {
     })
 
     const osServico = new OrdemServicoServico({
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
@@ -70,8 +70,8 @@ describe('Iniciar diagnostico', () => {
     const osServicoList = new OrdemServicoServicoList([osServico])
 
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      clienteId: cliente.getId(),
+      veiculoId: veiculo.getId(),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServicoList,
@@ -87,8 +87,8 @@ describe('Iniciar diagnostico', () => {
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
     const { ordemServico } = await sut.executar({
-      ordemServicoId: ordemServicoBaixaPrioridade.getId(),
-      mecanicoId: mecanico.getId()
+      ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
+      mecanicoId: mecanico.getId().toValue()
     })
 
     expect(ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
@@ -97,7 +97,7 @@ describe('Iniciar diagnostico', () => {
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({
         destinatario: cliente.getTelefone().getValor(),
-        mensagem: expect.stringContaining(ordemServicoBaixaPrioridade.getId())
+        mensagem: expect.stringContaining(ordemServicoBaixaPrioridade.getId().toValue())
       })
     )
   })
@@ -118,7 +118,7 @@ describe('Iniciar diagnostico', () => {
     })
 
     const osServico = new OrdemServicoServico({
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
@@ -129,8 +129,8 @@ describe('Iniciar diagnostico', () => {
     const osServicoList = new OrdemServicoServicoList([osServico])
 
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      clienteId: cliente.getId(),
+      veiculoId: veiculo.getId(),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServicoList,
@@ -147,7 +147,7 @@ describe('Iniciar diagnostico', () => {
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
     await expect(sut.executar({
-      ordemServicoId: ordemServicoBaixaPrioridade.getId(),
+      ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanicoId.toValue()
     })).rejects.toBeInstanceOf(Error)
 
@@ -172,7 +172,7 @@ describe('Iniciar diagnostico', () => {
     })
 
     const osServico = new OrdemServicoServico({
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
@@ -183,8 +183,8 @@ describe('Iniciar diagnostico', () => {
     const osServicoList = new OrdemServicoServicoList([osServico])
 
     const ordemServicoBaixaPrioridade = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      clienteId: cliente.getId(),
+      veiculoId: veiculo.getId(),
       descricao: 'Ordem de serviço 1',
       eGarantia: false,
       servicos: osServicoList,
@@ -200,8 +200,8 @@ describe('Iniciar diagnostico', () => {
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
     await expect(sut.executar({
-      ordemServicoId: ordemServicoBaixaPrioridade.getId(),
-      mecanicoId: mecanico.getId()
+      ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
+      mecanicoId: mecanico.getId().toValue()
     })).rejects.toBeInstanceOf(Error)
 
     expect(spy).not.toHaveBeenCalled()

@@ -44,7 +44,7 @@ export type OrdemServicoProps = {
 export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public static criar(
     props: Optional<OrdemServicoProps, 'status' | 'mecanicoId' | 'criadoEm'>,
-    id?: string,
+    id?: UniqueEntityID,
   ): OrdemServico {
     const propriedadesCompletas: OrdemServicoProps = {
       ...props,
@@ -125,7 +125,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     this.props.mecanicoId = mecanicoId
 
     this.addDomainEvent(
-      new DiagnosticoInicializadoEvent(new UniqueEntityID(this.getId()), this.getClienteId())
+      new DiagnosticoInicializadoEvent(this.getId(), this.getClienteId())
     )
   }
 

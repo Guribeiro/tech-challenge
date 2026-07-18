@@ -1,5 +1,5 @@
 import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
-import { Email } from '@/modules/os-orcamento/domain/entities/value-objects/email.js'
+import { Email } from '@/shared/domain/value-objects/email.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'

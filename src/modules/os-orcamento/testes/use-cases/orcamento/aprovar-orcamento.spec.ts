@@ -51,7 +51,10 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
 
     // 2. Inicializa os Casos de Uso
     reservarPecasEstoque = new ReservarProdutosEstoqueUseCase(produtoRepository)
-    sut = new AprovarOrcamentoUseCase(orcamentoRepository)
+    sut = new AprovarOrcamentoUseCase(
+      orcamentoRepository,
+      clienteRepository
+    )
 
     // 3. Registra os Subscribers (Ouvintes) para o teste
     new OnClienteAprovouOrcamento(ordemServicoRepository)
@@ -76,7 +79,7 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
 
     // Cria componentes da OS associados ao produto cadastrado
     const componenteOS = new OrdemServicoComponente({
-      produtoId: new UniqueEntityID(produto.getId()),
+      produtoId: produto.getId(),
       quantidade: 2,
       precoUnitario: produto.getPrecoUnitario(),
       tipo: produto.getTipo(),
@@ -87,7 +90,7 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
     })
 
     const prioridade = Prioridade.calcular({
@@ -99,22 +102,22 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
 
     // Cria a Ordem de Serviço em estado de diagnóstico aguardando aprovação
     const ordemServico = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
+      clienteId: cliente.getId(),
       componentes: new OrdemServicoComponenteList([componenteOS]),
       servicos: new OrdemServicoServicoList([osServicos]),
       prioridade,
       status: 'AGUARDANDO_APROVACAO',
       eGarantia: true,
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      veiculoId: veiculo.getId(),
       descricao: 'Algum problema com o veiculo'
     })
     await ordemServicoRepository.create(ordemServico)
 
     // Cria o orçamento vinculado à OS
     const orcamento = Orcamento.criar({
-      ordemServicoId: new UniqueEntityID(ordemServico.getId()),
+      ordemServicoId: ordemServico.getId(),
       status: 'ENVIADO',
-      clienteId: new UniqueEntityID(cliente.getId()),
+      clienteId: cliente.getId(),
       componentes: ordemServico.getComponentes().getItems(),
       servicos: ordemServico.getServicos().getItems()
     })
@@ -122,11 +125,12 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
 
     // --- ACT (Executar a ação) ---
     const resultado = await sut.execute({
-      orcamentoId: orcamento.getId()
+      orcamentoId: orcamento.getId().toValue(),
+      clienteId: cliente.getId().toValue()
     })
 
     // --- ASSERT (Verificar resultados e efeitos colaterais assíncronos) ---
-    expect(resultado.orcamento.getId()).toBe(orcamento.getId())
+    expect(resultado.orcamento.getId().toValue()).toBe(orcamento.getId().toValue())
 
     // 1. O Orçamento mudou para APROVADO?
     expect(resultado.orcamento.getStatus()).toBe('APROVADO')
@@ -134,12 +138,12 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
     // 2. O Estoque reservou os produtos corretos? (Tinha 10, reservou 2)
     await vi.waitFor(async () => {
       // 1. O Estoque reservou os produtos corretos?
-      const produtoNoEstoque = await produtoRepository.findById(produto.getId())
+      const produtoNoEstoque = await produtoRepository.findById(produto.getId().toValue())
 
       expect(produtoNoEstoque?.getQuantidadeReservada()).toBe(2)
 
       // 2. A OS passou por toda a esteira e terminou como PRONTA_PARA_INICIAR?
-      const osNoBanco = await ordemServicoRepository.findById(ordemServico.getId())
+      const osNoBanco = await ordemServicoRepository.findById(ordemServico.getId().toValue())
       expect(osNoBanco?.getStatus()).toBe('PRONTA_PARA_INICIAR')
     }, { timeout: 1000 })
   })

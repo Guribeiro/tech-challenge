@@ -1,4 +1,3 @@
-import { UniqueEntityID } from '../entities/unique-entity-id.js'
 import { DomainEvent } from './domain-event.js'
 
 // Tipagem para a função que vai ouvir o evento

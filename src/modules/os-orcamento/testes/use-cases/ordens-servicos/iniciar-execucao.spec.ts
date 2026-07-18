@@ -65,7 +65,7 @@ describe('Iniciar execucao de OS', () => {
     await servicoRepository.create(servico)
 
     const osServico = new OrdemServicoServico({
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
@@ -76,8 +76,8 @@ describe('Iniciar execucao de OS', () => {
     const osServicoList = new OrdemServicoServicoList([osServico])
 
     const ordemServico = OrdemServico.criar({
-      clienteId: new UniqueEntityID(cliente.getId()),
-      veiculoId: new UniqueEntityID(veiculo.getId()),
+      clienteId: cliente.getId(),
+      veiculoId: veiculo.getId(),
       descricao: 'Ordem de serviço 1',
       status: 'PRONTA_PARA_INICIAR',
       eGarantia: false,
@@ -94,8 +94,8 @@ describe('Iniciar execucao de OS', () => {
     await ordemServicoRepository.create(ordemServico)
 
     const output = await sut.executar({
-      mecanicoId: mecanico.getId(),
-      ordemServicoId: ordemServico.getId()
+      mecanicoId: mecanico.getId().toValue(),
+      ordemServicoId: ordemServico.getId().toValue()
     })
 
     expect(output.ordemServico.getId()).toBe(ordemServico.getId())
@@ -105,7 +105,7 @@ describe('Iniciar execucao de OS', () => {
       expect(spy).toHaveBeenCalledWith(
         expect.objectContaining({
           destinatario: cliente.getTelefone().getValor(),
-          mensagem: expect.stringContaining(ordemServico.getId())
+          mensagem: expect.stringContaining(ordemServico.getId().toValue())
         })
       )
     })

@@ -12,6 +12,6 @@ export class OSExecucaoFinalizadaEvent implements DomainEvent {
   }
 
   public getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.ordemServico.getId())
+    return this.ordemServico.getId()
   }
 }

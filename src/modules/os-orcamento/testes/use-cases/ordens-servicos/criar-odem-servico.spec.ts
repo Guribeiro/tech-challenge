@@ -47,14 +47,14 @@ describe('Criar ordem de servico', () => {
     await veiculoRepository.create(veiculo)
 
     const { ordemServico } = await sut.execute({
-      clienteId: cliente.getId(),
+      clienteId: cliente.getId().toValue(),
       eGarantia: false,
       descricao: 'Veiculo com problemas na eletrica',
-      veiculoId: veiculo.getId(),
+      veiculoId: veiculo.getId().toValue(),
     })
 
-    expect(ordemServico.getClienteId().toValue()).toBe(cliente.getId())
-    expect(ordemServico.getVeiculoId().toValue()).toBe(veiculo.getId())
+    expect(ordemServico.getClienteId().toValue()).toBe(cliente.getId().toValue())
+    expect(ordemServico.getVeiculoId().toValue()).toBe(veiculo.getId().toValue())
   })
 
   it('deve criar ordem de servico informando servicos', async () => {
@@ -74,19 +74,19 @@ describe('Criar ordem de servico', () => {
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
     })
 
     const { ordemServico } = await sut.execute({
-      clienteId: cliente.getId(),
+      clienteId: cliente.getId().toValue(),
       eGarantia: false,
       descricao: 'Veiculo com problemas na eletrica',
-      veiculoId: veiculo.getId(),
+      veiculoId: veiculo.getId().toValue(),
       servicos: [osServicos]
     })
 
-    expect(ordemServico.getClienteId().toValue()).toBe(cliente.getId())
-    expect(ordemServico.getVeiculoId().toValue()).toBe(veiculo.getId())
+    expect(ordemServico.getClienteId().toValue()).toBe(cliente.getId().toValue())
+    expect(ordemServico.getVeiculoId().toValue()).toBe(veiculo.getId().toValue())
     expect(ordemServico.getServicos().getItems()).toHaveLength(1)
   })
 
@@ -99,10 +99,10 @@ describe('Criar ordem de servico', () => {
     const veiculo = makeVeiculo()
 
     await expect(sut.execute({
-      clienteId: cliente.getId(),
+      clienteId: cliente.getId().toValue(),
       eGarantia: false,
       descricao: 'Veiculo com problemas na eletrica',
-      veiculoId: veiculo.getId(),
+      veiculoId: veiculo.getId().toValue(),
     })).rejects.toBeInstanceOf(Error)
   })
 
@@ -114,10 +114,10 @@ describe('Criar ordem de servico', () => {
     await veiculoRepository.create(veiculo)
 
     await expect(sut.execute({
-      clienteId: cliente.getId(),
+      clienteId: cliente.getId().toValue(),
       eGarantia: false,
       descricao: 'Veiculo com problemas na eletrica',
-      veiculoId: veiculo.getId(),
+      veiculoId: veiculo.getId().toValue(),
     })).rejects.toBeInstanceOf(Error)
   })
 
@@ -136,14 +136,14 @@ describe('Criar ordem de servico', () => {
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
-      servicoId: new UniqueEntityID(servico.getId()),
+      servicoId: servico.getId(),
     })
 
     await expect(sut.execute({
-      clienteId: cliente.getId(),
+      clienteId: cliente.getId().toValue(),
       eGarantia: false,
       descricao: 'Veiculo com problemas na eletrica',
-      veiculoId: veiculo.getId(),
+      veiculoId: veiculo.getId().toValue(),
       servicos: [osServicos]
     })).rejects.toBeInstanceOf(Error)
 

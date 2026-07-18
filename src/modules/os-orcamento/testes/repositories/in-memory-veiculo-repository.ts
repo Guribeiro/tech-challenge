@@ -16,10 +16,10 @@ export class InMemoryVeiculoRepository implements VeiculoRepository {
   }
 
   async findById(id: string): Promise<Veiculo | null> {
-    return this.veiculos.find(c => c.getId() === id) || null
+    return this.veiculos.find(c => c.getId().toValue() === id) || null
   }
 
   async delete(id: string): Promise<void> {
-    this.veiculos = this.veiculos.filter(c => c.getId() !== id)
+    this.veiculos = this.veiculos.filter(c => c.getId().toValue() !== id)
   }
 }

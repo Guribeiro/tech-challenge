@@ -16,6 +16,6 @@ export class DiagnosticoConcluidoEvent implements DomainEvent {
    * Exigido pela interface DomainEvent do seu core.
    */
   public getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.ordemServico.getId())
+    return this.ordemServico.getId()
   }
 }

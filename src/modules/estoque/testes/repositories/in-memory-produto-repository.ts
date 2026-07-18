@@ -21,7 +21,7 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
   }
 
   async findById(id: string): Promise<Produto | null> {
-    return this.produtos.find(c => c.getId() === id) || null
+    return this.produtos.find(c => c.getId().toValue() === id) || null
   }
 
   async findByNome(nome: string): Promise<Produto | null> {
@@ -29,7 +29,7 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
   }
 
   async delete(id: string): Promise<void> {
-    this.produtos = this.produtos.filter(c => c.getId() !== id)
+    this.produtos = this.produtos.filter(c => c.getId().toValue() !== id)
   }
 
   async list(): Promise<Produto[]> {
@@ -38,7 +38,7 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
 
   async findManyByIds(ids: string[]): Promise<Produto[]> {
     return this.produtos.filter(produto =>
-      ids.includes(produto.getId())
+      ids.includes(produto.getId().toValue())
     )
   }
 }

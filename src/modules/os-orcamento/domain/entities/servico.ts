@@ -1,4 +1,5 @@
 import { Entity } from '@/core/entities/entity.js'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id.js';
 
 export type CategoriaServico = 'SEGURANCA' | 'MANUTENCAO_PREVENTIVA' | 'ESTETICA' | 'ELETRICA' | 'MECANICA_GERAL';
 
@@ -10,7 +11,7 @@ export type ServicoProps = {
 }
 
 export class Servico extends Entity<ServicoProps> {
-  public static criar(props: ServicoProps, id?: string): Servico {
+  public static criar(props: ServicoProps, id?: UniqueEntityID): Servico {
 
     this.validar(props)
     return new Servico(props, id)

@@ -16,15 +16,15 @@ export class InMemoryServicoRepository implements ServicoRepository {
   }
 
   async findById(id: string): Promise<Servico | null> {
-    return this.servicos.find(c => c.getId() === id) || null
+    return this.servicos.find(servico => servico.getId().toValue() === id) || null
   }
 
   async findManyByIds(ids: string[]): Promise<Servico[]> {
     return this.servicos.filter(servico =>
-      ids.includes(servico.getId())
+      ids.includes(servico.getId().toValue())
     )
   }
   async delete(id: string): Promise<void> {
-    this.servicos = this.servicos.filter(c => c.getId() !== id)
+    this.servicos = this.servicos.filter(c => c.getId().toValue() !== id)
   }
 }

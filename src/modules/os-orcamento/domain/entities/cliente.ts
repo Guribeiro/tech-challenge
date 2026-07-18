@@ -1,7 +1,8 @@
 import { Entity } from '@/core/entities/entity.js'
-import { Email } from '@/modules/os-orcamento/domain/entities/value-objects/email.js'
+import { Email } from '@/shared/domain/value-objects/email.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 
 export interface ClienteProps {
   nome: NomeCompleto
@@ -11,7 +12,7 @@ export interface ClienteProps {
 }
 
 export class Cliente extends Entity<ClienteProps> {
-  public static criar(props: ClienteProps, id?: string): Cliente {
+  public static criar(props: ClienteProps, id?: UniqueEntityID): Cliente {
     if (!props.nome.getValor()?.trim()) {
       throw new Error('Nome do cliente é obrigatório.')
     }
