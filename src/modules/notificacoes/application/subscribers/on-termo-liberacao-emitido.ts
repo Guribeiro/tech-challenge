@@ -30,37 +30,39 @@ export class OnTermoLiberacaoEmitido implements EventHandler {
   }
 
   private async executar({ termo }: TermoLiberacaoEvents): Promise<void> {
-    const osId = termo.getOrdemServicoId()
+    try {
+      const osId = termo.getOrdemServicoId().toValue()
 
-    const ordemServico = await this.ordemServicoRepository.findById(osId.toValue())
+      const ordemServico = await this.ordemServicoRepository.findById(osId)
 
-    if (!ordemServico) {
-      console.warn(`[Subscriber Warning]: OS #${osId} não encontrada para envio do termo de liberação.`)
-      return
+      if (!ordemServico) {
+        throw new Error(`[Subscriber Warning]: OS #${osId} não encontrada para envio do termo de liberação.`)
+      }
+
+      const clienteId = ordemServico.getClienteId().toValue()
+      const cliente = await this.clienteRepository.findById(clienteId)
+
+      if (!cliente) {
+        throw new Error(`[Subscriber Warning]: Cliente com ID ${clienteId} não encontrado para envio do termo de liberação.`)
+      }
+
+      const telefone = cliente.getTelefone().getValor()
+      const nome = cliente.getNome().getValor()
+
+      // 💡 Mensagem Dinâmica: Descobre o motivo para personalizar o texto enviado ao cliente
+      const mensagem = termo.getMotivo() === 'PAGAMENTO_APROVADO'
+        ? `Olá, ${nome}! O pagamento da sua OS #${osId} foi confirmado e o seu veículo está liberado para retirada no pátio físico.`
+        : `Olá, ${nome}! Conforme sua solicitação, a OS #${osId} foi encerrada e o seu veículo está liberado para retirada no pátio físico.`
+
+      // Dispara a notificação usando o seu use-case existente!
+      await this.enviarNotificacao.execute({
+        destinatario: telefone,
+        mensagem
+      })
+
+      console.log(`[Notification Success]: Cliente ${nome} notificado da liberação da OS #${osId} por motivo de ${termo.getMotivo()}`)
+    } catch (error) {
+      console.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${termo.getId().toValue()}`, error)
     }
-
-    const clienteId = ordemServico.getClienteId().toValue()
-    const cliente = await this.clienteRepository.findById(clienteId)
-
-    if (!cliente) {
-      console.warn(`[Subscriber Warning]: Cliente com ID ${clienteId} não encontrado para envio do termo de liberação.`)
-      return
-    }
-
-    const telefone = cliente.getTelefone().getValor()
-    const nome = cliente.getNome().getValor()
-
-    // 💡 Mensagem Dinâmica: Descobre o motivo para personalizar o texto enviado ao cliente
-    const mensagem = termo.getMotivo() === 'PAGAMENTO_APROVADO'
-      ? `Olá, ${nome}! O pagamento da sua OS #${osId} foi confirmado e o seu veículo está liberado para retirada no pátio físico.`
-      : `Olá, ${nome}! Conforme sua solicitação, a OS #${osId} foi encerrada e o seu veículo está liberado para retirada no pátio físico.`
-
-    // Dispara a notificação usando o seu use-case existente!
-    await this.enviarNotificacao.execute({
-      destinatario: telefone,
-      mensagem
-    })
-
-    console.log(`[Notification Success]: Cliente ${nome} notificado da liberação da OS #${osId} por motivo de ${termo.getMotivo()}`)
   }
 }

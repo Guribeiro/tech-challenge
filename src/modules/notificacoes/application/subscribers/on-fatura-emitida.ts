@@ -22,32 +22,34 @@ export class OnFaturaEmitida implements EventHandler {
   }
 
   private async executar({ fatura }: FaturaEmitidaEvent): Promise<void> {
-    const osId = fatura.getOrdemServicoId()
+    try {
+      const osId = fatura.getOrdemServicoId()
 
-    const ordemServico = await this.ordemServicoRepository.findById(osId)
+      const ordemServico = await this.ordemServicoRepository.findById(osId.toValue())
 
-    if (!ordemServico) {
-      console.warn(`[Subscriber Warning]: OS #${osId} não encontrada para envio da fatura.`)
-      return
+      if (!ordemServico) {
+        throw new Error(`[Subscriber Warning]: OS #${osId.toValue()} não encontrada para envio da fatura.`)
+      }
+
+      const clienteId = ordemServico.getClienteId().toValue()
+
+      const cliente = await this.clienteRepository.findById(clienteId)
+
+      if (!cliente) {
+        throw new Error(`[Subscriber Warning]: Cliente com ID ${clienteId} não encontrado para envio da fatura.`)
+      }
+
+      const telefone = cliente.getTelefone().getValor()
+      const nome = cliente.getNome().getValor()
+      const valorTotal = fatura.getValorTotal()
+
+      // Dispara a notificação usando o SEU use-case existente!
+      await this.enviarNotificacao.execute({
+        destinatario: telefone,
+        mensagem: `Olá, ${nome}! A sua fatura da OS #${osId} foi emitida com sucesso no valor de R$ ${valorTotal.toFixed(2)}.`
+      })
+    } catch (error) {
+      console.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId()}`, error)
     }
-
-    const clienteId = ordemServico.getClienteId().toValue()
-
-    const cliente = await this.clienteRepository.findById(clienteId)
-
-    if (!cliente) {
-      console.warn(`[Subscriber Warning]: Cliente com ID ${clienteId} não encontrado para envio da fatura.`)
-      return
-    }
-
-    const telefone = cliente.getTelefone().getValor()
-    const nome = cliente.getNome().getValor()
-    const valorTotal = fatura.getValorTotal()
-
-    // Dispara a notificação usando o SEU use-case existente!
-    await this.enviarNotificacao.execute({
-      destinatario: telefone,
-      mensagem: `Olá, ${nome}! A sua fatura da OS #${osId} foi emitida com sucesso no valor de R$ ${valorTotal.toFixed(2)}.`
-    })
   }
 }

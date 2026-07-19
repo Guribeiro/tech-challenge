@@ -31,7 +31,6 @@ describe('Subscriber: On OS Encerrada por Rejeicao', () => {
       execute: vi.fn()
     } as unknown as EnviarNotificacaoUseCase
 
-
     new OnOrdemServicoEncerradaPorRejeicao(
       emitirTermoRejeicaoMock,
     )
