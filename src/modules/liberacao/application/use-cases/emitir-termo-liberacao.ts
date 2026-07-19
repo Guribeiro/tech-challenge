@@ -15,7 +15,7 @@ export class EmitirTermoLiberacaoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
     private readonly veiculoRepository: VeiculoRepository,
-    private readonly termoLiberacao: TermoLiberacaoRepository
+    private readonly termoLiberacaoRepository: TermoLiberacaoRepository
   ) { }
 
   public async execute(input: EmitirTermoInput): Promise<EmitirTermoOutput> {
@@ -36,7 +36,7 @@ export class EmitirTermoLiberacaoUseCase {
       motivo: 'PAGAMENTO_APROVADO'
     })
 
-    await this.termoLiberacao.create(termo)
+    await this.termoLiberacaoRepository.create(termo)
 
     return {
       termo

@@ -55,7 +55,7 @@ export class CriaOrdemServicoUseCase {
       // Se o banco retornar menos itens do que pedimos, algum ID está quebrado!
       if (servicosExistentes.length !== idsUnicos.length) {
         // Opcional: Descobrir quais IDs são inválidos para dar uma resposta rica no erro
-        const idsExistentes = servicosExistentes.map(s => s.getId())
+        const idsExistentes = servicosExistentes.map(s => s.getId().toValue())
         const idsInvalidos = idsUnicos.filter(id => !idsExistentes.includes(id))
 
         throw new Error(`Os seguintes serviços não foram encontrados no catálogo: ${idsInvalidos.join(', ')}`)

@@ -1,8 +1,12 @@
-// src/modules/faturamento/application/use-cases/confirmar-pagamento.ts
+import { Fatura } from "../../domain/entities/fatura.js"
 import { FaturaRepository } from "../../domain/repositories/faturas-repository.js"
 
 interface ConfirmarPagamentoInput {
   faturaId: string
+}
+
+interface ConfirmarPagamentoOutput {
+  fatura: Fatura
 }
 
 export class ConfirmarPagamentoUseCase {
@@ -10,7 +14,7 @@ export class ConfirmarPagamentoUseCase {
     private readonly faturaRepository: FaturaRepository
   ) { }
 
-  public async execute(input: ConfirmarPagamentoInput): Promise<void> {
+  public async execute(input: ConfirmarPagamentoInput): Promise<ConfirmarPagamentoOutput> {
     const fatura = await this.faturaRepository.findById(input.faturaId)
 
     if (!fatura) {
@@ -22,6 +26,8 @@ export class ConfirmarPagamentoUseCase {
     // Ao salvar, o repositório faz o dispatch do evento de pagamento concluído
     await this.faturaRepository.save(fatura)
 
-    console.log(`[Faturamento]: Pagamento confirmado com sucesso para a Fatura #${input.faturaId}`)
+    return {
+      fatura
+    }
   }
 }

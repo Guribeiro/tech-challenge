@@ -1,4 +1,3 @@
-import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { InMemoryNotificacaoService } from '@/modules/notificacoes/testes/services/in-memory-notificacao-service.js'
 import { CriaOrdemServicoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/criar-ordem-servico.js'
 import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'

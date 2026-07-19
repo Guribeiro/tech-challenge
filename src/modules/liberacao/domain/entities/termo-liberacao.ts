@@ -1,9 +1,10 @@
 import { AggregateRoot } from "@/core/entities/aggregate-root.js"
 import { TermoLiberacaoEmitidoEvent } from "../events/termo-liberacao-emitido-event.js"
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from "../events/termo-liberacao-por-rejeicao-emitido-event.js"
+import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
 
 interface TermoLiberacaoProps {
-  ordemServicoId: string
+  ordemServicoId: UniqueEntityID
   placaVeiculo: string
   motivo: 'PAGAMENTO_APROVADO' | 'REJEICAO_ORCAMENTO'
   conteudo: string
@@ -15,7 +16,7 @@ const termoLiberacaoVariations = {
   REJEICAO_ORCAMENTO: 'Orçamento Rejeitado'
 }
 export class TermoLiberacao extends AggregateRoot<TermoLiberacaoProps> {
-  public static criar(props: Omit<TermoLiberacaoProps, 'conteudo' | 'emitidoEm'>, id?: string): TermoLiberacao {
+  public static criar(props: Omit<TermoLiberacaoProps, 'conteudo' | 'emitidoEm'>, id?: UniqueEntityID): TermoLiberacao {
     const emitidoEm = new Date()
 
     const conteudo = `
@@ -43,7 +44,7 @@ export class TermoLiberacao extends AggregateRoot<TermoLiberacaoProps> {
     return termo
   }
 
-  public getOrdemServicoId(): string { return this.props.ordemServicoId }
+  public getOrdemServicoId(): UniqueEntityID { return this.props.ordemServicoId }
   public getMotivo(): string { return this.props.motivo }
   public getConteudo(): string { return this.props.conteudo }
   public getPlacaVeiculo(): string { return this.props.placaVeiculo }
