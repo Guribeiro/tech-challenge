@@ -32,7 +32,7 @@ export class OnTermoLiberacaoEmitido implements EventHandler {
   private async executar({ termo }: TermoLiberacaoEvents): Promise<void> {
     const osId = termo.getOrdemServicoId()
 
-    const ordemServico = await this.ordemServicoRepository.findById(osId)
+    const ordemServico = await this.ordemServicoRepository.findById(osId.toValue())
 
     if (!ordemServico) {
       console.warn(`[Subscriber Warning]: OS #${osId} não encontrada para envio do termo de liberação.`)

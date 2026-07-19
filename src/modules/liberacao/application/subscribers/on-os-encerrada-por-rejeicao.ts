@@ -1,6 +1,6 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao.js'
+import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao-event.js'
 import { EmitirTermoRejeicaoUseCase } from '@/modules/liberacao/application/use-cases/emitir-termo-liberacao-rejeicao.js'
 
 export class OnOrdemServicoEncerradaPorRejeicao implements EventHandler {
@@ -21,7 +21,7 @@ export class OnOrdemServicoEncerradaPorRejeicao implements EventHandler {
     const { ordemServico } = event
     try {
       await this.emitirTermoRejeicao.execute({
-        ordemServicoId: ordemServico.getId()
+        ordemServicoId: ordemServico.getId().toValue()
       })
     } catch (error) {
       console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId()}`, error)

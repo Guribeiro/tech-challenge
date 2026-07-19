@@ -11,7 +11,7 @@ import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event
 import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
 import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
 import { OSExecucaoIniciadaEvent } from '../events/os-execucao-iniciada-event.js'
-import { OSEncerradaPorRejeicaoEvent } from '../events/os-encerrada-por-rejeicao.js'
+import { OSEncerradaPorRejeicaoEvent } from '../events/os-encerrada-por-rejeicao-event.js'
 import { OSExecucaoFinalizadaEvent } from '../events/os-execucao-finalizada-event.js'
 import { OSEncerradaEvent } from '../events/os-encerrada-event.js'
 

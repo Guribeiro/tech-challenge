@@ -1,6 +1,6 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao.js'
+import { OSEncerradaEvent } from '../../../os-orcamento/domain/events/os-encerrada-event.js'
 import { EmitirTermoLiberacaoUseCase } from '@/modules/liberacao/application/use-cases/emitir-termo-liberacao.js'
 
 export class OnOrdemServicoEncerrada implements EventHandler {
@@ -13,16 +13,16 @@ export class OnOrdemServicoEncerrada implements EventHandler {
   public setupSubscriptions(): void {
     DomainEvents.register(
       this.executar.bind(this),
-      OSEncerradaPorRejeicaoEvent.name
+      OSEncerradaEvent.name
     )
   }
 
-  private async executar(event: OSEncerradaPorRejeicaoEvent): Promise<void> {
+  private async executar(event: OSEncerradaEvent): Promise<void> {
     const { ordemServico } = event
 
     try {
       await this.emitirTermoLiberacao.execute({
-        ordemServicoId: ordemServico.getId()
+        ordemServicoId: ordemServico.getId().toValue()
       })
     } catch (error) {
       console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId()}`, error)
