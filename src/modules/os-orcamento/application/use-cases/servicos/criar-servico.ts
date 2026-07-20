@@ -1,14 +1,21 @@
 import { Servico, CategoriaServico } from '@/modules/os-orcamento/domain/entities/servico.js'
+import { ServicoRepository } from '@/modules/os-orcamento/domain/repositories/servicos-repository.js'
 
 export type CriarServicoInput = {
   nome: string
   categoria: CategoriaServico
   descricao?: string
-  valorReferencia?: number
+  valorReferencia: number
 }
 
-export class CriarServico {
-  public executar(input: CriarServicoInput): Record<string, unknown> {
+export type CriarServicoOutput = {
+  servico: Servico
+}
+export class CriarServicoUseCase {
+  constructor(
+    private readonly servicosRepository: ServicoRepository
+  ) { }
+  public async executar(input: CriarServicoInput): Promise<CriarServicoOutput> {
     const servico = Servico.criar({
       nome: input.nome,
       descricao: input.descricao,
@@ -16,6 +23,10 @@ export class CriarServico {
       valorReferencia: input.valorReferencia,
     })
 
-    return servico.toJSON()
+    await this.servicosRepository.create(servico)
+
+    return {
+      servico
+    }
   }
 }

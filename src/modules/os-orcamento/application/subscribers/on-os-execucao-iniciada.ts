@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSExecucaoIniciadaEvent } from '../../domain/events/os-execucao-iniciada-event.js'
-import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-case/enviar-notificacao.js'
+import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { ClienteRepository } from '../../domain/repositories/clientes-repository.js'
 
 export class OnExecucaoIniciada implements EventHandler {

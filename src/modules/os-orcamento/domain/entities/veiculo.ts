@@ -14,6 +14,18 @@ export type VeiculoProps = {
   observacoes?: string
   criadoEm: Date
   atualizadoEm?: Date
+  deletadoEm?: Date | null
+}
+
+export type AtualizarVeiculoProps = {
+  placa: Placa
+  marca: string
+  modelo: string
+  ano: number
+  cor?: string
+  quilometragem?: number
+  combustivel?: string
+  observacoes?: string
 }
 
 export class Veiculo extends Entity<VeiculoProps> {
@@ -21,6 +33,38 @@ export class Veiculo extends Entity<VeiculoProps> {
     props: Optional<VeiculoProps, 'criadoEm' | 'atualizadoEm'>,
     id?: UniqueEntityID,
   ): Veiculo {
+
+    this.validar(props)
+
+    return new Veiculo(
+      {
+        ...props,
+        criadoEm: props.criadoEm ?? new Date(),
+        deletadoEm: props.deletadoEm ?? null,
+      },
+      id,
+    )
+  }
+
+  public atualizar(props: AtualizarVeiculoProps): void {
+    // 1. Garante que os novos dados também atendem às regras de negócio
+    Veiculo.validar(props)
+
+    // 2. Atualiza as propriedades e registra o momento da alteração
+    this.props.placa = props.placa
+    this.props.marca = props.marca
+    this.props.modelo = props.modelo
+    this.props.ano = props.ano
+    this.props.cor = props.cor
+    this.props.quilometragem = props.quilometragem
+    this.props.combustivel = props.combustivel
+    this.props.observacoes = props.observacoes
+    this.props.atualizadoEm = new Date()
+  }
+
+  private static validar(
+    props: Pick<VeiculoProps, 'marca' | 'modelo' | 'ano' | 'quilometragem'>,
+  ): void {
     if (!props.marca?.trim() || !props.modelo?.trim()) {
       throw new Error(
         'Marca e modelo são obrigatórios para o cadastro do veículo.',
@@ -38,14 +82,23 @@ export class Veiculo extends Entity<VeiculoProps> {
     if (props.quilometragem !== undefined && props.quilometragem < 0) {
       throw new Error('Quilometragem não pode ser negativa.')
     }
+  }
 
-    return new Veiculo(
-      {
-        ...props,
-        criadoEm: props.criadoEm ?? new Date(),
-      },
-      id,
-    )
+  public deletar(): void {
+    if (this.props.deletadoEm) {
+      throw new Error('Este veículo já está excluído.')
+    }
+
+    this.props.deletadoEm = new Date()
+    this.props.atualizadoEm = new Date()
+  }
+
+  public isDeletado(): boolean {
+    return !!this.props.deletadoEm
+  }
+
+  public getDeletadoEm(): Date | null | undefined {
+    return this.props.deletadoEm
   }
 
   public getPlaca(): Placa {

@@ -3,7 +3,7 @@ import { Produto } from "@/modules/estoque/domain/entities/produto.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
 
 export class InMemoryProdutoRepository implements ProdutoRepository {
-  private produtos: Produto[] = []
+  public produtos: Produto[] = []
 
   async create(produto: Produto): Promise<void> {
     this.produtos.push(produto)

@@ -1,5 +1,6 @@
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { Entity } from '@/core/entities/entity.js'
+import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
 
 export type TipoProduto = 'PECA' | 'INSUMO'
@@ -17,7 +18,7 @@ export interface ProdutoProps {
 }
 
 export class Produto extends AggregateRoot<ProdutoProps> {
-  public static criar(props: Optional<ProdutoProps, 'criadoEm' | 'quantidadeReservada' | 'quantidadeEstoque'>, id?: string): Produto {
+  public static criar(props: Optional<ProdutoProps, 'criadoEm' | 'quantidadeReservada' | 'quantidadeEstoque'>, id?: UniqueEntityID): Produto {
     const produto: ProdutoProps = {
       ...props,
       quantidadeEstoque: props.quantidadeEstoque ?? 0,

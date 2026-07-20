@@ -24,6 +24,7 @@ export class DeduzirEstoqueUseCase {
         throw new Error(`Produto com ID ${item.produtoId} não encontrado no estoque para dedução.`)
       }
 
+      console.log({ item })
       produto.confirmarReservaEDeduzir(item.quantidade)
 
       // Salva a nova fotografia do produto atualizado

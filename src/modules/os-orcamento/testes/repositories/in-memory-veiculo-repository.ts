@@ -2,7 +2,7 @@ import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/ve
 import { Veiculo } from "@/modules/os-orcamento/domain/entities/veiculo.js"
 
 export class InMemoryVeiculoRepository implements VeiculoRepository {
-  private veiculos: Veiculo[] = []
+  public veiculos: Veiculo[] = []
 
   async create(veiculo: Veiculo): Promise<void> {
     this.veiculos.push(veiculo)
@@ -19,7 +19,15 @@ export class InMemoryVeiculoRepository implements VeiculoRepository {
     return this.veiculos.find(c => c.getId().toValue() === id) || null
   }
 
+  async findByLicensePlate(placa: string): Promise<Veiculo | null> {
+    return this.veiculos.find(c => c.getPlaca().getValor() === placa) || null
+  }
+
   async delete(id: string): Promise<void> {
     this.veiculos = this.veiculos.filter(c => c.getId().toValue() !== id)
+  }
+
+  async list(): Promise<Veiculo[]> {
+    return this.veiculos
   }
 }

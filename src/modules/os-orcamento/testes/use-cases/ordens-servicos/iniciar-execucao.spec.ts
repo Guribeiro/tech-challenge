@@ -1,5 +1,5 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
-import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-case/enviar-notificacao.js"
+import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-cases/enviar-notificacao.js"
 import { InMemoryNotificacaoService } from "@/modules/notificacoes/testes/services/in-memory-notificacao-service.js"
 import { IniciarExecucaoUseCase } from "@/modules/os-orcamento/application/use-cases/ordens-servicos/iniciar-execucao.js"
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"

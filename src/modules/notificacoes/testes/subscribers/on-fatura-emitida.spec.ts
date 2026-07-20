@@ -1,6 +1,6 @@
 import { FaturaEmitidaEvent } from "@/modules/faturamento/domain/events/fatura-emitida-event.js";
 import { OnFaturaEmitida } from "../../application/subscribers/on-fatura-emitida.js";
-import { EnviarNotificacaoUseCase } from "../../domain/use-case/enviar-notificacao.js";
+import { EnviarNotificacaoUseCase } from "../../domain/use-cases/enviar-notificacao.js";
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js";
 import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js";
 import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js";

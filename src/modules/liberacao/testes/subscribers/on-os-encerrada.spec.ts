@@ -1,6 +1,6 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
-import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-case/enviar-notificacao.js"
+import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-cases/enviar-notificacao.js"
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js"
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js"

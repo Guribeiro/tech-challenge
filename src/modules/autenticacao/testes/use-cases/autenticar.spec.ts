@@ -56,7 +56,7 @@ describe('Caso de Uso: Autenticar', () => {
 
     await usuariosRepository.create(usuario)
 
-    expect(sut.execute({
+    await expect(sut.execute({
       email: 'invalid@email.com',
       senha: 'senha'
     })).rejects.toBeInstanceOf(Error)
@@ -73,7 +73,7 @@ describe('Caso de Uso: Autenticar', () => {
 
     await usuariosRepository.create(usuario)
 
-    expect(sut.execute({
+    await expect(sut.execute({
       email: usuario.getEmail().getValor(),
       senha: 'invalid-password'
     })).rejects.toBeInstanceOf(Error)

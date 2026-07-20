@@ -4,5 +4,7 @@ export interface VeiculoRepository {
   create(veiculo: Veiculo): Promise<void>
   save(veiculo: Veiculo): Promise<void>
   findById(id: string): Promise<Veiculo | null>
+  findByLicensePlate(placa: string): Promise<Veiculo | null>
   delete(id: string): Promise<void>
+  list(): Promise<Veiculo[]>
 }

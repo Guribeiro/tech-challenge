@@ -1,7 +1,7 @@
 import { DomainEvents } from "@/core/events/domain-events.js";
 import { EventHandler } from "@/core/events/event-handler.js";
 import { UsuarioCriadoEvent } from "@/modules/autenticacao/domain/events/usuario-criado-event.js";
-import { EnviarNotificacaoUseCase } from "../../domain/use-case/enviar-notificacao.js";
+import { EnviarNotificacaoUseCase } from "../../domain/use-cases/enviar-notificacao.js";
 
 export class OnUsuarioCriado implements EventHandler {
 

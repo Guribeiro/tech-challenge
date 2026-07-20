@@ -20,17 +20,10 @@ export class EnviarNotificacaoUseCase {
     mensagem
   }: EnviarNotificacaoInput): Promise<EnviarNotificacaoOutput> {
 
-    if (!destinatario || !mensagem.trim()) {
-      throw new Error("Destinatário e mensagem são obrigatórios para realizar o envio.")
-    }
-
-    // 1. Delega o envio real para o serviço de infraestrutura integrado
     await this.notificacaoService.enviar({
       destinatario,
       mensagem
     })
-
-    // 2. Aqui você poderia criar uma entidade 'Notificacao' e salvar no repositório
 
     return { sucesso: true }
   }

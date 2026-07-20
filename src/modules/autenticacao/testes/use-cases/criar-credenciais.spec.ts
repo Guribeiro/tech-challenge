@@ -7,7 +7,7 @@ import { FakeHasher } from "../cryptography/fake-hasher.js";
 import { InMemoryUsuariosRepository } from "../repositories/in-memory-users-repository.js";
 import { CriarCredenciaisUseCase } from "../../application/use-cases/criar-credenciais.js";
 import { OnUsuarioCriado } from "@/modules/notificacoes/application/subscribers/on-usuario-criado.js";
-import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-case/enviar-notificacao.js";
+import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-cases/enviar-notificacao.js";
 import { InMemoryNotificacaoService } from "@/modules/notificacoes/testes/services/in-memory-notificacao-service.js";
 import { NotificacaoService } from "@/modules/notificacoes/domain/services/notificacao-service.js";
 import { Mecanico } from "@/modules/os-orcamento/domain/entities/mecanico.js";
