@@ -1,4 +1,4 @@
-// src/modules/faturamento/application/use-cases/emitir-fatura.ts
+import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Fatura } from '../../domain/entities/fatura.js'
 import { FaturaRepository } from '@/modules/faturamento/domain/repositories/faturas-repository.js'
 
@@ -14,7 +14,7 @@ export class EmitirFaturaUseCase {
 
   public async execute({ ordemServicoId, valorTotal }: EmitirFaturaInput): Promise<void> {
     const fatura = Fatura.criar({
-      ordemServicoId,
+      ordemServicoId: new UniqueEntityID(ordemServicoId),
       valorTotal
     })
 

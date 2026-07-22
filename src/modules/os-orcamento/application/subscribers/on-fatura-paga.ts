@@ -19,7 +19,7 @@ export class OnFaturaPagaEncerrarOrdemServico implements EventHandler {
   }
 
   private async executar({ fatura }: FaturaPagaEvent): Promise<void> {
-    const osId = fatura.getOrdemServicoId()
+    const osId = fatura.getOrdemServicoId().toValue()
 
     try {
 

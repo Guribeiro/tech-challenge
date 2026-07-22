@@ -21,7 +21,7 @@ export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler {
 
   private async executar(event: OSExecucaoFinalizadaEvent): Promise<void> {
     const { ordemServico } = event
-    const ordemServicoId = ordemServico.getId()
+    const ordemServicoId = ordemServico.getId().toValue()
 
     try {
 

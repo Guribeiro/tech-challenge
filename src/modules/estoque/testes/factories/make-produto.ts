@@ -1,7 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { Produto, ProdutoProps, TipoProduto } from "@/modules/estoque/domain/entities/produto.js";
+import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
 
-export function makeProduto(override: Partial<ProdutoProps> = {}, id?: string): Produto {
+export function makeProduto(override: Partial<ProdutoProps> = {}, id?: UniqueEntityID): Produto {
   const tipos: TipoProduto[] = ['PECA', 'INSUMO']
   const tipoAleatorio = faker.helpers.arrayElement(tipos)
 

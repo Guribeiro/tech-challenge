@@ -1,8 +1,4 @@
-import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
-import { DomainEvents } from "@/core/events/domain-events.js"
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
-import { DiagnosticoInicializadoEvent } from "@/modules/os-orcamento/domain/events/diagnostico-inicializado-event.js"
-import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js"
 import { MecanicoRepository } from "@/modules/os-orcamento/domain/repositories/mecanicos-repository.js"
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
 import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js"
@@ -20,7 +16,6 @@ export class IniciarDiagnosticoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
     private readonly mecanicoRepository: MecanicoRepository,
-    private readonly clienteRepository: ClienteRepository,
     private readonly veiculoRepository: VeiculoRepository,
   ) { }
 
@@ -43,13 +38,9 @@ export class IniciarDiagnosticoUseCase {
       throw new Error(`Veiculo na OS não encontrado`)
     }
 
-    ordemServico.iniciarDiagnostico(new UniqueEntityID(mecanico.getId()))
+    ordemServico.iniciarDiagnostico(mecanico.getId())
 
     await this.ordemServicoRepository.save(ordemServico)
-
-    // DomainEvents.dispatch(
-    //   new DiagnosticoInicializadoEvent(ordemServico.getId(), ordemServico.getClienteId())
-    // );
 
     return {
       ordemServico

@@ -35,7 +35,6 @@ describe('Iniciar diagnostico', () => {
     sut = new IniciarDiagnosticoUseCase(
       ordemServicoRepository,
       mecanicoRepository,
-      clienteRepository,
       veiculoRepository
     )
 

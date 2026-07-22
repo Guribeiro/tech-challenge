@@ -6,12 +6,12 @@ export class InMemoryTermoLiberacaoRepository implements TermoLiberacaoRepositor
   public items: TermoLiberacao[] = []
 
   public async findById(id: string): Promise<TermoLiberacao | null> {
-    const termo = this.items.find((item) => item.getId() === id)
+    const termo = this.items.find((item) => item.getId().toValue() === id)
     return termo || null
   }
 
   public async findByOrdemServicoId(ordemServicoId: string): Promise<TermoLiberacao | null> {
-    const termo = this.items.find((item) => item.getOrdemServicoId() === ordemServicoId)
+    const termo = this.items.find((item) => item.getOrdemServicoId().toValue() === ordemServicoId)
     return termo || null
   }
 

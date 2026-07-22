@@ -25,7 +25,7 @@ export class OnDiagnosticoConcluido implements EventHandler {
     try {
       // ⚡ A REAÇÃO: Manda o caso de uso gerar o orçamento baseado na fotografia da OS
       await this.gerarOrcamento.execute({
-        ordemServicoId: ordemServico.getId(),
+        ordemServicoId: ordemServico.getId().toValue(),
         clienteId: ordemServico.getClienteId().toValue(),
         servicos: ordemServico.getServicos().getItems(),
         componentes: ordemServico.getComponentes().getItems()
