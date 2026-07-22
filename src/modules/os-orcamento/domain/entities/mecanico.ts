@@ -12,10 +12,12 @@ export type MecanicoProps = {
   cpf: Cpf
   especialidade?: string // Ex: Suspensão, Motores, Injeção Eletrônica
   ativo: boolean
+  criadoEm: Date
+  atualizadoEm?: Date
 }
 
 export class Mecanico extends AggregateRoot<MecanicoProps> {
-  public static criar(props: Optional<MecanicoProps, 'ativo'>, id?: UniqueEntityID): Mecanico {
+  public static criar(props: Optional<MecanicoProps, 'ativo' | 'criadoEm'>, id?: UniqueEntityID): Mecanico {
     if (!props.nome?.getValor().trim()) {
       throw new Error('Nome do mecânico é obrigatório.')
     }
@@ -30,7 +32,8 @@ export class Mecanico extends AggregateRoot<MecanicoProps> {
       email: props.email,
       cpf: props.cpf,
       especialidade: props.especialidade,
-      ativo: props.ativo ?? true
+      ativo: props.ativo ?? true,
+      criadoEm: new Date()
     }
 
     const mecanico = new Mecanico(propriedadesCompletas, id)
@@ -56,6 +59,14 @@ export class Mecanico extends AggregateRoot<MecanicoProps> {
 
   public getEspecialidade(): string | undefined {
     return this.props.especialidade
+  }
+
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
+  }
+
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
   }
 
   public isAtivo(): boolean {

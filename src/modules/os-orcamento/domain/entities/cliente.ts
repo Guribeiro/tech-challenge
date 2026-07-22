@@ -3,16 +3,19 @@ import { Email } from '@/shared/domain/value-objects/email.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { Optional } from '@/core/types/optional.js'
 
 export interface ClienteProps {
   nome: NomeCompleto
   email: Email
   telefone: Telefone
   tipo: 'PF' | 'PJ'
+  criadoEm: Date
+  atualizadoEm?: Date
 }
 
 export class Cliente extends Entity<ClienteProps> {
-  public static criar(props: ClienteProps, id?: UniqueEntityID): Cliente {
+  public static criar(props: Optional<ClienteProps, 'criadoEm'>, id?: UniqueEntityID): Cliente {
     if (!props.nome.getValor()?.trim()) {
       throw new Error('Nome do cliente é obrigatório.')
     }
@@ -20,7 +23,10 @@ export class Cliente extends Entity<ClienteProps> {
     if (!props.email.getValor()?.trim()) {
       throw new Error('Email do cliente é obrigatório.')
     }
-    return new Cliente(props, id)
+    return new Cliente({
+      ...props,
+      criadoEm: props.criadoEm ?? new Date() // 👈
+    }, id)
   }
 
   public getNome(): NomeCompleto {
@@ -38,6 +44,15 @@ export class Cliente extends Entity<ClienteProps> {
   public getTipo(): 'PF' | 'PJ' {
     return this.props.tipo
   }
+
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
+  }
+
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
+  }
+
 
   public toJSON(): Record<string, unknown> {
     return {

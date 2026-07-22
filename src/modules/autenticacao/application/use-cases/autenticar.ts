@@ -1,6 +1,7 @@
 import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-generator.js'
 import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { Encrypter } from '../../domain/cryptography/encrypter.js'
+import { Injectable } from '@nestjs/common'
 
 interface AutenticarInput {
   email: string
@@ -11,6 +12,7 @@ interface AutenticarOutput {
   accessToken: string
 }
 
+@Injectable()
 export class AutenticarUseCase {
   constructor(
     private readonly usuariosRepository: UsuariosRepository,

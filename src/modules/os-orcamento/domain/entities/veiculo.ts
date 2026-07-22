@@ -26,11 +26,13 @@ export type AtualizarVeiculoProps = {
   quilometragem?: number
   combustivel?: string
   observacoes?: string
+  criadoEm: Date
+  atualizadoEm?: Date
 }
 
 export class Veiculo extends Entity<VeiculoProps> {
   public static criar(
-    props: Optional<VeiculoProps, 'criadoEm' | 'atualizadoEm'>,
+    props: Optional<VeiculoProps, 'criadoEm'>,
     id?: UniqueEntityID,
   ): Veiculo {
 
@@ -131,6 +133,14 @@ export class Veiculo extends Entity<VeiculoProps> {
 
   public getObservacoes(): string | undefined {
     return this.props.observacoes
+  }
+
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
+  }
+
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
   }
 
   public toJSON(): Record<string, unknown> {
