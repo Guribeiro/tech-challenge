@@ -1,19 +1,13 @@
+import { PaginationParams, PaginationResult, QueryStatus } from '@/core/repositories/pagination-params.js'
 import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
 
-export type StatusCliente = 'ativos' | 'deletados' | 'todos'
-
-export interface BuscarClientesParams {
-  pagina: number
-  limite: number
-  status?: StatusCliente
+export type BuscarClientesParams = PaginationParams & {
+  status?: QueryStatus
   nome?: string
 }
 
-export interface BuscarClientesResultado {
+export type BuscarClientesResultado = PaginationResult & {
   clientes: Cliente[]
-  total: number
-  pagina: number
-  limite: number
 }
 
 export abstract class ClienteRepository {

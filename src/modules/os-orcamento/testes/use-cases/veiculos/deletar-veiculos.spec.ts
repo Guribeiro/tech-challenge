@@ -20,7 +20,7 @@ describe('Caso de Uso: Deletar Veiculo', () => {
 
     const [veiculo1] = veiculos
 
-    const output = await sut.executar({ id: veiculo1.getId().toValue() })
+    const output = await sut.execute({ id: veiculo1.getId().toValue() })
 
     expect(output.veiculo.isDeletado()).toBe(true)
   })
@@ -29,7 +29,7 @@ describe('Caso de Uso: Deletar Veiculo', () => {
     const veiculo = makeVeiculo({ deletadoEm: new Date() })
 
 
-    await expect(sut.executar({ id: veiculo.getId().toValue() })).rejects.toBeInstanceOf(Error)
+    await expect(sut.execute({ id: veiculo.getId().toValue() })).rejects.toBeInstanceOf(Error)
 
   })
 })

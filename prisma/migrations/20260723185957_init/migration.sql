@@ -59,6 +59,7 @@ CREATE TABLE "veiculos" (
     "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "atualizado_em" TIMESTAMP(3),
     "deletado_em" TIMESTAMP(3),
+    "cliente_id" TEXT NOT NULL,
 
     CONSTRAINT "veiculos_pkey" PRIMARY KEY ("id")
 );
@@ -80,3 +81,6 @@ CREATE UNIQUE INDEX "mecanicos_cpf_key" ON "mecanicos"("cpf");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "veiculos_placa_key" ON "veiculos"("placa");
+
+-- AddForeignKey
+ALTER TABLE "veiculos" ADD CONSTRAINT "veiculos_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "clientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -16,7 +16,7 @@ describe('Caso de Uso: Editar Veiculo', () => {
 
     await veiculoRepository.create(veiculo)
 
-    const output = await sut.executar({
+    const output = await sut.execute({
       id: veiculo.getId().toValue(),
       ano: 2024,
       modelo: 'Modelo',
@@ -34,7 +34,7 @@ describe('Caso de Uso: Editar Veiculo', () => {
   it('nao deve editar um veiculo inexistente', async () => {
     const veiculo = makeVeiculo()
 
-    await expect(sut.executar({
+    await expect(sut.execute({
       id: veiculo.getId().toValue(),
       ano: 2024,
       modelo: 'Modelo',
@@ -52,7 +52,7 @@ describe('Caso de Uso: Editar Veiculo', () => {
 
     const [veiculo1, veiculo2] = veiculos
 
-    await expect(sut.executar({
+    await expect(sut.execute({
       id: veiculo1.getId().toValue(),
       ano: 2024,
       modelo: 'Modelo',

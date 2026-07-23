@@ -2,6 +2,7 @@ import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
+import { Injectable } from '@nestjs/common'
 
 export type CriarVeiculoInput = {
   clienteId: string
@@ -19,6 +20,7 @@ export type CriarVeiculoOutput = {
   veiculo: Veiculo
 }
 
+@Injectable()
 export class CriarVeiculoUseCase {
   constructor(
     private readonly clienteRepository: ClienteRepository,

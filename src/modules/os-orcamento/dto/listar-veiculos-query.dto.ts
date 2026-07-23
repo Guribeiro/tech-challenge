@@ -17,8 +17,4 @@ export class ListarClientesQueryDto {
   @IsOptional()
   @IsEnum(['ativos', 'deletados', 'todos'])
   status?: QueryStatus = 'ativos'
-
-  @IsOptional()
-  @IsString()
-  nome?: string
 }

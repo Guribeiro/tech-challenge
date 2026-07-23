@@ -27,8 +27,6 @@ export type AtualizarVeiculoProps = {
   quilometragem?: number
   combustivel?: string
   observacoes?: string
-  criadoEm: Date
-  atualizadoEm?: Date
 }
 
 export class Veiculo extends Entity<VeiculoProps> {

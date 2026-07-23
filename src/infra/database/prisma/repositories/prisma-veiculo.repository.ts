@@ -1,8 +1,9 @@
 import { Injectable } from "@nestjs/common";
-import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js";
+import { BuscarVeiculosParams, BuscarVeiculosResultado, VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js";
 import { Veiculo } from "@/modules/os-orcamento/domain/entities/veiculo.js";
 import { PrismaService } from "../prisma.service.js";
 import { PrismaVeiculoMapper } from "../mappers/prisma-veiculo-mapper.js";
+import { Prisma } from "@/generated/prisma/client.js";
 
 @Injectable()
 export class PrismaVeiculoRepository implements VeiculoRepository {
@@ -63,6 +64,38 @@ export class PrismaVeiculoRepository implements VeiculoRepository {
         deletadoEm: new Date()
       }
     })
+  }
+
+  public async findMany({
+    limite,
+    pagina,
+    status
+  }: BuscarVeiculosParams): Promise<BuscarVeiculosResultado> {
+    const where: Prisma.VeiculoWhereInput = {}
+
+    if (status === 'ativos') {
+      where.deletadoEm = null
+    } else if (status === 'deletados') {
+      where.deletadoEm = { not: null }
+    }
+
+
+    const [rawClientes, total] = await Promise.all([
+      this.prisma.veiculo.findMany({
+        where,
+        take: limite,
+        skip: (pagina - 1) * limite,
+        orderBy: { criadoEm: 'desc' },
+      }),
+      this.prisma.veiculo.count({ where }),
+    ])
+
+    return {
+      veiculos: rawClientes.map(PrismaVeiculoMapper.toDomain),
+      total,
+      pagina,
+      limite,
+    }
   }
 
 }

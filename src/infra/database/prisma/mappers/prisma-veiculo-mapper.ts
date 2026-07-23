@@ -9,6 +9,7 @@ export class PrismaVeiculoMapper {
     return Veiculo.criar(
       {
         placa: Placa.criar(raw.placa),
+        clienteId: new UniqueEntityID(raw.clienteId),
         ano: raw.ano,
         marca: raw.marca,
         modelo: raw.modelo,
@@ -28,6 +29,7 @@ export class PrismaVeiculoMapper {
   static toPrisma(veiculo: Veiculo): PrismaVeiculo {
     return {
       id: veiculo.getId().toValue(),
+      clienteId: veiculo.getClienteId().toValue(),
       placa: veiculo.getPlaca().getValor(),
       ano: veiculo.getAno(),
       marca: veiculo.getMarca(),

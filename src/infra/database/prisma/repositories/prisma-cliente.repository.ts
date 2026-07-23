@@ -77,11 +77,10 @@ export class PrismaClienteRepository implements ClienteRepository {
   }: BuscarClientesParams): Promise<BuscarClientesResultado> {
     const where: Prisma.ClienteWhereInput = {}
 
-    // 🎯 Filtro baseado na presença/ausência da data de exclusão
     if (status === 'ativos') {
       where.deletadoEm = null
     } else if (status === 'deletados') {
-      where.deletadoEm = { not: null } // Apenas registros com Soft Delete
+      where.deletadoEm = { not: null }
     }
 
     if (nome) {
