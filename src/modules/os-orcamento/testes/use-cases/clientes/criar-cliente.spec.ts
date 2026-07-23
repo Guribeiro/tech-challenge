@@ -1,28 +1,28 @@
-import { CriarCliente, CriarClientInput } from '@/modules/os-orcamento/application/use-cases/clientes/criar-cliente.js'
+import { CriarClienteUseCase } from '@/modules/os-orcamento/application/use-cases/clientes/criar-cliente.js'
 import { InMemoryClienteRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js'
+import { makeCliente } from '../../factories/make-cliente.js'
 
 let clienteRepository: InMemoryClienteRepository
-let sut: CriarCliente
+let sut: CriarClienteUseCase
 
 describe('Criar cliente', () => {
   beforeEach(() => {
     clienteRepository = new InMemoryClienteRepository()
-    sut = new CriarCliente(clienteRepository)
+    sut = new CriarClienteUseCase(clienteRepository)
   })
 
   it('deve criar um cliente com sucesso', async () => {
-    const input: CriarClientInput = {
-      id: '1',
-      nome: 'João da Silva',
-      tipo: 'PF',
-      email: 'joao.silva@example.com',
-      telefone: '11999999999'
-    }
+    const cliente = makeCliente()
+    const output = await sut.execute({
+      nome: cliente.getNome().getValor(),
+      email: cliente.getEmail().getValor(),
+      telefone: cliente.getTelefone().getValor(),
+      cpf: cliente.getCpf().getValor(),
+      tipo: cliente.getTipo(),
+    })
 
-    const output = await sut.execute(input)
-
-    expect(output.cliente.getNome().getValor()).toBe(input.nome)
-    expect(output.cliente.getEmail().getValor()).toBe(input.email)
-    expect(output.cliente.getTelefone().getValor()).toBe(input.telefone)
+    expect(output.cliente.getNome().getValor()).toBe(cliente.getNome().getValor())
+    expect(output.cliente.getEmail().getValor()).toBe(cliente.getEmail().getValor())
+    expect(output.cliente.getTelefone().getValor()).toBe(cliente.getTelefone().getValor())
   })
 })

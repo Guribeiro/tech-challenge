@@ -4,5 +4,7 @@ export abstract class MecanicoRepository {
   abstract create(mecanico: Mecanico): Promise<void>
   abstract save(mecanico: Mecanico): Promise<void>
   abstract findById(id: string): Promise<Mecanico | null>
+  abstract findByEmail(email: string): Promise<Mecanico | null>
+  abstract findByCpf(cpf: string): Promise<Mecanico | null>
   abstract delete(id: string): Promise<void>
 }

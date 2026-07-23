@@ -91,7 +91,8 @@ describe('Iniciar diagnostico', () => {
     })
 
     expect(ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
-    expect(ordemServico.getMecanicoId()?.toValue()).toBe(mecanico.getId())
+
+    expect(ordemServico.getMecanicoId()?.equals(mecanico.getId())).toBe(true)
 
     expect(spy).toHaveBeenCalledWith(
       expect.objectContaining({

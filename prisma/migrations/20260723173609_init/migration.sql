@@ -21,10 +21,12 @@ CREATE TABLE "clientes" (
     "id" TEXT NOT NULL,
     "nome" TEXT NOT NULL,
     "email" TEXT NOT NULL,
+    "cpf" TEXT NOT NULL,
     "telefone" TEXT NOT NULL,
     "tipo" "ClienteTipo" NOT NULL,
     "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "atualizado_em" TIMESTAMP(3),
+    "deletado_em" TIMESTAMP(3),
 
     CONSTRAINT "clientes_pkey" PRIMARY KEY ("id")
 );
@@ -66,6 +68,9 @@ CREATE UNIQUE INDEX "usuarios_email_key" ON "usuarios"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "clientes_email_key" ON "clientes"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "clientes_cpf_key" ON "clientes"("cpf");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "mecanicos_email_key" ON "mecanicos"("email");

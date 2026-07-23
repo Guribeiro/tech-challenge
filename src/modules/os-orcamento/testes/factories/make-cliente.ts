@@ -1,9 +1,11 @@
 import { fakerPT_BR as faker } from "@faker-js/faker";
+import { generate as gerarCpf } from 'gerador-validador-cpf'
 
 import { Cliente, ClienteProps } from "@/modules/os-orcamento/domain/entities/cliente.js";
 import { NomeCompleto } from "@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js";
 import { Email } from "../../../../shared/domain/value-objects/email.js";
 import { Telefone } from "../../domain/entities/value-objects/telefone.js";
+import { Cpf } from "../../domain/entities/value-objects/cpf.js";
 
 export function makeCliente(override: Partial<ClienteProps> = {}): Cliente {
   const dddsValidos = [
@@ -29,6 +31,7 @@ export function makeCliente(override: Partial<ClienteProps> = {}): Cliente {
     nome: NomeCompleto.criar(faker.person.fullName()),
     email: Email.criar(faker.internet.email()), //
     telefone: Telefone.criar(celularValidoBruto),
+    cpf: Cpf.criar(gerarCpf()),
     tipo: 'PF',
     ...override
   })

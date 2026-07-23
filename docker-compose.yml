@@ -28,6 +28,13 @@ services:
     container_name: fiap_tech_challenge_app
     ports:
       - "${PORT:-3000}:3000"
+    develop:
+      watch:
+        - action: sync
+          path: .
+          target: /app
+          ignore:
+            - node_modules/
     environment:
       - NODE_ENV=development
       - PORT=3000
@@ -35,9 +42,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - .:/app
-      - /app/node_modules
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
     command: npm run start:dev
 
 volumes:

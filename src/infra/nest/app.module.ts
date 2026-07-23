@@ -1,4 +1,5 @@
 import { AutenticacaoModule } from '@/modules/autenticacao/autenticacao.module.js';
+import { OsOrcamentoModule } from '@/modules/os-orcamento/os-orcamento.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 
@@ -7,7 +8,8 @@ import { ConfigModule } from '@nestjs/config'
     ConfigModule.forRoot({
       isGlobal: true, // Torna o ConfigModule acessível em todos os módulos sem precisar reimportar
     }),
-    AutenticacaoModule
+    AutenticacaoModule,
+    OsOrcamentoModule
   ],
 })
 export class AppModule { }

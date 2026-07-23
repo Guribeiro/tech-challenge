@@ -1,3 +1,4 @@
+import { AggregateRoot } from '../entities/aggregate-root.js'
 import { DomainEvent } from './domain-event.js'
 
 // Tipagem para a função que vai ouvir o evento
@@ -21,13 +22,30 @@ export class DomainEvents {
   /**
    * Dispara o evento imediatamente para todos os inscritos ouvirem
    */
-  public static dispatch(event: DomainEvent) {
+  public static async dispatch(event: DomainEvent): Promise<void> {
     const eventClassName = event.constructor.name
     const handlers = this.handlersMap.get(eventClassName) || []
 
-    for (const handler of handlers) {
-      // Executa a função de forma assíncrona para não travar o fluxo principal
-      handler(event)
+    // Aguarda a execução de todos os handlers de forma segura
+    const results = await Promise.allSettled(
+      handlers.map((handler) => handler(event))
+    )
+
+    // Loga eventuais erros em background sem quebrar o fluxo principal se necessário
+    results.forEach((result) => {
+      if (result.status === 'rejected') {
+        console.error(`Error handling event ${eventClassName}:`, result.reason)
+      }
+    })
+  }
+
+  public static async dispatchEventsForAggregate(aggregate: AggregateRoot<any>): Promise<void> {
+    const events = aggregate.domainEvents
+
+    for (const event of events) {
+      await this.dispatch(event)
     }
+
+    aggregate.clearEvents()
   }
 }

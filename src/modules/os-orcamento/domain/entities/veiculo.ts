@@ -4,6 +4,7 @@ import { Optional } from '@/core/types/optional.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 
 export type VeiculoProps = {
+  clienteId: UniqueEntityID
   placa: Placa
   marca: string
   modelo: string
@@ -101,6 +102,10 @@ export class Veiculo extends Entity<VeiculoProps> {
 
   public getDeletadoEm(): Date | null | undefined {
     return this.props.deletadoEm
+  }
+
+  public getClienteId(): UniqueEntityID {
+    return this.props.clienteId
   }
 
   public getPlaca(): Placa {

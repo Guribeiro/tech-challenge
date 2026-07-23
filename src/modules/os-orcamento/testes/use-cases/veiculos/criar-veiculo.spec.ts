@@ -2,20 +2,30 @@ import { CriarVeiculoUseCase } from "@/modules/os-orcamento/application/use-case
 import { InMemoryVeiculoRepository } from "../../repositories/in-memory-veiculo-repository.js";
 import { makeVeiculo } from "../../factories/make-veiculo.js";
 import { Placa } from "@/modules/os-orcamento/domain/entities/value-objects/placa.js";
+import { InMemoryClienteRepository } from "../../repositories/in-memory-cliente-repository.js";
+import { makeCliente } from "../../factories/make-cliente.js";
 
 describe('Caso de Uso: Criar veiculo', () => {
   let sut: CriarVeiculoUseCase
   let veiculosRepository: InMemoryVeiculoRepository
+  let clienteRepository: InMemoryClienteRepository
 
   beforeEach(() => {
     veiculosRepository = new InMemoryVeiculoRepository()
+    clienteRepository = new InMemoryClienteRepository()
     sut = new CriarVeiculoUseCase(
-      veiculosRepository
+      clienteRepository,
+      veiculosRepository,
     )
   })
 
   it('deve criar veiculo', async () => {
-    const { veiculo } = await sut.executar({
+    const cliente = makeCliente()
+
+    await clienteRepository.create(cliente)
+
+    const { veiculo } = await sut.execute({
+      clienteId: cliente.getId().toValue(),
       ano: 2026,
       marca: 'FIAT',
       modelo: 'Modelo',
@@ -30,10 +40,14 @@ describe('Caso de Uso: Criar veiculo', () => {
   })
 
   it('não deve criar dois veiculos com a mesma placa', async () => {
+    const cliente = makeCliente()
+    await clienteRepository.create(cliente)
+
     const veiculo = makeVeiculo()
     veiculosRepository.create(veiculo)
 
-    await expect(sut.executar({
+    await expect(sut.execute({
+      clienteId: cliente.getId().toValue(),
       ano: 2026,
       marca: 'FIAT',
       modelo: 'Modelo',
@@ -43,4 +57,24 @@ describe('Caso de Uso: Criar veiculo', () => {
       quilometragem: 0,
     })).rejects.toBeInstanceOf(Error)
   })
+
+  it('não deve criar um veiculo com um cliente inexistente', async () => {
+    const cliente = makeCliente()
+
+    const veiculo = makeVeiculo()
+    veiculosRepository.create(veiculo)
+
+    await expect(sut.execute({
+      clienteId: cliente.getId().toValue(),
+      ano: 2026,
+      marca: 'FIAT',
+      modelo: 'Modelo',
+      placa: veiculo.getPlaca().getValor(),
+      combustivel: 'gasolina',
+      cor: 'preto',
+      quilometragem: 0,
+    })).rejects.toBeInstanceOf(Error)
+  })
+
+
 })

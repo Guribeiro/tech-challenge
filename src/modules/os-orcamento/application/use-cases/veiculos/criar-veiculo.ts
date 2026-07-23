@@ -1,8 +1,10 @@
 import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
+import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
 
 export type CriarVeiculoInput = {
+  clienteId: string
   placa: string
   marca: string
   modelo: string
@@ -19,10 +21,16 @@ export type CriarVeiculoOutput = {
 
 export class CriarVeiculoUseCase {
   constructor(
+    private readonly clienteRepository: ClienteRepository,
     private readonly veiculosRepository: VeiculoRepository
   ) { }
 
-  public async executar(input: CriarVeiculoInput): Promise<CriarVeiculoOutput> {
+  public async execute(input: CriarVeiculoInput): Promise<CriarVeiculoOutput> {
+    const cliente = await this.clienteRepository.findById(input.clienteId)
+
+    if (!cliente) {
+      throw new Error('Cliente não registrado')
+    }
 
     const veiculoComMesmaPlaca = await this.veiculosRepository.findByLicensePlate(input.placa)
 
@@ -31,6 +39,7 @@ export class CriarVeiculoUseCase {
     }
 
     const veiculo = Veiculo.criar({
+      clienteId: cliente.getId(),
       placa: Placa.criar(input.placa),
       marca: input.marca,
       modelo: input.modelo,

@@ -1,16 +1,11 @@
 import { ObterFilaTrabalhoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/obter-fila-trabalho.js'
 import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordens-servico-repository.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
-import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
-import { Email } from '@/shared/domain/value-objects/email.js'
-import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
-import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
-import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
-import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
-import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { makeOrdemServicoServicoList } from '../../factories/make-ordem-servico-servico-list.js'
 import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
+import { makeCliente } from '../../factories/make-cliente.js'
+import { makeVeiculo } from '../../factories/make-veiculo.js'
 
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let sut: ObterFilaTrabalhoUseCase
@@ -23,36 +18,13 @@ describe('Obter fila de trabalho', () => {
 
   it('deve retornar a fila de trabalho ordenada por prioridade', async () => {
 
-    const cliente = Cliente.criar({
-      email: Email.criar('cliente@email.com'),
-      nome: NomeCompleto.criar('Cliente Teste'),
-      telefone: Telefone.criar('11999999999'),
-      tipo: 'PF',
-    })
+    const cliente = makeCliente()
 
+    const veiculo = makeVeiculo()
 
-    const veiculo = Veiculo.criar({
-      marca: 'Marca Teste',
-      placa: Placa.criar('ABC1234'),
-      modelo: 'Modelo Teste',
-      ano: 2020,
-    })
+    const cliente2 = makeCliente()
 
-    const cliente2 = Cliente.criar({
-      email: Email.criar('cliente@email.com'),
-      nome: NomeCompleto.criar('Cliente Teste'),
-      telefone: Telefone.criar('11999999999'),
-      tipo: 'PF',
-    })
-
-
-    const veiculo2 = Veiculo.criar({
-      marca: 'Marca Teste',
-      placa: Placa.criar('ABC1234'),
-      modelo: 'Modelo Teste',
-      ano: 2020,
-    })
-
+    const veiculo2 = makeVeiculo()
 
     const osServiceBaixaPrioridadeList = makeOrdemServicoServicoList()
 
