@@ -1,7 +1,6 @@
 import { CriarVeiculoUseCase } from "@/modules/os-orcamento/application/use-cases/veiculos/criar-veiculo.js";
 import { InMemoryVeiculoRepository } from "../../repositories/in-memory-veiculo-repository.js";
 import { makeVeiculo } from "../../factories/make-veiculo.js";
-import { Placa } from "@/modules/os-orcamento/domain/entities/value-objects/placa.js";
 import { InMemoryClienteRepository } from "../../repositories/in-memory-cliente-repository.js";
 import { makeCliente } from "../../factories/make-cliente.js";
 

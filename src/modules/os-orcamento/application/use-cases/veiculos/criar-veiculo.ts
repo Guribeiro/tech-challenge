@@ -50,7 +50,7 @@ export class CriarVeiculoUseCase {
       observacoes: input.observacoes,
     })
 
-    this.veiculosRepository.save(veiculo)
+    await this.veiculosRepository.create(veiculo)
 
     return {
       veiculo
