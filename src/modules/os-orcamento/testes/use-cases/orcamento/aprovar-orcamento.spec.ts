@@ -68,7 +68,7 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
     const cliente = makeCliente()
     await clienteRepository.create(cliente)
 
-    const produto = makeProduto({ quantidadeEstoque: 10 })
+    const produto = makeProduto({ quantidadeEstoque: 10, quantidadeReservada: 0 })
     await produtoRepository.create(produto)
 
     const servico = makeServico({ nome: 'Troca de óleo' })
@@ -139,6 +139,7 @@ describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
     await vi.waitFor(async () => {
       // 1. O Estoque reservou os produtos corretos?
       const produtoNoEstoque = await produtoRepository.findById(produto.getId().toValue())
+
 
       expect(produtoNoEstoque?.getQuantidadeReservada()).toBe(2)
 

@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Produto } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 
@@ -9,6 +10,7 @@ interface ReativarProdutoOutput {
   produto: Produto
 }
 
+@Injectable()
 export class ReativarProdutoUseCase {
   constructor(private readonly produtoRepository: ProdutoRepository) { }
   public async execute({
@@ -20,7 +22,6 @@ export class ReativarProdutoUseCase {
     if (!produto) {
       throw new Error(`Produto com ID ${produtoId} não encontrado`)
     }
-
 
     produto.reativar()
 

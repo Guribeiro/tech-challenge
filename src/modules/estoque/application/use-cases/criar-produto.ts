@@ -1,26 +1,47 @@
-import { Produto, TipoProduto } from "../../domain/entities/produto.js";
+import { Injectable } from "@nestjs/common";
+import { Produto, TipoProduto, UnidadeMedida } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 
 export interface CriarProdutoInput {
   nome: string
   tipo: TipoProduto
+  marca?: string
+  codigoSKU?: string
   descricao?: string
+  codigoFabricante?: string
+
   precoUnitario: number
+  precoCusto: number
+
   quantidadeEstoque: number
+
+  estoqueMinimo?: number
+  estoqueMaximo?: number
+  unidadeMedida?: UnidadeMedida
+  localizacao?: string
 }
 
 interface CriarProdutoOutput {
   produto: Produto
 }
 
+@Injectable()
 export class CriarProdutoUseCase {
   constructor(private readonly produtoRepository: ProdutoRepository) { }
   public async execute({
     nome,
     tipo,
+    marca,
+    codigoSKU,
+    codigoFabricante,
     descricao,
     precoUnitario,
+    precoCusto,
     quantidadeEstoque,
+    unidadeMedida,
+    estoqueMaximo,
+    estoqueMinimo,
+    localizacao,
   }: CriarProdutoInput): Promise<CriarProdutoOutput> {
 
     const produtoFromNome = await this.produtoRepository.findByNome(nome)
@@ -32,9 +53,17 @@ export class CriarProdutoUseCase {
     const produto = Produto.criar({
       nome,
       tipo,
+      marca,
+      codigoSKU,
+      codigoFabricante,
       descricao,
       precoUnitario,
+      precoCusto,
       quantidadeEstoque,
+      unidadeMedida,
+      estoqueMaximo,
+      estoqueMinimo,
+      localizacao,
     })
 
     await this.produtoRepository.create(produto)

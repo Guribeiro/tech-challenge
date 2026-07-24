@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common";
 import { Produto } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 
@@ -9,6 +10,7 @@ interface DesativarProdutoOutput {
   produto: Produto
 }
 
+@Injectable()
 export class DesativarProdutoUseCase {
   constructor(private readonly produtoRepository: ProdutoRepository) { }
   public async execute({

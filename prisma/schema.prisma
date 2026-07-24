@@ -19,6 +19,19 @@ enum Role {
   CLIENTE
 }
 
+enum TipoProduto {
+  INSUMO
+  PECA
+}
+
+enum UnidadeMedida {
+  UN
+  L
+  KG
+  JOGO
+  METRO
+}
+
 model Usuario {
   id           String    @id
   email        String    @unique
@@ -81,4 +94,25 @@ model Veiculo {
   clienteId String  @map("cliente_id")
 
   @@map("veiculos")
+}
+
+model Produto {
+  id                  String         @id
+  nome                String
+  tipo                TipoProduto
+  marca               String?
+  descricao           String?
+  codigoSKU           String?        @unique @map("codigo_sku")
+  codigoFabricante    String?        @map("codigo_fabricante")
+  precoUnitario       Int            @map("preco_unitario")
+  precoCusto          Int            @map("preco_custo")
+  quantidadeEstoque   Int            @map("quantidade_estoque")
+  quantidadeReservada Int?           @map("quantidade_reservada")
+  estoqueMinimo       Int?           @map("estoque_minimo")
+  estoqueMaximo       Int?           @map("estoque_maximo")
+  unidadeMedida       UnidadeMedida? @map("unidade_medida")
+  localizacao         String?
+  criadoEm            DateTime       @default(now()) @map("criado_em")
+  atualizadoEm        DateTime?      @updatedAt @map("atualizado_em")
+  desativadoEm        DateTime?      @map("desativado_em")
 }

@@ -5,95 +5,143 @@ import { makeProduto } from '../../factories/make-produto.js'
 let produtoRepository: InMemoryProdutoRepository
 let sut: CriarProdutoUseCase
 
-describe('Criar produto', () => {
+describe('Caso de Uso: Criar produto', () => {
   beforeEach(() => {
     produtoRepository = new InMemoryProdutoRepository()
     sut = new CriarProdutoUseCase(produtoRepository)
   })
 
   it('deve criar um produto com sucesso', async () => {
-    const input: CriarProdutoInput = {
-      nome: 'Produto',
-      precoUnitario: 1000,
-      quantidadeEstoque: 10,
-      tipo: 'INSUMO',
-      descricao: 'algum produto para o estoque'
-    }
+    const produto = makeProduto()
 
-    const { produto } = await sut.execute(input)
+    const output = await sut.execute({
+      nome: produto.getNome(),
+      tipo: produto.getTipo(),
+      marca: produto.getMarca(),
+      codigoSKU: produto.getCodigoSKU(),
+      codigoFabricante: produto.getCodigoFabricante(),
+      descricao: produto.getDescricao(),
+      precoCusto: produto.getPrecoCusto(),
+      precoUnitario: produto.getPrecoUnitario(),
+      estoqueMinimo: produto.getEstoqueMinimo(),
+      quantidadeEstoque: produto.getQuantidadeEstoque(),
+      estoqueMaximo: produto.getEstoqueMaximo(),
+      localizacao: produto.getLocalizacao(),
+      unidadeMedida: produto.getUnidadeMedida()
+    })
 
-    expect(produto.getNome()).toBe(input.nome)
-    expect(produto).toHaveProperty('_id')
+    expect(output.produto.getNome()).toBe(produto.getNome())
   })
 
   it('deve criar um produto INSUMOS com sucesso', async () => {
-    const input: CriarProdutoInput = {
-      nome: 'Produto',
-      precoUnitario: 1000,
-      quantidadeEstoque: 10,
+    const produto = makeProduto()
+
+    const output = await sut.execute({
+      nome: produto.getNome(),
       tipo: 'INSUMO',
-      descricao: 'algum produto para o estoque'
-    }
+      marca: produto.getMarca(),
+      codigoSKU: produto.getCodigoSKU(),
+      codigoFabricante: produto.getCodigoFabricante(),
+      descricao: produto.getDescricao(),
+      precoCusto: produto.getPrecoCusto(),
+      precoUnitario: produto.getPrecoUnitario(),
+      estoqueMinimo: produto.getEstoqueMinimo(),
+      quantidadeEstoque: produto.getQuantidadeEstoque(),
+      estoqueMaximo: produto.getEstoqueMaximo(),
+      localizacao: produto.getLocalizacao(),
+      unidadeMedida: produto.getUnidadeMedida()
+    })
 
-    const { produto } = await sut.execute(input)
-
-    expect(produto).toHaveProperty('_id')
-    expect(produto.getNome()).toBe(input.nome)
-    expect(produto.getTipo()).toBe('INSUMO')
+    expect(output.produto).toHaveProperty('_id')
+    expect(output.produto.getNome()).toBe(produto.getNome())
+    expect(output.produto.getTipo()).toBe('INSUMO')
   })
   it('deve criar um produto PECA com sucesso', async () => {
-    const input: CriarProdutoInput = {
-      nome: 'Produto',
-      precoUnitario: 1000,
-      quantidadeEstoque: 10,
+    const produto = makeProduto()
+
+    const output = await sut.execute({
+      nome: produto.getNome(),
       tipo: 'PECA',
-      descricao: 'algum produto para o estoque'
-    }
-
-    const { produto } = await sut.execute(input)
-
-    expect(produto).toHaveProperty('_id')
-    expect(produto.getNome()).toBe(input.nome)
-    expect(produto.getTipo()).toBe('PECA')
+      marca: produto.getMarca(),
+      codigoSKU: produto.getCodigoSKU(),
+      codigoFabricante: produto.getCodigoFabricante(),
+      descricao: produto.getDescricao(),
+      precoCusto: produto.getPrecoCusto(),
+      precoUnitario: produto.getPrecoUnitario(),
+      estoqueMinimo: produto.getEstoqueMinimo(),
+      quantidadeEstoque: produto.getQuantidadeEstoque(),
+      estoqueMaximo: produto.getEstoqueMaximo(),
+      localizacao: produto.getLocalizacao(),
+      unidadeMedida: produto.getUnidadeMedida()
+    })
+    expect(output.produto).toHaveProperty('_id')
+    expect(output.produto.getNome()).toBe(produto.getNome())
+    expect(output.produto.getTipo()).toBe('PECA')
   })
 
   it('não deve criar um produto com estoque negativo', async () => {
-    const input: CriarProdutoInput = {
-      nome: 'Produto',
-      precoUnitario: 1000,
-      quantidadeEstoque: -1,
-      tipo: 'PECA',
-      descricao: 'algum produto para o estoque'
-    }
-
-    await expect(sut.execute(input)).rejects.toBeInstanceOf(Error)
+    const produto = makeProduto()
+    await expect(
+      sut.execute({
+        nome: produto.getNome(),
+        tipo: produto.getTipo(),
+        marca: produto.getMarca(),
+        codigoSKU: produto.getCodigoSKU(),
+        codigoFabricante: produto.getCodigoFabricante(),
+        descricao: produto.getDescricao(),
+        precoCusto: produto.getPrecoCusto(),
+        precoUnitario: produto.getPrecoUnitario(),
+        estoqueMinimo: produto.getEstoqueMinimo(),
+        quantidadeEstoque: -1,
+        estoqueMaximo: produto.getEstoqueMaximo(),
+        localizacao: produto.getLocalizacao(),
+        unidadeMedida: produto.getUnidadeMedida()
+      })
+    ).rejects.toBeInstanceOf(Error)
   })
 
   it('não deve criar um produto com preço unitário negativo', async () => {
-    const input: CriarProdutoInput = {
-      nome: 'Produto',
-      precoUnitario: -1,
-      quantidadeEstoque: 10,
-      tipo: 'PECA',
-      descricao: 'algum produto para o estoque'
-    }
-
-    await expect(sut.execute(input)).rejects.toBeInstanceOf(Error)
+    const produto = makeProduto()
+    await expect(
+      sut.execute({
+        nome: produto.getNome(),
+        tipo: produto.getTipo(),
+        marca: produto.getMarca(),
+        codigoSKU: produto.getCodigoSKU(),
+        codigoFabricante: produto.getCodigoFabricante(),
+        descricao: produto.getDescricao(),
+        precoCusto: produto.getPrecoCusto(),
+        precoUnitario: -1,
+        estoqueMinimo: produto.getEstoqueMinimo(),
+        quantidadeEstoque: produto.getQuantidadeEstoque(),
+        estoqueMaximo: produto.getEstoqueMaximo(),
+        localizacao: produto.getLocalizacao(),
+        unidadeMedida: produto.getUnidadeMedida()
+      })
+    ).rejects.toBeInstanceOf(Error)
   })
 
   it('não deve criar produto com nome duplicado', async () => {
-    const produto1 = makeProduto({ nome: 'Pastilha Freio' })
+    const produto = makeProduto({ nome: 'Pastilha Freio' })
 
-    await produtoRepository.create(produto1)
+    await produtoRepository.create(produto)
 
-    const input: CriarProdutoInput = {
-      nome: 'Pastilha Freio',
-      precoUnitario: 1000,
-      quantidadeEstoque: 10,
-      tipo: 'PECA',
-      descricao: 'algum produto para o estoque'
-    }
-
-    await expect(sut.execute(input)).rejects.toBeInstanceOf(Error)
+    await expect(
+      sut.execute({
+        nome: produto.getNome(),
+        tipo: produto.getTipo(),
+        marca: produto.getMarca(),
+        codigoSKU: produto.getCodigoSKU(),
+        codigoFabricante: produto.getCodigoFabricante(),
+        descricao: produto.getDescricao(),
+        precoCusto: produto.getPrecoCusto(),
+        precoUnitario: -1,
+        estoqueMinimo: produto.getEstoqueMinimo(),
+        quantidadeEstoque: produto.getQuantidadeEstoque(),
+        estoqueMaximo: produto.getEstoqueMaximo(),
+        localizacao: produto.getLocalizacao(),
+        unidadeMedida: produto.getUnidadeMedida()
+      })
+    ).rejects.toBeInstanceOf(Error)
   })
 })

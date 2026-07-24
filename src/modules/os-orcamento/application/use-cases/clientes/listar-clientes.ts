@@ -2,7 +2,6 @@ import { BuscarClientesParams, BuscarClientesResultado, ClienteRepository } from
 import { Injectable } from '@nestjs/common'
 
 export type ListarClienteInput = Partial<BuscarClientesParams>
-
 export type ListarClienteOutput = BuscarClientesResultado
 
 @Injectable()
