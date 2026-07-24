@@ -19,6 +19,7 @@ import { CriarServicoController } from './controllers/servicos/criar-servico.con
 import { ListarServicosController } from './controllers/servicos/listar-servicos.controller.js'
 import { DesativarServicoController } from './controllers/servicos/desativar-servico.controller.js'
 import { ReativarServicoController } from './controllers/servicos/reativar-servico.controller.js'
+import { EditarServicoController } from './controllers/servicos/editar-servico.controller.js'
 
 // Use Cases
 import { CriarMecanicoUseCase } from '@/modules/os-orcamento/application/use-cases/mecanicos/criar-mecanico.js'
@@ -37,6 +38,7 @@ import { ListarServicosUseCase } from '@/modules/os-orcamento/application/use-ca
 import { CriarServicoUseCase } from '@/modules/os-orcamento/application/use-cases/servicos/criar-servico.js'
 import { DesativarServicoUseCase } from '@/modules/os-orcamento/application/use-cases/servicos/desativar-servico.js'
 import { ReativarServicoUseCase } from '@/modules/os-orcamento/application/use-cases/servicos/reativar-servico.js'
+import { EditarServicoUseCase } from './application/use-cases/servicos/editar-servico.js'
 
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
@@ -64,7 +66,8 @@ import { PrismaServicoRepository } from '@/infra/database/prisma/repositories/pr
     ListarServicosController,
     CriarServicoController,
     DesativarServicoController,
-    ReativarServicoController
+    ReativarServicoController,
+    EditarServicoController
   ],
   providers: [
     // Database Service
@@ -84,6 +87,7 @@ import { PrismaServicoRepository } from '@/infra/database/prisma/repositories/pr
     CriarServicoUseCase,
     DesativarServicoUseCase,
     ReativarServicoUseCase,
+    EditarServicoUseCase,
 
     // Inversão de Dependência dos Repositórios (Domínio -> Infra)
     {

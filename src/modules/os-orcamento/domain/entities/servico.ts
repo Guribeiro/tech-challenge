@@ -14,6 +14,13 @@ export type ServicoProps = {
   desativadoEm?: Date | null
 }
 
+export type AtualizarServcoProps = Partial<{
+  categoria: CategoriaServico
+  nome: string
+  descricao: string
+  valorReferencia: number
+}>
+
 export class Servico extends Entity<ServicoProps> {
   public static criar(props: Optional<ServicoProps, 'criadoEm'>, id?: UniqueEntityID): Servico {
 
@@ -40,6 +47,16 @@ export class Servico extends Entity<ServicoProps> {
 
   }
 
+  public atualizar(props: AtualizarServcoProps): void {
+    this.props.nome = props.nome ?? this.props.nome
+    this.props.categoria = props.categoria ?? this.props.categoria
+    this.props.descricao = props.descricao ?? this.props.descricao
+    this.props.valorReferencia = props.valorReferencia ?? this.props.valorReferencia
+
+    Servico.validar(this.props)
+    this.touch()
+  }
+
   private touch() {
     this.props.atualizadoEm = new Date()
   }
@@ -48,11 +65,10 @@ export class Servico extends Entity<ServicoProps> {
     if (this.props.desativadoEm) {
       throw new Error('Este produto já está desativado.')
     }
-    this.props.desativadoEm = new Date() // Grava o timestamp atual
+    this.props.desativadoEm = new Date()
     this.touch()
   }
 
-  // Comportamento de reativação (se necessário no futuro)
   public reativar(): void {
     this.props.desativadoEm = null
     this.touch()

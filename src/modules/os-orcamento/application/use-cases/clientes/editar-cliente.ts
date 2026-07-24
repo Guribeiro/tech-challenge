@@ -50,7 +50,7 @@ export class EditarClienteUseCase {
       nome,
       email,
       telefone,
-      tipo: input.tipo ?? cliente.getTipo()
+      tipo: input.tipo
     })
 
     await this.clienteRepository.save(cliente)
