@@ -1,4 +1,4 @@
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js"
+import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js"
 import { ConfirmarPagamentoUseCase } from "../../application/use-cases/confirmar-pagamento.js"
 import { Fatura } from "../../domain/entities/fatura.js"
 import { InMemoryFaturasRepository } from "../repositories/in-memory-fatura-repository.js"

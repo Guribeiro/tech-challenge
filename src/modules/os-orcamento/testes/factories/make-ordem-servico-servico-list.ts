@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import { ServicoProps, CategoriaServico } from "@/modules/os-orcamento/domain/entities/servico.js";
 import { makeServico } from "./make-servico.js";
-import { OrdemServicoServico } from "../../domain/entities/value-objects/ordem-servico-servico.js";
+import { OrdemServicoServico } from "../../domain/entities/ordem-servico-servico.js";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
 import { OrdemServicoServicoList } from "../../domain/entities/value-objects/ordem-servico-servico-list.js";
 

@@ -1,6 +1,6 @@
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
-import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente.js"
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js"
+import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/ordem-servico-componente.js"
+import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
 import { OrcamentoRepository } from "@/modules/os-orcamento/domain/repositories/orcamento-repository.js"
 
 interface RenegociarOrcamentoInput {

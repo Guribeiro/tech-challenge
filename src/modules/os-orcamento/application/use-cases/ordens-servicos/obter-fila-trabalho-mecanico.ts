@@ -1,5 +1,5 @@
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js'
+import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 
 interface ListarFilaTrabalhoMecanicoInput {
   mecanicoId?: string

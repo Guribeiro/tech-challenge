@@ -3,7 +3,7 @@ import { EventHandler } from '@/core/events/event-handler.js'
 import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js'
+import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 
 export class OnFaturaEmitida implements EventHandler {
   constructor(

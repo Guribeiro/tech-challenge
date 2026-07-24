@@ -5,8 +5,8 @@ import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { OrdemServicoServicoList } from './value-objects/ordem-servico-servico-list.js'
 import { OrdemServicoComponenteList } from './value-objects/ordem-servico-componente-list.js'
-import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
-import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
+import { OrdemServicoServico } from './ordem-servico-servico.js'
+import { OrdemServicoComponente } from './ordem-servico-componente.js'
 import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event.js'
 import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
 import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
@@ -95,6 +95,9 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public getDescricao(): string {
     return this.props.descricao
   }
+  public getEGarantia(): boolean {
+    return this.props.eGarantia
+  }
 
   public getServicos(): OrdemServicoServicoList {
     return this.props.servicos
@@ -114,6 +117,13 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
   public getMecanicoId(): UniqueEntityID | undefined {
     return this.props.mecanicoId
+  }
+
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
+  }
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
   }
 
   public iniciarDiagnostico(mecanicoId: UniqueEntityID): void {

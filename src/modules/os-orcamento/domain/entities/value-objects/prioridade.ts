@@ -8,6 +8,11 @@ export type DadosParaPriorizacao = {
   categoriasDosServicos: string[]; // Ex: ['FREIO', 'REVISAO', 'FUNILARIA']
 };
 
+export type RestaurarPrioridadeProps = {
+  tipo: TipoPrioridade
+  peso: number
+}
+
 export class Prioridade {
   private readonly tipo: TipoPrioridade;
   private readonly peso: number;
@@ -57,6 +62,10 @@ export class Prioridade {
     if (pontos >= 25) return new Prioridade('MEDIA', 2);
 
     return new Prioridade('BAIXA', 1);
+  }
+
+  public static restaurar(tipo: TipoPrioridade, peso: number): Prioridade {
+    return new Prioridade(tipo, peso);
   }
 
   public getTipo(): TipoPrioridade {

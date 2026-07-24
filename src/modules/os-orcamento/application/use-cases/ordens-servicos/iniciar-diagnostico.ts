@@ -1,6 +1,6 @@
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
 import { MecanicoRepository } from "@/modules/os-orcamento/domain/repositories/mecanicos-repository.js"
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
+import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js"
 
 export type IniciarDiagnosticoInput = {

@@ -1,4 +1,4 @@
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
+import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 
 interface EncerrarOrdemServicoFaturaPagaInput {
   ordemServicoId: string

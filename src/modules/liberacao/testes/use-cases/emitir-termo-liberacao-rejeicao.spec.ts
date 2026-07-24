@@ -1,5 +1,5 @@
 import { EmitirTermoRejeicaoUseCase } from "../../application/use-cases/emitir-termo-liberacao-rejeicao.js";
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js";
+import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js";
 import { InMemoryVeiculoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-veiculo-repository.js";
 import { InMemoryTermoLiberacaoRepository } from "../repositories/in-memory-termo-liberacao-repository.js";
 import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veiculo.js"

@@ -4,7 +4,7 @@ import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/te
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js' // ◄ Importa o segundo evento
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js'
+import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 
 type TermoLiberacaoEvents = TermoLiberacaoEmitidoEvent | TermoLiberacaoPorRejeicaoEmitidoEvent
 

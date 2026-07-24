@@ -4,12 +4,12 @@ import { AprovarOrcamentoUseCase } from '@/modules/os-orcamento/application/use-
 // Repositórios em Memória
 import { InMemoryProdutoRepository } from '@/modules/estoque/testes/repositories/in-memory-produto-repository.js'
 import { InMemoryOrcamentoRepository } from '../../repositories/in-memory-orcamento-repository.js'
-import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordens-servico-repository.js'
+import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordem-servico-repository.js'
 
 // Entidades e Factories (substitua pelos seus caminhos/factories de teste)
 import { Orcamento } from '@/modules/os-orcamento/domain/entities/orcamento.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
-import { OrdemServicoComponente } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente.js'
+import { OrdemServicoComponente } from '@/modules/os-orcamento/domain/entities/ordem-servico-componente.js'
 
 // Caso de Uso Auxiliar e Subscribers
 import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js'
@@ -19,7 +19,7 @@ import { OnExecucaoAutorizada } from '@/modules/os-orcamento/application/subscri
 import { OnProdutosReservados } from '@/modules/os-orcamento/application/subscribers/on-produtos-reservados.js'
 import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
 import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
-import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'
+import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/ordem-servico-servico.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { makeCliente } from '../../factories/make-cliente.js'
 import { makeServico } from '../../factories/make-servico.js'

@@ -1,7 +1,7 @@
 import { DeduzirEstoqueUseCase } from "@/modules/estoque/application/use-cases/deduzir-estoque.js";
 import { InMemoryProdutoRepository } from "../../repositories/in-memory-produto-repository.js";
 import { makeProduto } from "../../factories/make-produto.js";
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js";
+import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js";
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
 import { makeCliente } from "@/modules/os-orcamento/testes/factories/make-cliente.js";
 import { InMemoryClienteRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js";
@@ -11,11 +11,11 @@ import { InMemoryMecanicosRepository } from "@/modules/os-orcamento/testes/repos
 import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veiculo.js";
 import { makeServico } from "@/modules/os-orcamento/testes/factories/make-servico.js";
 import { makeMecanico } from "@/modules/os-orcamento/testes/factories/make-mecanico.js";
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js";
+import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js";
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js";
 import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js";
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
-import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente.js";
+import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/ordem-servico-componente.js";
 
 describe('Caso de Uso: Deduzir Estoque', () => {
   let sut: DeduzirEstoqueUseCase

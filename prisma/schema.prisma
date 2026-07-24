@@ -40,6 +40,26 @@ enum ServicoCategoria {
   MECANICA_GERAL
 }
 
+enum TipoPrioridade {
+  URGENTE
+  ALTA
+  MEDIA
+  BAIXA
+}
+
+enum StatusOS {
+  RECEBIDA
+  EM_DIAGNOSTICO
+  AGUARDANDO_APROVACAO
+  EM_EXECUCAO
+  AUTORIZADA
+  PRONTA_PARA_INICIAR
+  FINALIZADA
+  ENTREGUE
+  ENCERRADA_REJEICAO
+  ENCERRADA
+}
+
 model Usuario {
   id           String    @id
   email        String    @unique
@@ -57,29 +77,31 @@ enum ClienteTipo {
 }
 
 model Cliente {
-  id           String      @id
-  nome         String
-  email        String      @unique
-  cpf          String      @unique
-  telefone     String
-  tipo         ClienteTipo
-  criadoEm     DateTime    @default(now()) @map("criado_em")
-  atualizadoEm DateTime?   @updatedAt @map("atualizado_em")
-  deletadoEm   DateTime?   @map("deletado_em")
-  veiculos     Veiculo[]
+  id            String         @id
+  nome          String
+  email         String         @unique
+  cpf           String         @unique
+  telefone      String
+  tipo          ClienteTipo
+  criadoEm      DateTime       @default(now()) @map("criado_em")
+  atualizadoEm  DateTime?      @updatedAt @map("atualizado_em")
+  deletadoEm    DateTime?      @map("deletado_em")
+  veiculos      Veiculo[]
+  ordemServicos OrdemServico[]
 
   @@map("clientes")
 }
 
 model Mecanico {
-  id            String    @id
+  id            String         @id
   nome          String
-  email         String    @unique
-  cpf           String    @unique
+  email         String         @unique
+  cpf           String         @unique
   especialidade String?
-  ativo         Boolean   @default(true)
-  criadoEm      DateTime  @default(now()) @map("criado_em")
-  atualizadoEm  DateTime? @updatedAt @map("atualizado_em")
+  ativo         Boolean        @default(true)
+  criadoEm      DateTime       @default(now()) @map("criado_em")
+  atualizadoEm  DateTime?      @updatedAt @map("atualizado_em")
+  ordemServicos OrdemServico[]
 
   @@map("mecanicos")
 }
@@ -98,40 +120,116 @@ model Veiculo {
   atualizadoEm  DateTime? @updatedAt @map("atualizado_em")
   deletadoEm    DateTime? @map("deletado_em")
 
-  cliente   Cliente @relation(fields: [clienteId], references: [id])
-  clienteId String  @map("cliente_id")
+  cliente       Cliente        @relation(fields: [clienteId], references: [id])
+  clienteId     String         @map("cliente_id")
+  ordemServicos OrdemServico[]
 
   @@map("veiculos")
 }
 
 model Produto {
-  id                  String         @id
-  nome                String
-  tipo                TipoProduto
-  marca               String?
-  descricao           String?
-  codigoSKU           String?        @unique @map("codigo_sku")
-  codigoFabricante    String?        @map("codigo_fabricante")
-  precoUnitario       Int            @map("preco_unitario")
-  precoCusto          Int            @map("preco_custo")
-  quantidadeEstoque   Int            @map("quantidade_estoque")
-  quantidadeReservada Int?           @map("quantidade_reservada")
-  estoqueMinimo       Int?           @map("estoque_minimo")
-  estoqueMaximo       Int?           @map("estoque_maximo")
-  unidadeMedida       UnidadeMedida? @map("unidade_medida")
-  localizacao         String?
-  criadoEm            DateTime       @default(now()) @map("criado_em")
-  atualizadoEm        DateTime?      @updatedAt @map("atualizado_em")
-  desativadoEm        DateTime?      @map("desativado_em")
+  id                      String                   @id
+  nome                    String
+  tipo                    TipoProduto
+  marca                   String?
+  descricao               String?
+  codigoSKU               String?                  @unique @map("codigo_sku")
+  codigoFabricante        String?                  @map("codigo_fabricante")
+  precoUnitario           Int                      @map("preco_unitario")
+  precoCusto              Int                      @map("preco_custo")
+  quantidadeEstoque       Int                      @map("quantidade_estoque")
+  quantidadeReservada     Int?                     @map("quantidade_reservada")
+  estoqueMinimo           Int?                     @map("estoque_minimo")
+  estoqueMaximo           Int?                     @map("estoque_maximo")
+  unidadeMedida           UnidadeMedida?           @map("unidade_medida")
+  localizacao             String?
+  criadoEm                DateTime                 @default(now()) @map("criado_em")
+  atualizadoEm            DateTime?                @updatedAt @map("atualizado_em")
+  desativadoEm            DateTime?                @map("desativado_em")
+  ordemServicoComponentes OrdemServicoComponente[]
+
+  @@map("produtos")
 }
 
 model Servico {
-  id              String           @id
-  categoria       ServicoCategoria
-  nome            String
-  descricao       String?
-  valorReferencia Int
-  criadoEm        DateTime         @default(now()) @map("criado_em")
-  atualizadoEm    DateTime?        @updatedAt @map("atualizado_em")
-  desativadoEm    DateTime?        @map("desativado_em")
+  id                   String                @id
+  categoria            ServicoCategoria
+  nome                 String
+  descricao            String?
+  valorReferencia      Int
+  criadoEm             DateTime              @default(now()) @map("criado_em")
+  atualizadoEm         DateTime?             @updatedAt @map("atualizado_em")
+  desativadoEm         DateTime?             @map("desativado_em")
+  ordemServicoServicos OrdemServicoServico[]
+
+  @@map("servicos")
+}
+
+model OrdemServico {
+  id        String  @id
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+  clienteId String  @map("cliente_id")
+
+  veiculo   Veiculo @relation(fields: [veiculoId], references: [id])
+  veiculoId String  @map("veiculo_id")
+
+  mecanico   Mecanico? @relation(fields: [mecanicoId], references: [id])
+  mecanicoId String?   @map("mecanico_id")
+
+  descricao String
+
+  prioridade     TipoPrioridade @default(BAIXA)
+  prioridadePeso Int            @default(1) @map("prioridade_peso")
+
+  eGarantia Boolean @map("e_garantia")
+
+  status       StatusOS
+  criadoEm     DateTime                 @default(now()) @map("criado_em")
+  atualizadoEm DateTime?                @updatedAt @map("atualizado_em")
+  servicos     OrdemServicoServico[]
+  componentes  OrdemServicoComponente[]
+
+  @@map("ordem_servicos")
+}
+
+model OrdemServicoServico {
+  id String @id
+
+  servicoId String  @map("servico_id")
+  servico   Servico @relation(fields: [servicoId], references: [id])
+
+  ordemServicoId String       @map("ordem_servico_id")
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id])
+
+  nome          String
+  descricao     String?
+  categoria     ServicoCategoria
+  precoUnitario Int              @map("preco_unitario")
+  criadoEm      DateTime         @default(now()) @map("criado_em")
+
+  @@map("ordem_servico_servicos")
+}
+
+model OrdemServicoComponente {
+  id String @id
+
+  produtoId String  @map("produto_id")
+  produto   Produto @relation(fields: [produtoId], references: [id])
+
+  ordemServicoId String       @map("ordem_servico_id")
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id])
+
+  nome             String
+  tipo             TipoProduto
+  marca            String?
+  codigoSKU        String?        @unique @map("codigo_sku")
+  codigoFabricante String?        @map("codigo_fabricante")
+  descricao        String?
+  precoCusto       Int            @map("preco_custo")
+  precoUnitario    Int            @map("preco_unitario")
+  unidadeMedida    UnidadeMedida? @map("unidade_medida")
+  quantidade       Int
+  criadoEm         DateTime       @default(now()) @map("criado_em")
+
+  @@map("ordem_servico_componentes")
 }

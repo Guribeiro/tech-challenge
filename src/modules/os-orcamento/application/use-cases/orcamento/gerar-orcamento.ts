@@ -1,8 +1,8 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
 import { OrcamentoRepository } from "@/modules/os-orcamento/domain/repositories/orcamento-repository.js"
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js"
-import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente.js"
+import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
+import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/ordem-servico-componente.js"
 
 interface GerarOrcamentoInput {
   ordemServicoId: string

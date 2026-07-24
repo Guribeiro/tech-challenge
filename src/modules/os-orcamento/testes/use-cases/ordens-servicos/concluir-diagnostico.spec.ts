@@ -1,5 +1,5 @@
 import { ConcluirDiagnosticoUseCase } from "@/modules/os-orcamento/application/use-cases/ordens-servicos/concluir-diagnostico.js";
-import { InMemoryOrdemServicoRepository } from "../../repositories/in-memory-ordens-servico-repository.js";
+import { InMemoryOrdemServicoRepository } from "../../repositories/in-memory-ordem-servico-repository.js";
 import { InMemoryOrcamentoRepository } from "../../repositories/in-memory-orcamento-repository.js";
 import { makeCliente } from "../../factories/make-cliente.js";
 import { makeVeiculo } from "../../factories/make-veiculo.js";
@@ -10,7 +10,7 @@ import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servi
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
 import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js";
 import { makeServico } from "../../factories/make-servico.js";
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js";
+import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js";
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js";
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
 import { makeMecanico } from "../../factories/make-mecanico.js";

@@ -1,4 +1,4 @@
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
+import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { TermoLiberacao } from "../../domain/entities/termo-liberacao.js"
 import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js"
 import { TermoLiberacaoRepository } from "../../domain/repositories/termoRepository.js"

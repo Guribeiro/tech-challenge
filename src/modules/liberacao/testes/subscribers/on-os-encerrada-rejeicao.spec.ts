@@ -7,10 +7,10 @@ import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/
 import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js"
 import { OSEncerradaPorRejeicaoEvent } from "@/modules/os-orcamento/domain/events/os-encerrada-por-rejeicao-event.js"
 import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js"
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
+import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veiculo.js"
 import { InMemoryClienteRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js"
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js"
+import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js"
 import { OnOrdemServicoEncerradaPorRejeicao } from "../../application/subscribers/on-os-encerrada-por-rejeicao.js"
 import { EmitirTermoRejeicaoUseCase } from "../../application/use-cases/emitir-termo-liberacao-rejeicao.js"
 

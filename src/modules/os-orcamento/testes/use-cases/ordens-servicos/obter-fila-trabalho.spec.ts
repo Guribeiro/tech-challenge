@@ -1,5 +1,5 @@
 import { ObterFilaTrabalhoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/obter-fila-trabalho.js'
-import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordens-servico-repository.js'
+import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordem-servico-repository.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { makeOrdemServicoServicoList } from '../../factories/make-ordem-servico-servico-list.js'

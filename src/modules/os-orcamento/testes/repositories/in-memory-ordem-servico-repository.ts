@@ -1,21 +1,24 @@
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js"
+import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { OrdemServico } from "../../domain/entities/ordem-servico.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
 
 export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
-  private items: OrdemServico[] = []
+  public items: OrdemServico[] = []
 
   async create(ordemServico: OrdemServico): Promise<void> {
     this.items.push(ordemServico)
+
+    DomainEvents.dispatchEventsForAggregate(ordemServico)
+    ordemServico.clearEvents()
   }
 
   async save(ordemServico: OrdemServico): Promise<void> {
-    const index = this.items.findIndex(os => os.getId() === ordemServico.getId())
+    const index = this.items.findIndex(os => os.getId().equals(ordemServico.getId()))
     if (index !== -1) {
       this.items[index] = ordemServico
     }
-    ordemServico.domainEvents.forEach(event => DomainEvents.dispatch(event))
 
+    DomainEvents.dispatchEventsForAggregate(ordemServico)
     ordemServico.clearEvents()
   }
 

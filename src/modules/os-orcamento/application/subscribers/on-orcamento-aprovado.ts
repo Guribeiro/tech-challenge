@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoAprovadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-aprovado-event.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js'
+import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 
 export class OnClienteAprovouOrcamento implements EventHandler {
   constructor(

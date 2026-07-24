@@ -9,6 +9,8 @@ describe('Caso de Uso: Listar Produtos', () => {
   beforeEach(() => {
     produtoRepository = new InMemoryProdutoRepository()
     sut = new ListarProdutosUseCase(produtoRepository)
+
+    vi.clearAllMocks()
   })
 
   it('deve listar apenas produtos ativos por padrão com paginação padrão', async () => {
@@ -97,7 +99,7 @@ describe('Caso de Uso: Listar Produtos', () => {
     await produtoRepository.create(produto3)
 
     const output = await sut.execute({
-      nome: 'Fluido', // em minúsculas para testar case-insensitivity
+      nome: 'fluido', // em minúsculas para testar case-insensitivity
     })
 
     expect(output.produtos).toHaveLength(2)

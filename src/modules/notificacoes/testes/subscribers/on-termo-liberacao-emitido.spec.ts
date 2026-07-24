@@ -3,9 +3,9 @@ import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/te
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js' // ◄ Importa o segundo evento
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js'
+import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 import { InMemoryClienteRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js'
-import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js'
+import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js'
 import { OnTermoLiberacaoEmitido } from '../../application/subscribers/on-termo-liberacao-emitido.js'
 import { TermoLiberacao } from '@/modules/liberacao/domain/entities/termo-liberacao.js'
 import { makeCliente } from '@/modules/os-orcamento/testes/factories/make-cliente.js'
