@@ -15,11 +15,11 @@ describe('Caso de Uso: Listar Produtos', () => {
     // Cria 3 produtos ativos
     const produtosAtivos = Array.from({ length: 3 }).map(() => makeProduto())
 
-    // Cria 1 cliente deletado (soft delete)
-    const clienteDeletado = makeProduto({ desativadoEm: new Date() })
+    // Cria 1 produto deletado (soft delete)
+    const produtoDeletado = makeProduto({ desativadoEm: new Date() })
 
-    for (const cliente of [...produtosAtivos, clienteDeletado]) {
-      await produtoRepository.create(cliente)
+    for (const produto of [...produtosAtivos, produtoDeletado]) {
+      await produtoRepository.create(produto)
     }
 
     const output = await sut.execute({})
@@ -52,13 +52,13 @@ describe('Caso de Uso: Listar Produtos', () => {
   })
 
   it('deve filtrar produtos deletados (soft delete)', async () => {
-    const clienteAtivo = makeProduto()
-    const clienteDeletado1 = makeProduto({ desativadoEm: new Date() })
-    const clienteDeletado2 = makeProduto({ desativadoEm: new Date() })
+    const produtoAtivo = makeProduto()
+    const produtoDeletado1 = makeProduto({ desativadoEm: new Date() })
+    const produtoDeletado2 = makeProduto({ desativadoEm: new Date() })
 
-    await produtoRepository.create(clienteAtivo)
-    await produtoRepository.create(clienteDeletado1)
-    await produtoRepository.create(clienteDeletado2)
+    await produtoRepository.create(produtoAtivo)
+    await produtoRepository.create(produtoDeletado1)
+    await produtoRepository.create(produtoDeletado2)
 
     const output = await sut.execute({
       status: 'deletados',
@@ -66,18 +66,18 @@ describe('Caso de Uso: Listar Produtos', () => {
 
     expect(output.produtos).toHaveLength(2)
     expect(output.total).toBe(2)
-    expect(output.produtos.map(cliente => cliente.getId())).toEqual([
-      clienteDeletado1.getId(),
-      clienteDeletado2.getId()
+    expect(output.produtos.map(produto => produto.getId())).toEqual([
+      produtoDeletado1.getId(),
+      produtoDeletado2.getId()
     ])
   })
 
   it('deve listar todos os produtos (ativos e deletados) quando status for "todos"', async () => {
-    const clienteAtivo = makeProduto()
-    const clienteDeletado = makeProduto({ desativadoEm: new Date() })
+    const produtoAtivo = makeProduto()
+    const produtoDeletado = makeProduto({ desativadoEm: new Date() })
 
-    await produtoRepository.create(clienteAtivo)
-    await produtoRepository.create(clienteDeletado)
+    await produtoRepository.create(produtoAtivo)
+    await produtoRepository.create(produtoDeletado)
 
     const output = await sut.execute({
       status: 'todos',
@@ -88,24 +88,24 @@ describe('Caso de Uso: Listar Produtos', () => {
   })
 
   it('deve buscar produtos por trecho do nome (case insensitive)', async () => {
-    const cliente1 = makeProduto({ nome: 'Carlos Eduardo' })
-    const cliente2 = makeProduto({ nome: 'Ana Maria' })
-    const cliente3 = makeProduto({ nome: 'Eduardo Silva' })
+    const produto1 = makeProduto({ nome: 'Fluido de Freio', tipo: 'INSUMO' })
+    const produto2 = makeProduto({ nome: 'Ana Maria' })
+    const produto3 = makeProduto({ nome: 'Outro Fluido de Freio', tipo: 'INSUMO' })
 
-    await produtoRepository.create(cliente1)
-    await produtoRepository.create(cliente2)
-    await produtoRepository.create(cliente3)
+    await produtoRepository.create(produto1)
+    await produtoRepository.create(produto2)
+    await produtoRepository.create(produto3)
 
     const output = await sut.execute({
-      nome: 'eduardo', // em minúsculas para testar case-insensitivity
+      nome: 'Fluido', // em minúsculas para testar case-insensitivity
     })
 
     expect(output.produtos).toHaveLength(2)
     expect(output.total).toBe(2)
 
-    expect(output.produtos.map(cliente => cliente.getNome())).toEqual([
-      cliente1.getNome(),
-      cliente3.getNome(),
+    expect(output.produtos.map(produto => produto.getNome())).toEqual([
+      produto1.getNome(),
+      produto3.getNome(),
     ])
   })
 })

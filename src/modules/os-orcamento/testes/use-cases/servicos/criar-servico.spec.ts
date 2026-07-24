@@ -13,7 +13,7 @@ describe('Caso de Uso: Criar Servico', () => {
   })
 
   it('deve criar um servico', async () => {
-    const { servico } = await sut.executar({
+    const { servico } = await sut.execute({
       nome: 'Troca de Oleo',
       categoria: 'MANUTENCAO_PREVENTIVA',
       descricao: 'Troca de oleo do motor',
