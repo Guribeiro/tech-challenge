@@ -7,10 +7,10 @@ import { Injectable } from '@nestjs/common'
 
 export type EditarClienteInput = {
   id: string
-  nome: string
-  email: string
-  telefone: string
-  tipo: 'PF' | 'PJ'
+  nome?: string
+  email?: string
+  telefone?: string
+  tipo?: 'PF' | 'PJ'
 }
 
 export type EditarClienteOutput = {
@@ -27,23 +27,29 @@ export class EditarClienteUseCase {
       throw new Error('Cliente não encontrado')
     }
 
-    let novoEmail = cliente.getEmail()
-
+    let email = cliente.getEmail()
     if (input.email && input.email !== cliente.getEmail().getValor()) {
       const clienteComMesmoEmail = await this.clienteRepository.findByEmail(input.email)
-
       if (clienteComMesmoEmail && !clienteComMesmoEmail.getId().equals(cliente.getId())) {
         throw new Error('Email já em uso')
       }
+      email = Email.criar(input.email)
+    }
 
-      novoEmail = Email.criar(input.email)
+    let nome = cliente.getNome()
+    if (input.nome) {
+      nome = NomeCompleto.criar(input.nome)
+    }
+
+    let telefone = cliente.getTelefone()
+    if (input.telefone) {
+      telefone = Telefone.criar(input.telefone)
     }
 
     cliente.atualizar({
-      nome: NomeCompleto.criar(input.nome) ?? cliente.getNome().getValor(),
-      cpf: cliente.getCpf(),
-      email: novoEmail,
-      telefone: Telefone.criar(input.telefone) ?? cliente.getTelefone(),
+      nome,
+      email,
+      telefone,
       tipo: input.tipo ?? cliente.getTipo()
     })
 

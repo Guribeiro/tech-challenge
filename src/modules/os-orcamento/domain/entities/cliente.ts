@@ -17,13 +17,13 @@ export interface ClienteProps {
   deletadoEm?: Date | null
 }
 
-export interface AtualizarCliente {
+export type AtualizarClienteProps = Partial<{
   nome: NomeCompleto
   email: Email
   telefone: Telefone
   cpf: Cpf
   tipo: 'PF' | 'PJ'
-}
+}>
 
 export class Cliente extends Entity<ClienteProps> {
   public static criar(props: Optional<ClienteProps, 'criadoEm'>, id?: UniqueEntityID): Cliente {
@@ -37,14 +37,14 @@ export class Cliente extends Entity<ClienteProps> {
     }, id)
   }
 
-  public atualizar(props: AtualizarCliente) {
-    Cliente.validar(props)
+  public atualizar(props: AtualizarClienteProps) {
+    this.props.nome = props.nome ?? this.props.nome
+    this.props.cpf = props.cpf ?? this.props.cpf
+    this.props.email = props.email ?? this.props.email
+    this.props.telefone = props.telefone ?? this.props.telefone
+    this.props.tipo = props.tipo ?? this.props.tipo
 
-    this.props.nome = props.nome
-    this.props.cpf = props.cpf
-    this.props.email = props.email
-    this.props.telefone = props.telefone
-    this.props.tipo = props.tipo
+    Cliente.validar(this.props)
 
     this.touch()
   }

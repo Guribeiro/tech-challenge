@@ -18,16 +18,17 @@ export type VeiculoProps = {
   deletadoEm?: Date | null
 }
 
-export type AtualizarVeiculoProps = {
+export type AtualizarVeiculoProps = Partial<{
   placa: Placa
   marca: string
   modelo: string
   ano: number
-  cor?: string
-  quilometragem?: number
-  combustivel?: string
-  observacoes?: string
-}
+  cor: string
+  quilometragem: number
+  combustivel: string
+  observacoes: string
+}>
+
 
 export class Veiculo extends Entity<VeiculoProps> {
   public static criar(
@@ -48,19 +49,18 @@ export class Veiculo extends Entity<VeiculoProps> {
   }
 
   public atualizar(props: AtualizarVeiculoProps): void {
-    // 1. Garante que os novos dados também atendem às regras de negócio
-    Veiculo.validar(props)
+    this.props.placa = props.placa ?? this.props.placa
+    this.props.marca = props.marca ?? this.props.marca
+    this.props.modelo = props.modelo ?? this.props.modelo
+    this.props.ano = props.ano ?? this.props.ano
+    this.props.cor = props.cor ?? this.props.cor
+    this.props.quilometragem = props.quilometragem ?? this.props.quilometragem
+    this.props.combustivel = props.combustivel ?? this.props.combustivel
+    this.props.observacoes = props.observacoes ?? this.props.observacoes
 
-    // 2. Atualiza as propriedades e registra o momento da alteração
-    this.props.placa = props.placa
-    this.props.marca = props.marca
-    this.props.modelo = props.modelo
-    this.props.ano = props.ano
-    this.props.cor = props.cor
-    this.props.quilometragem = props.quilometragem
-    this.props.combustivel = props.combustivel
-    this.props.observacoes = props.observacoes
-    this.props.atualizadoEm = new Date()
+    Veiculo.validar(this.props)
+
+    this.touch()
   }
 
   private static validar(
@@ -91,6 +91,10 @@ export class Veiculo extends Entity<VeiculoProps> {
     }
 
     this.props.deletadoEm = new Date()
+    this.props.atualizadoEm = new Date()
+  }
+
+  public touch() {
     this.props.atualizadoEm = new Date()
   }
 

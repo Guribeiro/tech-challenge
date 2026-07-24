@@ -46,13 +46,13 @@ export class EditarVeiculoUseCase {
 
     veiculo.atualizar({
       placa: novaPlaca,
-      marca: input.marca ?? veiculo.getMarca(),
-      modelo: input.modelo ?? veiculo.getModelo(),
-      ano: input.ano ?? veiculo.getAno(),
-      cor: input.cor ?? veiculo.getCor(),
-      quilometragem: input.quilometragem ?? veiculo.getQuilometragem(),
-      combustivel: input.combustivel ?? veiculo.getCombustivel(),
-      observacoes: input.observacoes ?? veiculo.getObservacoes(),
+      marca: input.marca,
+      modelo: input.modelo,
+      ano: input.ano,
+      cor: input.cor,
+      quilometragem: input.quilometragem,
+      combustivel: input.combustivel,
+      observacoes: input.observacoes,
     })
 
     await this.veiculosRepository.save(veiculo)
