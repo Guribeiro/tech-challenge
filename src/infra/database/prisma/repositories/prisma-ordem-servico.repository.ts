@@ -1,11 +1,12 @@
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
+import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service.js";
 import { PrismaOrdemServicoMapper } from "../mappers/prisma-ordem-servico-mapper.js";
 import { PrismaOrdemServicoServicoMapper } from "../mappers/prisma-os-servico-mapper.js";
 import { PrismaOrdemServicoComponenteMapper } from "../mappers/prisma-os-componente-mapper.js";
 import { DomainEvents } from "@/core/events/domain-events.js";
+import { Prisma } from "@/generated/prisma/client.js";
 
 @Injectable()
 export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
@@ -35,13 +36,20 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
 
   public async save(ordem: OrdemServico): Promise<void> {
     const { componentes: _, servicos: __, ...data } = PrismaOrdemServicoMapper.toPrisma(ordem)
+    const ordemServicoId = ordem.getId().toValue()
 
     const servicosList = ordem.getServicos()
-    const novosServicos = servicosList.getNewItems().map(PrismaOrdemServicoServicoMapper.toPrisma)
+    const novosServicos = servicosList.getNewItems().map((item) => ({
+      ...PrismaOrdemServicoServicoMapper.toPrisma(item),
+      ordemServicoId,
+    }))
     const servicosRemovidos = servicosList.getRemovedItems()
 
     const componentesList = ordem.getComponentes()
-    const novosComponentes = componentesList.getNewItems().map(PrismaOrdemServicoComponenteMapper.toPrisma)
+    const novosComponentes = componentesList.getNewItems().map((item) => ({
+      ...PrismaOrdemServicoComponenteMapper.toPrisma(item),
+      ordemServicoId,
+    }))
     const componentesRemovidos = componentesList.getRemovedItems()
 
     await this.prisma.$transaction([
@@ -96,18 +104,39 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
     ordem.clearEvents()
   }
 
-  public async listServiceQueue(): Promise<OrdemServico[]> {
-    const raw = await this.prisma.ordemServico.findMany({
-      include: {
-        componentes: true,
-        servicos: true,
-      },
-      orderBy: {
-        prioridadePeso: "desc",
-      },
-    });
+  public async listServiceQueue({
+    pagina,
+    limite,
+    status = 'RECEBIDA'
+  }: BuscarFilaTrabalhoParams): Promise<BuscarFilaTrabalhoResultado> {
+    const where: Prisma.OrdemServicoWhereInput = {}
 
-    return raw.map(PrismaOrdemServicoMapper.toDomain);
+    if (status) {
+      where.status = status
+    }
+
+    const [raw, total] = await Promise.all([
+      this.prisma.ordemServico.findMany({
+        where,
+        take: limite,
+        skip: (pagina - 1) * limite,
+        include: {
+          componentes: true,
+          servicos: true,
+        },
+        orderBy: {
+          prioridadePeso: "desc",
+        },
+      }),
+      this.prisma.ordemServico.count({ where })
+    ]);
+
+    return {
+      ordensServicos: raw.map(PrismaOrdemServicoMapper.toDomain),
+      total,
+      pagina,
+      limite,
+    }
   }
 
   public async findManyReadyToInitialize(

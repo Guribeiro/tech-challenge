@@ -22,6 +22,7 @@ import { ReativarServicoController } from './controllers/servicos/reativar-servi
 import { EditarServicoController } from './controllers/servicos/editar-servico.controller.js'
 
 import { CriarOrdemServicoController } from './controllers/ordem-servico/criar-ordem-servico.controller.js'
+import { ObterFilaTrabalhoController } from './controllers/ordem-servico/obter-fila-trabalho.controller.js'
 
 
 // Use Cases
@@ -44,6 +45,7 @@ import { ReativarServicoUseCase } from '@/modules/os-orcamento/application/use-c
 import { EditarServicoUseCase } from './application/use-cases/servicos/editar-servico.js'
 
 import { CriarOrdemServicoUseCase } from './application/use-cases/ordens-servicos/criar-ordem-servico.js'
+import { ObterFilaTrabalhoUseCase } from './application/use-cases/ordens-servicos/obter-fila-trabalho.js'
 
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
@@ -77,7 +79,8 @@ import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositori
     DesativarServicoController,
     ReativarServicoController,
     EditarServicoController,
-    CriarOrdemServicoController
+    CriarOrdemServicoController,
+    ObterFilaTrabalhoController,
   ],
   providers: [
     // Database Service
@@ -99,6 +102,7 @@ import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositori
     ReativarServicoUseCase,
     EditarServicoUseCase,
     CriarOrdemServicoUseCase,
+    ObterFilaTrabalhoUseCase,
 
     // Inversão de Dependência dos Repositórios (Domínio -> Infra)
     {
