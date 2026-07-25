@@ -71,6 +71,7 @@ export class PrismaProdutoRepository implements ProdutoRepository {
   }
 
   public async findMany({
+    tipo,
     pagina,
     limite,
     status = 'ativos', // Padrão: trazer apenas os não deletados
@@ -82,6 +83,10 @@ export class PrismaProdutoRepository implements ProdutoRepository {
       where.desativadoEm = null
     } else if (status === 'deletados') {
       where.desativadoEm = { not: null }
+    }
+
+    if (tipo) {
+      where.tipo = tipo
     }
 
     if (nome) {

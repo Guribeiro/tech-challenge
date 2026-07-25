@@ -13,10 +13,10 @@ export class PrismaMecanicoMapper {
         email: Email.criar(raw.email),
         nome: NomeCompleto.criar(raw.nome),
         cpf: Cpf.criar(raw.cpf),
-        ativo: raw.ativo,
         especialidade: raw.especialidade ?? undefined,
         criadoEm: raw.criadoEm,
         atualizadoEm: raw.atualizadoEm ?? undefined,
+        desativadoEm: raw.desativadoEm ?? undefined
       },
       new UniqueEntityID(raw.id)
     )
@@ -28,11 +28,11 @@ export class PrismaMecanicoMapper {
       id: mecanico.getId().toValue(),
       email: mecanico.getEmail().getValor(),
       nome: mecanico.getNome().getValor(),
-      ativo: mecanico.isAtivo(),
       cpf: mecanico.getCpf().getValor(),
       especialidade: mecanico.getEspecialidade() ?? null,
       criadoEm: mecanico.getCriadoEm(),
       atualizadoEm: mecanico.getAtualizadoEm() ?? null,
+      desativadoEm: mecanico.getDesativadoEm() ?? null
     }
   }
 }

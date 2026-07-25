@@ -98,9 +98,9 @@ model Mecanico {
   email         String         @unique
   cpf           String         @unique
   especialidade String?
-  ativo         Boolean        @default(true)
   criadoEm      DateTime       @default(now()) @map("criado_em")
   atualizadoEm  DateTime?      @updatedAt @map("atualizado_em")
+  desativadoEm  DateTime?      @map("desativado_em")
   ordemServicos OrdemServico[]
 
   @@map("mecanicos")

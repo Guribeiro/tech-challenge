@@ -9,6 +9,7 @@ export class MecanicoPresenter {
       especialidade: cliente.getEspecialidade(),
       criadoEm: cliente.getCriadoEm(),
       atualizadoEm: cliente.getAtualizadoEm(),
+      desativadoEm: cliente.getDesativadoEm(),
     }
   }
 }

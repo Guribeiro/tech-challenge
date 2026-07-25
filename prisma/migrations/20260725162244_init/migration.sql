@@ -1,21 +1,83 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('MECANICO', 'RECEPCAO', 'ADMIN', 'CLIENTE');
 
-  - You are about to drop the `Produto` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Servico` table. If the table is not empty, all the data it contains will be lost.
+-- CreateEnum
+CREATE TYPE "TipoProduto" AS ENUM ('INSUMO', 'PECA');
 
-*/
+-- CreateEnum
+CREATE TYPE "UnidadeMedida" AS ENUM ('UN', 'L', 'KG', 'JOGO', 'METRO');
+
+-- CreateEnum
+CREATE TYPE "ServicoCategoria" AS ENUM ('SEGURANCA', 'MANUTENCAO_PREVENTIVA', 'ESTETICA', 'ELETRICA', 'MECANICA_GERAL');
+
 -- CreateEnum
 CREATE TYPE "TipoPrioridade" AS ENUM ('URGENTE', 'ALTA', 'MEDIA', 'BAIXA');
 
 -- CreateEnum
 CREATE TYPE "StatusOS" AS ENUM ('RECEBIDA', 'EM_DIAGNOSTICO', 'AGUARDANDO_APROVACAO', 'EM_EXECUCAO', 'AUTORIZADA', 'PRONTA_PARA_INICIAR', 'FINALIZADA', 'ENTREGUE', 'ENCERRADA_REJEICAO', 'ENCERRADA');
 
--- DropTable
-DROP TABLE "Produto";
+-- CreateEnum
+CREATE TYPE "ClienteTipo" AS ENUM ('PJ', 'PF');
 
--- DropTable
-DROP TABLE "Servico";
+-- CreateTable
+CREATE TABLE "usuarios" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "senha_hash" TEXT NOT NULL,
+    "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "atualizado_em" TIMESTAMP(3),
+    "role" "Role" NOT NULL,
+
+    CONSTRAINT "usuarios_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "clientes" (
+    "id" TEXT NOT NULL,
+    "nome" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "cpf" TEXT NOT NULL,
+    "telefone" TEXT NOT NULL,
+    "tipo" "ClienteTipo" NOT NULL,
+    "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "atualizado_em" TIMESTAMP(3),
+    "deletado_em" TIMESTAMP(3),
+
+    CONSTRAINT "clientes_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "mecanicos" (
+    "id" TEXT NOT NULL,
+    "nome" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "cpf" TEXT NOT NULL,
+    "especialidade" TEXT,
+    "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "atualizado_em" TIMESTAMP(3),
+    "desativado_em" TIMESTAMP(3),
+
+    CONSTRAINT "mecanicos_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "veiculos" (
+    "id" TEXT NOT NULL,
+    "placa" TEXT NOT NULL,
+    "marca" TEXT NOT NULL,
+    "modelo" TEXT NOT NULL,
+    "ano" INTEGER NOT NULL,
+    "cor" TEXT,
+    "quilometragem" INTEGER,
+    "combustivel" TEXT,
+    "observacoes" TEXT,
+    "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "atualizado_em" TIMESTAMP(3),
+    "deletado_em" TIMESTAMP(3),
+    "cliente_id" TEXT NOT NULL,
+
+    CONSTRAINT "veiculos_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "produtos" (
@@ -92,16 +154,46 @@ CREATE TABLE "ordem_servico_componentes" (
     "produto_id" TEXT NOT NULL,
     "ordem_servico_id" TEXT NOT NULL,
     "nome" TEXT NOT NULL,
+    "tipo" "TipoProduto" NOT NULL,
+    "marca" TEXT,
+    "codigo_sku" TEXT,
+    "codigo_fabricante" TEXT,
     "descricao" TEXT,
-    "categoria" "ServicoCategoria" NOT NULL,
+    "preco_custo" INTEGER NOT NULL,
     "preco_unitario" INTEGER NOT NULL,
+    "unidade_medida" "UnidadeMedida",
+    "quantidade" INTEGER NOT NULL,
     "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "ordem_servico_componentes_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
+CREATE UNIQUE INDEX "usuarios_email_key" ON "usuarios"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "clientes_email_key" ON "clientes"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "clientes_cpf_key" ON "clientes"("cpf");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "mecanicos_email_key" ON "mecanicos"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "mecanicos_cpf_key" ON "mecanicos"("cpf");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "veiculos_placa_key" ON "veiculos"("placa");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "produtos_codigo_sku_key" ON "produtos"("codigo_sku");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "ordem_servico_componentes_codigo_sku_key" ON "ordem_servico_componentes"("codigo_sku");
+
+-- AddForeignKey
+ALTER TABLE "veiculos" ADD CONSTRAINT "veiculos_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "clientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ordem_servicos" ADD CONSTRAINT "ordem_servicos_cliente_id_fkey" FOREIGN KEY ("cliente_id") REFERENCES "clientes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

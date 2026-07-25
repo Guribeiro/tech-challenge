@@ -1,7 +1,8 @@
 import { PaginationParams, PaginationResult, QueryStatus } from '@/core/repositories/pagination-params.js'
-import { Produto } from '@/modules/estoque/domain/entities/produto.js'
+import { Produto, TipoProduto } from '@/modules/estoque/domain/entities/produto.js'
 
 export type BuscarProdutosParams = PaginationParams & {
+  tipo?: TipoProduto
   nome?: string
   status?: QueryStatus
 }
