@@ -3,14 +3,17 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { MecanicoCriadoEvent } from '@/modules/os-orcamento/domain/events/mecanico-criado-event.js'
 import { CriarCredenciaisUseCase } from '../use-cases/criar-credenciais.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnMecanicoCriado implements EventHandler {
-  constructor(private readonly criarCredenciais: CriarCredenciaisUseCase) {
+@Injectable()
+export class OnMecanicoCriado implements EventHandler, OnModuleInit {
+  constructor(private readonly criarCredenciais: CriarCredenciaisUseCase) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
   setupSubscriptions(): void {
-    // Registra a escuta do evento vindo do módulo de OS/Oficina
     DomainEvents.register(
       this.handle.bind(this),
       MecanicoCriadoEvent.name

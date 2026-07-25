@@ -4,10 +4,12 @@ import { Email } from "@/shared/domain/value-objects/email.js"
 import { UsuarioCriadoEvent } from "../events/usuario-criado-event.js"
 import { Optional } from "@/core/types/optional.js"
 
+export type Role = 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
+
 interface UsuarioProps {
   email: Email
   senhaHash: string
-  role: 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
+  role: Role
   criadoEm: Date
   atualizadoEm?: Date
 }

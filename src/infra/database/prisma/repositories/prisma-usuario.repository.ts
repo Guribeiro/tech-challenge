@@ -4,6 +4,7 @@ import { Usuario } from "@/modules/autenticacao/domain/entities/usuario.js";
 import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js";
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 import { PrismaUsuarioMapper } from "../mappers/prisma-usuario-mapper.js";
+import { DomainEvents } from "@/core/events/domain-events.js";
 
 @Injectable()
 export class PrismaUsuarioRepository implements UsuariosRepository {
@@ -12,6 +13,7 @@ export class PrismaUsuarioRepository implements UsuariosRepository {
   public async create(usuario: Usuario): Promise<void> {
     const data = PrismaUsuarioMapper.toPrisma(usuario)
     await this.prisma.usuario.create({ data })
+    DomainEvents.dispatchEventsForAggregate(usuario)
   }
 
   public async findByEmail(email: string): Promise<Usuario | null> {

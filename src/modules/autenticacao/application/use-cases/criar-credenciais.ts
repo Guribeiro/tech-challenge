@@ -3,6 +3,7 @@ import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-g
 import { Usuario } from '@/modules/autenticacao/domain/entities/usuario.js'
 import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { Email } from '@/shared/domain/value-objects/email.js'
+import { Injectable } from '@nestjs/common'
 import { randomBytes } from 'node:crypto';
 
 interface CriarCredenciaisInput {
@@ -11,6 +12,7 @@ interface CriarCredenciaisInput {
   role: 'MECANICO' | 'RECEPCAO' | 'ADMIN'
 }
 
+@Injectable()
 export class CriarCredenciaisUseCase {
   constructor(
     private readonly usuariosRepository: UsuariosRepository,

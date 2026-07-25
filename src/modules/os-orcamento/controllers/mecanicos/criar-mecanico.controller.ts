@@ -1,6 +1,7 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException } from '@nestjs/common'
 import { CriarMecanicoUseCase } from '../../application/use-cases/mecanicos/criar-mecanico.js'
 import { CriarMecanicoBodyDto } from '../../dto/criar-mecanico.dto.js'
+import { MecanicoPresenter } from '../../presenters/mecanico-presenter.js'
 
 @Controller('mecanicos')
 export class CriarMecanicoController {
@@ -10,8 +11,8 @@ export class CriarMecanicoController {
   @HttpCode(HttpStatus.OK)
   async handle(@Body() body: CriarMecanicoBodyDto) {
     try {
-      const result = await this.criarMecanico.execute(body)
-      return result
+      const { mecanico } = await this.criarMecanico.execute(body)
+      return MecanicoPresenter.toHTTP(mecanico)
     } catch (error) {
       if (error instanceof Error) {
         throw new UnauthorizedException(error.message)

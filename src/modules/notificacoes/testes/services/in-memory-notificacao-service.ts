@@ -11,6 +11,7 @@ export class InMemoryNotificacaoService implements NotificacaoService {
 
   async enviar(dados: EnviarNotificacaoInput): Promise<void> {
     // Em vez de enviar um WhatsApp real, nós apenas guardamos o envio no array
+    console.log('[NOTIFICACAO SERVICE]', dados)
     this.envios.push(dados)
   }
 

@@ -10,7 +10,6 @@ interface CriarMecanicoUseCaseInput {
   cpf: string
   email: string
   especialidade?: string
-
 }
 
 interface CriarMecanicoUseCaseOutput {

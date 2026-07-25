@@ -6,7 +6,7 @@ import { AutenticarBodyDto } from '../dto/autenticar.dto.js'
 export class AutenticarController {
   constructor(private readonly autenticarUseCase: AutenticarUseCase) { }
 
-  @Post()
+  @Post('sign-in')
   @HttpCode(HttpStatus.OK)
   async handle(@Body() body: AutenticarBodyDto) {
     try {

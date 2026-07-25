@@ -3,6 +3,6 @@ export interface EnviarNotificacaoProps {
   mensagem: string
 }
 
-export interface NotificacaoService {
-  enviar(dados: EnviarNotificacaoProps): Promise<void>
+export abstract class NotificacaoService {
+  abstract enviar(dados: EnviarNotificacaoProps): Promise<void>
 }

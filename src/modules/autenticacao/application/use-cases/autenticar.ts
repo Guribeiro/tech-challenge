@@ -2,6 +2,7 @@ import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-g
 import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { Encrypter } from '../../domain/cryptography/encrypter.js'
 import { Injectable } from '@nestjs/common'
+import { Role } from '../../domain/entities/usuario.js'
 
 interface AutenticarInput {
   email: string
@@ -9,6 +10,10 @@ interface AutenticarInput {
 }
 
 interface AutenticarOutput {
+  usuario: {
+    email: string
+    role: Role
+  }
   accessToken: string
 }
 
@@ -42,6 +47,10 @@ export class AutenticarUseCase {
     })
 
     return {
+      usuario: {
+        email: usuario.getEmail().getValor(),
+        role: usuario.getRole()
+      },
       accessToken
     }
   }

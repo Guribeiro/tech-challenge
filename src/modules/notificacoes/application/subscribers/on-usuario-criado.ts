@@ -2,12 +2,15 @@ import { DomainEvents } from "@/core/events/domain-events.js";
 import { EventHandler } from "@/core/events/event-handler.js";
 import { UsuarioCriadoEvent } from "@/modules/autenticacao/domain/events/usuario-criado-event.js";
 import { EnviarNotificacaoUseCase } from "../../domain/use-cases/enviar-notificacao.js";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 
-export class OnUsuarioCriado implements EventHandler {
-
+@Injectable()
+export class OnUsuarioCriado implements EventHandler, OnModuleInit {
   constructor(
     private readonly enviarNotificacao: EnviarNotificacaoUseCase
-  ) {
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
