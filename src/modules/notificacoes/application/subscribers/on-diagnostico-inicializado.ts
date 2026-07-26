@@ -1,17 +1,18 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { DiagnosticoInicializadoEvent } from '@/modules/os-orcamento/domain/events/diagnostico-inicializado-event.js'
-import { ClienteRepository } from '../../domain/repositories/clientes-repository.js';
+import { ClienteRepository } from '../../../os-orcamento/domain/repositories/clientes-repository.js';
 import { NotificacaoService } from '@/modules/notificacoes/domain/services/notificacao-service.js';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { EventHandler } from '@/core/events/event-handler.js';
 
-// Interface simples apenas para simular o serviço de envio no seu domínio
-
-
-export class OnDiagnosticoInicializado {
+@Injectable()
+export class OnDiagnosticoInicializado implements EventHandler, OnModuleInit {
   constructor(
     private readonly clienteRepository: ClienteRepository,
     private readonly notificacaoService: NotificacaoService
-  ) {
-    // Assim que a classe for instanciada na aplicação, ela se registra no "YouTube" dos eventos
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 

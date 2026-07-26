@@ -47,7 +47,7 @@ export class PrismaOrdemServicoMapper {
       cliente: { connect: { id: os.getClienteId().toValue() } },
       veiculo: { connect: { id: os.getVeiculoId().toValue() } },
       ...(os.getMecanicoId() && {
-        mecanico: { connect: { id: os.getMecanicoId()!.toString() } },
+        mecanico: { connect: { id: os.getMecanicoId()!.toValue() } },
       }),
       descricao: os.getDescricao() ?? null,
       prioridade: os.getPrioridade().getTipo(),

@@ -1,4 +1,4 @@
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
+import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { OrdemServico } from "../../domain/entities/ordem-servico.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
 
@@ -26,14 +26,41 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
     return this.items.find(os => os.getId().toValue() === id) || null
   }
 
-  async listServiceQueue(): Promise<OrdemServico[]> {
-    return this.items.sort((a, b) => {
+  async listServiceQueue({
+    pagina = 1,
+    limite = 10,
+    status = 'RECEBIDA',
+  }: BuscarFilaTrabalhoParams): Promise<BuscarFilaTrabalhoResultado> {
+    // 1. Filtra os itens pelo status (se fornecido)
+    const itensFiltrados = this.items.filter((item) => {
+      if (!status) return true
+
+      const itemStatus = item.getStatus()
+
+      return itemStatus === status
+    })
+
+    // 2. Ordena por peso da prioridade (decrescente)
+    const itensOrdenados = [...itensFiltrados].sort((a, b) => {
       const prioridadeA = a.getPrioridade().getPeso()
       const prioridadeB = b.getPrioridade().getPeso()
+
       return prioridadeB - prioridadeA
     })
-  }
 
+    // 3. Aplica a paginação (skip e take em memória)
+    const inicio = (pagina - 1) * limite
+    const fim = inicio + limite
+    const itensPaginados = itensOrdenados.slice(inicio, fim)
+
+    // 4. Retorna a mesma estrutura do resultado retornado pelo Prisma
+    return {
+      ordensServicos: itensPaginados,
+      total: itensFiltrados.length,
+      pagina,
+      limite,
+    }
+  }
   async findManyReadyToInitialize(mecanicoId?: string): Promise<OrdemServico[]> {
     // 1. Filtra os registros com base nas regras de negócio
     const ordensFiltradas = this.items.filter(item => {

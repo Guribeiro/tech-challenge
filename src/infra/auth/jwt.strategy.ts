@@ -3,9 +3,9 @@ import { ConfigService } from '@nestjs/config'
 import { PassportStrategy } from '@nestjs/passport'
 import { ExtractJwt, Strategy } from 'passport-jwt'
 
-export interface UserPayload {
+export type UserPayload = {
   sub: string
-  role: string
+  role: 'MECANICO' | 'RECEPCAO' | 'ADMIN'
 }
 
 @Injectable()
@@ -22,6 +22,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: UserPayload) {
     // Retorna o objeto que será injetado em req.user
-    return { userId: payload.sub, role: payload.role }
+    return { sub: payload.sub, role: payload.role }
   }
 }

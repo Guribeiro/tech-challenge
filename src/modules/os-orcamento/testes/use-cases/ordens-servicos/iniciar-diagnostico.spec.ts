@@ -7,7 +7,7 @@ import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects
 import { makeMecanico } from '../../factories/make-mecanico.js'
 import { makeCliente } from '../../factories/make-cliente.js'
 import { makeVeiculo } from '../../factories/make-veiculo.js'
-import { OnDiagnosticoInicializado } from '@/modules/os-orcamento/application/subscribers/on-diagnostico-inicializado.js'
+import { OnDiagnosticoInicializado } from '@/modules/notificacoes/application/subscribers/on-diagnostico-inicializado.js'
 import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
 import { InMemoryNotificacaoService } from '@/modules/notificacoes/testes/services/in-memory-notificacao-service.js'
 import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
@@ -57,13 +57,16 @@ describe('Iniciar diagnostico', () => {
       categoria: 'ELETRICA'
     })
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
+      ordemServicoId,
       servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
       descricao: servico.getDescricao(),
-      observacao: 'Reparos nos sistema eletrico'
+      observacao: 'Reparos nos sistema eletrico',
     })
 
     const osServicoList = new OrdemServicoServicoList([osServico])
@@ -81,11 +84,11 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    const { ordemServico } = await sut.executar({
+    const { ordemServico } = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanico.getId().toValue()
     })
@@ -117,7 +120,10 @@ describe('Iniciar diagnostico', () => {
       categoria: 'ELETRICA'
     })
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
+      ordemServicoId,
       servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
@@ -141,12 +147,11 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    await expect(sut.executar({
+    await expect(sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanicoId.toValue()
     })).rejects.toBeInstanceOf(Error)
@@ -171,7 +176,10 @@ describe('Iniciar diagnostico', () => {
       categoria: 'ELETRICA'
     })
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
+      ordemServicoId,
       servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
@@ -195,11 +203,11 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    await expect(sut.executar({
+    await expect(sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanico.getId().toValue()
     })).rejects.toBeInstanceOf(Error)

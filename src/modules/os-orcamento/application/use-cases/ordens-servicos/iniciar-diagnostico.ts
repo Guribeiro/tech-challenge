@@ -2,6 +2,7 @@ import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servi
 import { MecanicoRepository } from "@/modules/os-orcamento/domain/repositories/mecanicos-repository.js"
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js"
+import { Injectable } from "@nestjs/common"
 
 export type IniciarDiagnosticoInput = {
   ordemServicoId: string
@@ -12,6 +13,7 @@ export type IniciarDiagnosticoutput = {
   ordemServico: OrdemServico
 }
 
+@Injectable()
 export class IniciarDiagnosticoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
@@ -19,7 +21,7 @@ export class IniciarDiagnosticoUseCase {
     private readonly veiculoRepository: VeiculoRepository,
   ) { }
 
-  public async executar({ ordemServicoId, mecanicoId }: IniciarDiagnosticoInput): Promise<IniciarDiagnosticoutput> {
+  public async execute({ ordemServicoId, mecanicoId }: IniciarDiagnosticoInput): Promise<IniciarDiagnosticoutput> {
     const ordemServico = await this.ordemServicoRepository.findById(ordemServicoId)
 
     if (!ordemServico) {
