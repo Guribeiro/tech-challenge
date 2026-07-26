@@ -58,7 +58,6 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
         data,
       }),
 
-      // B) Remoções cirúrgicas de Serviços (DELETE por ID)
       ...(servicosRemovidos.length > 0
         ? [
           this.prisma.ordemServicoServico.deleteMany({

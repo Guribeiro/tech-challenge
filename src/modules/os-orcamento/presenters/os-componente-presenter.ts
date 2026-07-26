@@ -10,6 +10,7 @@ export class OsComponenetePresenter {
       codigoSKU: componente.getCodigoSKU(),
       codigoFabricante: componente.getCodigoFabricante(),
       descricao: componente.getDescricao(),
+      quantidade: componente.getQuantidade(),
       precoCusto: componente.getPrecoCusto(),
       precoUnitario: componente.getPrecoUnitario(),
 

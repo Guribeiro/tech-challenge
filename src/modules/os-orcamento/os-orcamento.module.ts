@@ -24,6 +24,7 @@ import { EditarServicoController } from './controllers/servicos/editar-servico.c
 import { CriarOrdemServicoController } from './controllers/ordem-servico/criar-ordem-servico.controller.js'
 import { ObterFilaTrabalhoController } from './controllers/ordem-servico/obter-fila-trabalho.controller.js'
 import { IniciarDiagnosticoController } from './controllers/ordem-servico/iniciar-diagnostico.controller.js'
+import { ConcluirDiagnosticoController } from './controllers/ordem-servico/concluir-diagnostico.controller.js'
 
 
 // Use Cases
@@ -48,6 +49,8 @@ import { EditarServicoUseCase } from './application/use-cases/servicos/editar-se
 import { CriarOrdemServicoUseCase } from './application/use-cases/ordens-servicos/criar-ordem-servico.js'
 import { ObterFilaTrabalhoUseCase } from './application/use-cases/ordens-servicos/obter-fila-trabalho.js'
 import { IniciarDiagnosticoUseCase } from './application/use-cases/ordens-servicos/iniciar-diagnostico.js'
+import { ConcluirDiagnosticoUseCase } from './application/use-cases/ordens-servicos/concluir-diagnostico.js'
+import { GerarOrcamentoUseCase } from './application/use-cases/orcamento/gerar-orcamento.js'
 
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
@@ -64,6 +67,11 @@ import { PrismaVeiculoRepository } from '@/infra/database/prisma/repositories/pr
 import { PrismaServicoRepository } from '@/infra/database/prisma/repositories/prisma-servico.repository.js'
 import { PrismaProdutoRepository } from '@/infra/database/prisma/repositories/prisma-produto.repository.js'
 import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositories/prisma-ordem-servico.repository.js'
+import { PrismaOrcamentoRepository } from '@/infra/database/prisma/repositories/prisma-orcamento.repository.js'
+import { OrcamentoRepository } from './domain/repositories/orcamento-repository.js'
+
+//Subscribers
+import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico-concluido.js'
 
 @Module({
   controllers: [
@@ -84,6 +92,7 @@ import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositori
     CriarOrdemServicoController,
     ObterFilaTrabalhoController,
     IniciarDiagnosticoController,
+    ConcluirDiagnosticoController,
   ],
   providers: [
     // Database Service
@@ -107,6 +116,11 @@ import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositori
     CriarOrdemServicoUseCase,
     ObterFilaTrabalhoUseCase,
     IniciarDiagnosticoUseCase,
+    ConcluirDiagnosticoUseCase,
+    GerarOrcamentoUseCase,
+
+    //Subscribers
+    OnDiagnosticoConcluido,
 
     // Inversão de Dependência dos Repositórios (Domínio -> Infra)
     {
@@ -133,6 +147,10 @@ import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositori
       provide: OrdemServicoRepository,
       useClass: PrismaOrdemServicoRepository,
     },
+    {
+      provide: OrcamentoRepository,
+      useClass: PrismaOrcamentoRepository
+    }
   ],
 })
 export class OsOrcamentoModule { }

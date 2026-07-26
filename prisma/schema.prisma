@@ -60,6 +60,15 @@ enum StatusOS {
   ENCERRADA
 }
 
+enum StatusOrcamento {
+  CRIADO
+  ENVIADO
+  APROVADO
+  RECUSADO
+  RENEGOCIADO
+  REJEITADO_DEFINITIVO
+}
+
 model Usuario {
   id           String    @id
   email        String    @unique
@@ -88,6 +97,7 @@ model Cliente {
   deletadoEm    DateTime?      @map("deletado_em")
   veiculos      Veiculo[]
   ordemServicos OrdemServico[]
+  orcamentos    Orcamento[]
 
   @@map("clientes")
 }
@@ -147,6 +157,7 @@ model Produto {
   atualizadoEm            DateTime?                @updatedAt @map("atualizado_em")
   desativadoEm            DateTime?                @map("desativado_em")
   ordemServicoComponentes OrdemServicoComponente[]
+  orcamentoComponentes    OrcamentoComponente[]
 
   @@map("produtos")
 }
@@ -161,6 +172,7 @@ model Servico {
   atualizadoEm         DateTime?             @updatedAt @map("atualizado_em")
   desativadoEm         DateTime?             @map("desativado_em")
   ordemServicoServicos OrdemServicoServico[]
+  orcamentoServicos    OrcamentoServico[]
 
   @@map("servicos")
 }
@@ -188,6 +200,7 @@ model OrdemServico {
   atualizadoEm DateTime?                @updatedAt @map("atualizado_em")
   servicos     OrdemServicoServico[]
   componentes  OrdemServicoComponente[]
+  orcamentos   Orcamento[]
 
   @@map("ordem_servicos")
 }
@@ -222,7 +235,7 @@ model OrdemServicoComponente {
   nome             String
   tipo             TipoProduto
   marca            String?
-  codigoSKU        String?        @unique @map("codigo_sku")
+  codigoSKU        String?        @map("codigo_sku")
   codigoFabricante String?        @map("codigo_fabricante")
   descricao        String?
   precoCusto       Int            @map("preco_custo")
@@ -232,4 +245,65 @@ model OrdemServicoComponente {
   criadoEm         DateTime       @default(now()) @map("criado_em")
 
   @@map("ordem_servico_componentes")
+}
+
+model Orcamento {
+  id                  String          @id
+  ordemServicoId      String          @map("ordem_servico_id")
+  clienteId           String          @map("cliente_id")
+  versao              Int
+  descontoPorcentagem Int             @default(0) @map("desconto_porcentagem")
+  status              StatusOrcamento
+  criadoEm            DateTime        @default(now()) @map("criado_em")
+  atualizadoEm        DateTime?       @updatedAt @map("atualizado_em")
+
+  servicos    OrcamentoServico[]
+  componentes OrcamentoComponente[]
+
+  ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id])
+  cliente      Cliente      @relation(fields: [clienteId], references: [id])
+
+  @@map("orcamentos")
+}
+
+model OrcamentoServico {
+  id String @id
+
+  servicoId String  @map("servico_id")
+  servico   Servico @relation(fields: [servicoId], references: [id])
+
+  orcamentoId String    @map("orcamento_id")
+  orcamento   Orcamento @relation(fields: [orcamentoId], references: [id])
+
+  nome          String
+  descricao     String?
+  categoria     ServicoCategoria
+  precoUnitario Int              @map("preco_unitario")
+  criadoEm      DateTime         @default(now()) @map("criado_em")
+
+  @@map("orcamento_servicos")
+}
+
+model OrcamentoComponente {
+  id String @id
+
+  produtoId String  @map("produto_id")
+  produto   Produto @relation(fields: [produtoId], references: [id])
+
+  orcamentoId String    @map("orcamento_id")
+  orcamento   Orcamento @relation(fields: [orcamentoId], references: [id])
+
+  nome             String
+  tipo             TipoProduto
+  marca            String?
+  codigoSKU        String?        @map("codigo_sku")
+  codigoFabricante String?        @map("codigo_fabricante")
+  descricao        String?
+  precoCusto       Int            @map("preco_custo")
+  precoUnitario    Int            @map("preco_unitario")
+  unidadeMedida    UnidadeMedida? @map("unidade_medida")
+  quantidade       Int
+  criadoEm         DateTime       @default(now()) @map("criado_em")
+
+  @@map("orcamento_componentes")
 }

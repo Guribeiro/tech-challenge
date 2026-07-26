@@ -1,17 +1,20 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { OrcamentoEnviadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-enviado-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { ClienteRepository } from '../../domain/repositories/clientes-repository.js'
+import { OrcamentoEnviadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-enviado-event.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
+import { ClienteRepository } from '../../../os-orcamento/domain/repositories/clientes-repository.js'
 
-export class OnOrcamentoEnviado implements EventHandler {
+@Injectable()
+export class OnOrcamentoEnviado implements EventHandler, OnModuleInit {
   constructor(
     private readonly clienteRepository: ClienteRepository,
     private enviarNotificacao: EnviarNotificacaoUseCase
-  ) {
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
-
   // 1. Registra o ouvinte no ecossistema global de eventos da aplicação
   setupSubscriptions(): void {
     DomainEvents.register(

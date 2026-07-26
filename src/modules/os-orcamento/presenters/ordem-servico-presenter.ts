@@ -16,7 +16,7 @@ export class OrdemServicoPresenter {
       servicos: os.getServicos().getItems().map(OsServicoPresenter.toHTTP),
       componentes: os.getComponentes().getItems().map(OsComponenetePresenter.toHTTP),
       criadoEm: os.getCriadoEm(),
-      atualizadoEm: os.getAtualizadoEm(),
+      atualizadoEm: os.getAtualizadoEm() ?? undefined,
     }
   }
 }

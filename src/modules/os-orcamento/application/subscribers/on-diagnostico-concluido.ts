@@ -2,12 +2,15 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { DiagnosticoConcluidoEvent } from '../../domain/events/diagnostico-concluido-event.js'
 import { GerarOrcamentoUseCase } from '../use-cases/orcamento/gerar-orcamento.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnDiagnosticoConcluido implements EventHandler {
+@Injectable()
+export class OnDiagnosticoConcluido implements EventHandler, OnModuleInit {
   constructor(
     private readonly gerarOrcamento: GerarOrcamentoUseCase
-  ) {
-    // Registra o ouvinte assim que a aplicação inicializa
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 

@@ -3,8 +3,8 @@ import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
 import { TipoProduto, UnidadeMedida } from '@/modules/estoque/domain/entities/produto.js'
 
-export interface OrdemServicoComponenteProps {
-  ordemServicoId: UniqueEntityID
+export interface OrcamentoComponenteProps {
+  orcamentoId: UniqueEntityID
   produtoId: UniqueEntityID
   nome: string
   tipo: TipoProduto
@@ -19,18 +19,18 @@ export interface OrdemServicoComponenteProps {
   criadoEm: Date
 }
 
-export class OrdemServicoComponente extends Entity<OrdemServicoComponenteProps> {
+export class OrcamentoComponente extends Entity<OrcamentoComponenteProps> {
 
-  public static criar(props: Optional<OrdemServicoComponenteProps, 'criadoEm'>, id?: UniqueEntityID) {
+  public static criar(props: Optional<OrcamentoComponenteProps, 'criadoEm'>, id?: UniqueEntityID) {
     this.validar(props)
 
-    return new OrdemServicoComponente({
+    return new OrcamentoComponente({
       ...props,
       criadoEm: props.criadoEm ?? new Date()
     }, id)
   }
 
-  private static validar(props: Optional<OrdemServicoComponenteProps, 'criadoEm'>) {
+  private static validar(props: Optional<OrcamentoComponenteProps, 'criadoEm'>) {
     if (props.quantidade <= 0) {
       throw new Error('A quantidade de um componente na OS deve ser maior que zero.')
     }
@@ -65,7 +65,7 @@ export class OrdemServicoComponente extends Entity<OrdemServicoComponenteProps> 
     return this.props.unidadeMedida
   }
 
-  public getOrdemServicoId(): UniqueEntityID { return this.props.ordemServicoId }
+  public getOrcamentoId(): UniqueEntityID { return this.props.orcamentoId }
   public getProdutoId(): UniqueEntityID { return this.props.produtoId }
   public getDescricao(): string | undefined { return this.props.descricao }
   public getQuantidade(): number { return this.props.quantidade }
