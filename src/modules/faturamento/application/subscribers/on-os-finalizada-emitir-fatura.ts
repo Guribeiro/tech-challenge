@@ -3,12 +3,15 @@ import { EventHandler } from "@/core/events/event-handler.js"
 import { OSExecucaoFinalizadaEvent } from "@/modules/os-orcamento/domain/events/os-execucao-finalizada-event.js"
 import { EmitirFaturaUseCase } from "../use-cases/emitir-fatura.js"
 import { OrcamentoGateway } from "../gateways/orcamento-gateway.js"
+import { Injectable, OnModuleInit } from "@nestjs/common"
 
-export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler {
+@Injectable()
+export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler, OnModuleInit {
   constructor(
     private readonly emitirFatura: EmitirFaturaUseCase,
     private readonly orcamentoGateway: OrcamentoGateway
-  ) {
+  ) { }
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
@@ -25,10 +28,10 @@ export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler {
 
     try {
 
-      const valorTotal = await this.orcamentoGateway.obterValorAprovadoPorOrdemServicoId(ordemServicoId)
+      const { valorTotal, orcamentoId } = await this.orcamentoGateway.obterValorAprovadoPorOrdemServicoId(ordemServicoId)
 
       await this.emitirFatura.execute({
-        ordemServicoId,
+        orcamentoId,
         valorTotal
       })
 

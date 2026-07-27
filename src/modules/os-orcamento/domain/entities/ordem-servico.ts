@@ -216,7 +216,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
 
   public encerrarPorRejeicao(): void {
-    if (this.props.status === 'FINALIZADA') {
+    if (this.props.status === 'ENCERRADA_REJEICAO') {
       throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
     }
 
@@ -227,7 +227,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   }
 
   public encerrarPorFaturaPaga(): void {
-    if (this.props.status === 'FINALIZADA') {
+    if (this.props.status === 'ENCERRADA') {
       throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
     }
 

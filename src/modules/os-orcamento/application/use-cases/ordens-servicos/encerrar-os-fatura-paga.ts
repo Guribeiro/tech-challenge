@@ -1,9 +1,11 @@
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
+import { Injectable } from "@nestjs/common"
 
 interface EncerrarOrdemServicoFaturaPagaInput {
   ordemServicoId: string
 }
 
+@Injectable()
 export class EncerrarOrdemServicoFaturaPagaUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository

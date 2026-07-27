@@ -1,14 +1,17 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { OSExecucaoIniciadaEvent } from '../../domain/events/os-execucao-iniciada-event.js'
+import { OSExecucaoIniciadaEvent } from '../../../os-orcamento/domain/events/os-execucao-iniciada-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { ClienteRepository } from '../../domain/repositories/clientes-repository.js'
+import { ClienteRepository } from '../../../os-orcamento/domain/repositories/clientes-repository.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnExecucaoIniciada implements EventHandler {
+@Injectable()
+export class OnExecucaoIniciada implements EventHandler, OnModuleInit {
   constructor(
     private readonly enviarNotificacao: EnviarNotificacaoUseCase,
     private readonly clienteRepository: ClienteRepository
-  ) {
+  ) { }
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 

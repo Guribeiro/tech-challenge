@@ -69,6 +69,12 @@ enum StatusOrcamento {
   REJEITADO_DEFINITIVO
 }
 
+enum StatusFatura {
+  PENDENTE
+  PAGA
+  CANCELADA
+}
+
 model Usuario {
   id           String    @id
   email        String    @unique
@@ -262,6 +268,7 @@ model Orcamento {
 
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id])
   cliente      Cliente      @relation(fields: [clienteId], references: [id])
+  faturas      Fatura[]
 
   @@map("orcamentos")
 }
@@ -306,4 +313,19 @@ model OrcamentoComponente {
   criadoEm         DateTime       @default(now()) @map("criado_em")
 
   @@map("orcamento_componentes")
+}
+
+model Fatura {
+  id String @id
+
+  orcamentoId String    @map("orcamento_id")
+  orcamento   Orcamento @relation(fields: [orcamentoId], references: [id])
+
+  status     StatusFatura
+  valorTotal Int          @map("valor_total")
+
+  emitidaEm DateTime  @default(now()) @map("emitida_em")
+  pagaEm    DateTime? @updatedAt @map("paga_em")
+
+  @@map("faturas")
 }

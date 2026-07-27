@@ -14,6 +14,8 @@ import { DesativarProdutoController } from './controllers/produto/desativar-prod
 import { ReativarProdutoController } from './controllers/produto/reativar-produto.controller.js'
 
 import { PrismaProdutoRepository } from '@/infra/database/prisma/repositories/prisma-produto.repository.js'
+import { OnOrdemServicoFinalizadaDeduzirEstoque } from './application/subscribers/on-os-finalizada-deduzir-estoque.js'
+import { DeduzirEstoqueUseCase } from './application/use-cases/deduzir-estoque.js'
 
 @Module({
   controllers: [
@@ -28,6 +30,10 @@ import { PrismaProdutoRepository } from '@/infra/database/prisma/repositories/pr
     ListarProdutosUseCase,
     DesativarProdutoUseCase,
     ReativarProdutoUseCase,
+    DeduzirEstoqueUseCase,
+
+    //Subscriber
+    OnOrdemServicoFinalizadaDeduzirEstoque,
     {
       provide: ProdutoRepository,
       useClass: PrismaProdutoRepository

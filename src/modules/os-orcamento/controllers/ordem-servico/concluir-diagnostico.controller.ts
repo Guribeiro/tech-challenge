@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseUUIDPipe, Patch, UseGuards } from '@nestjs/common'
+import { Body, Controller, Param, ParseUUIDPipe, Patch, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { ConcluirDiagnosticoUseCase } from '../../application/use-cases/ordens-servicos/concluir-diagnostico.js'
 import type { UserPayload } from '@/infra/auth/jwt.strategy.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
@@ -18,13 +18,19 @@ export class ConcluirDiagnosticoController {
     @CurrentUser() user: UserPayload,
     @Body() body: ConcluirDiagnosticoBodyDto
   ) {
-
-    await this.concluirDiagnostico.execute({
-      ordemServicoId,
-      usuarioId: user.sub,
-      usuarioRole: user.role,
-      componentes: body.componentes,
-      servicos: body.servicos,
-    })
+    try {
+      await this.concluirDiagnostico.execute({
+        ordemServicoId,
+        usuarioId: user.sub,
+        usuarioRole: user.role,
+        componentes: body.componentes,
+        servicos: body.servicos,
+      })
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new UnauthorizedException(error.message)
+      }
+      throw error
+    }
   }
 }

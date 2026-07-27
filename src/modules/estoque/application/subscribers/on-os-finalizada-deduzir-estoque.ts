@@ -1,14 +1,16 @@
 import { DomainEvents } from "@/core/events/domain-events.js";
 import { EventHandler } from "@/core/events/event-handler.js";
 import { OSExecucaoFinalizadaEvent } from "@/modules/os-orcamento/domain/events/os-execucao-finalizada-event.js";
-import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 import { DeduzirEstoqueUseCase } from "../use-cases/deduzir-estoque.js";
+import { Injectable, OnModuleInit } from "@nestjs/common";
 
-export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler {
+@Injectable()
+export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler, OnModuleInit {
   constructor(
     private readonly deduzirEstoque: DeduzirEstoqueUseCase
-  ) {
-    // Registra o ouvinte assim que a aplicação inicializa
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
@@ -36,7 +38,6 @@ export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler {
         console.log(`[Subscriber Info]: OS ${ordemServico.getId()} finalizada sem produtos a deduzir.`)
         return
       }
-
       // 2. ⚡ A REAÇÃO: Delegamos para o Caso de Uso processar a baixa
       await this.deduzirEstoque.execute({
         ordemServicoId: ordemServico.getId().toValue(),

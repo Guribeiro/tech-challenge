@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { forwardRef, Module } from '@nestjs/common'
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 
 // Controllers
@@ -27,6 +27,9 @@ import { IniciarDiagnosticoController } from './controllers/ordem-servico/inicia
 
 import { ConcluirDiagnosticoController } from './controllers/ordem-servico/concluir-diagnostico.controller.js'
 import { AprovarOrcamentoController } from './controllers/orcamentos/aprovar-orcamento.controller.js'
+import { IniciarExecucaoController } from './controllers/ordem-servico/iniciar-execucao.controller.js'
+import { FinalizarExecucaoController } from './controllers/ordem-servico/finalizar-execucao.controller.js'
+
 
 
 // Use Cases
@@ -55,6 +58,8 @@ import { ConcluirDiagnosticoUseCase } from './application/use-cases/ordens-servi
 
 import { GerarOrcamentoUseCase } from './application/use-cases/orcamento/gerar-orcamento.js'
 import { AprovarOrcamentoUseCase } from './application/use-cases/orcamento/aprovar-orcamento.js'
+import { IniciarExecucaoUseCase } from './application/use-cases/ordens-servicos/iniciar-execucao.js'
+import { FinalizarExecucaoUseCase } from './application/use-cases/ordens-servicos/finalizar-execucao.js'
 
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
@@ -80,8 +85,15 @@ import { OnClienteAprovouOrcamento } from './application/subscribers/on-orcament
 import { OnExecucaoAutorizada } from './application/subscribers/on-os-execucao-autorizada.js'
 import { ReservarProdutosEstoqueUseCase } from '../estoque/application/use-cases/reservar-produtos-estoque.js'
 import { OnProdutosReservados } from './application/subscribers/on-produtos-reservados.js'
+import { EncerrarOrdemServicoFaturaPagaUseCase } from './application/use-cases/ordens-servicos/encerrar-os-fatura-paga.js'
+import { OnFaturaPagaEncerrarOrdemServico } from './application/subscribers/on-fatura-paga.js'
+import { FaturamentoModule } from '../faturamento/faturamento.module.js'
+
 
 @Module({
+  imports: [
+    forwardRef(() => FaturamentoModule), // ➔ Envolva com forwardRef
+  ],
   controllers: [
     CriarMecanicoController,
     CriarClienteController,
@@ -102,6 +114,8 @@ import { OnProdutosReservados } from './application/subscribers/on-produtos-rese
     IniciarDiagnosticoController,
     ConcluirDiagnosticoController,
     AprovarOrcamentoController,
+    IniciarExecucaoController,
+    FinalizarExecucaoController,
   ],
   providers: [
     // Database Service
@@ -129,14 +143,17 @@ import { OnProdutosReservados } from './application/subscribers/on-produtos-rese
     GerarOrcamentoUseCase,
     AprovarOrcamentoUseCase,
     ReservarProdutosEstoqueUseCase,
+    IniciarExecucaoUseCase,
+    FinalizarExecucaoUseCase,
+    EncerrarOrdemServicoFaturaPagaUseCase,
 
     //Subscribers
     OnDiagnosticoConcluido,
     OnClienteAprovouOrcamento,
     OnExecucaoAutorizada,
     OnProdutosReservados,
+    OnFaturaPagaEncerrarOrdemServico,
 
-    // Inversão de Dependência dos Repositórios (Domínio -> Infra)
     {
       provide: MecanicoRepository,
       useClass: PrismaMecanicoRepository,
@@ -165,6 +182,11 @@ import { OnProdutosReservados } from './application/subscribers/on-produtos-rese
       provide: OrcamentoRepository,
       useClass: PrismaOrcamentoRepository
     }
+  ],
+  exports: [
+    ClienteRepository,
+    OrcamentoRepository,
+    OrdemServicoRepository,
   ],
 })
 export class OsOrcamentoModule { }

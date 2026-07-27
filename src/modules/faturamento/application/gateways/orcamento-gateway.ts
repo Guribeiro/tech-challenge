@@ -1,4 +1,8 @@
 // src/modules/faturamento/application/gateways/orcamento-gateway.ts
-export interface OrcamentoGateway {
-  obterValorAprovadoPorOrdemServicoId(ordemServicoId: string): Promise<number>
+export interface OrcamentoAprovadoDTO {
+  orcamentoId: string
+  valorTotal: number
+}
+export abstract class OrcamentoGateway {
+  abstract obterValorAprovadoPorOrdemServicoId(ordemServicoId: string): Promise<OrcamentoAprovadoDTO>
 }

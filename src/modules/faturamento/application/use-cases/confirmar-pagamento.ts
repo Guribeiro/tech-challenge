@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common"
 import { Fatura } from "../../domain/entities/fatura.js"
 import { FaturaRepository } from "../../domain/repositories/faturas-repository.js"
 
@@ -9,6 +10,7 @@ interface ConfirmarPagamentoOutput {
   fatura: Fatura
 }
 
+@Injectable()
 export class ConfirmarPagamentoUseCase {
   constructor(
     private readonly faturaRepository: FaturaRepository

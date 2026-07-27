@@ -3,23 +3,23 @@ import { MecanicoRepository } from "@/modules/os-orcamento/domain/repositories/m
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { Injectable } from "@nestjs/common"
 
-export type IniciarExecucaoInput = {
+export type FinalizarExecucaoInput = {
   ordemServicoId: string
   mecanicoId: string
 }
 
-export type IniciarExecucaoOutput = {
+export type FinalizarExecucaoOutput = {
   ordemServico: OrdemServico
 }
 
 @Injectable()
-export class IniciarExecucaoUseCase {
+export class FinalizarExecucaoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
     private readonly mecanicoRepository: MecanicoRepository,
   ) { }
 
-  public async execute({ ordemServicoId, mecanicoId }: IniciarExecucaoInput): Promise<IniciarExecucaoOutput> {
+  public async execute({ ordemServicoId, mecanicoId }: FinalizarExecucaoInput): Promise<FinalizarExecucaoOutput> {
     const ordemServico = await this.ordemServicoRepository.findById(ordemServicoId)
 
     if (!ordemServico) {
@@ -32,7 +32,9 @@ export class IniciarExecucaoUseCase {
       throw new Error(`Mecânico com ID ${mecanicoId} não encontrado.`)
     }
 
-    ordemServico.iniciaExecucao()
+    //todo validar se o mecanico é o mesmo presente na OS ou se é ADMIN.
+
+    ordemServico.finalizaExecucao()
 
     await this.ordemServicoRepository.save(ordemServico)
 

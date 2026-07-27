@@ -64,8 +64,11 @@ describe('Iniciar execucao de OS', () => {
 
     await servicoRepository.create(servico)
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
       servicoId: servico.getId(),
+      ordemServicoId,
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
@@ -89,11 +92,11 @@ describe('Iniciar execucao de OS', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServico)
 
-    const output = await sut.executar({
+    const output = await sut.execute({
       mecanicoId: mecanico.getId().toValue(),
       ordemServicoId: ordemServico.getId().toValue()
     })
