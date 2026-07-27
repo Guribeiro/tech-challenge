@@ -5,6 +5,7 @@ import { BuscarClientesParams, BuscarClientesResultado, ClienteRepository } from
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 import { PrismaClienteMapper } from "../mappers/prisma-cliente-mapper.js";
 import { Prisma } from "@/generated/prisma/client.js";
+import { DomainEvents } from "@/core/events/domain-events.js";
 
 @Injectable()
 export class PrismaClienteRepository implements ClienteRepository {
@@ -13,6 +14,8 @@ export class PrismaClienteRepository implements ClienteRepository {
   public async create(cliente: Cliente): Promise<void> {
     const data = PrismaClienteMapper.toPrisma(cliente)
     await this.prisma.cliente.create({ data })
+
+    DomainEvents.dispatchEventsForAggregate(cliente)
   }
 
   public async findById(id: string): Promise<Cliente | null> {
@@ -60,6 +63,8 @@ export class PrismaClienteRepository implements ClienteRepository {
       where: { id: data.id },
       data,
     });
+
+    DomainEvents.dispatchEventsForAggregate(cliente)
   }
 
   public async list(): Promise<Cliente[]> {

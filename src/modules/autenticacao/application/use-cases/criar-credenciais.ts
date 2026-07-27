@@ -9,7 +9,7 @@ import { randomBytes } from 'node:crypto';
 interface CriarCredenciaisInput {
   id: string
   email: string
-  role: 'MECANICO' | 'RECEPCAO' | 'ADMIN'
+  role: 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
 }
 
 @Injectable()

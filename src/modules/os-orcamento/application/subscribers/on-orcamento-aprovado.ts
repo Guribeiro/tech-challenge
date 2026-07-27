@@ -2,11 +2,15 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoAprovadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-aprovado-event.js'
 import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnClienteAprovouOrcamento implements EventHandler {
+@Injectable()
+export class OnClienteAprovouOrcamento implements EventHandler, OnModuleInit {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository
-  ) {
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 

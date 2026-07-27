@@ -2,11 +2,14 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { ProdutosReservadosNoEstoqueEvent } from '@/modules/estoque/domain/events/produtos-reservados-no-estoque-event.js'
 import { OrdemServicoRepository } from '../../domain/repositories/ordem-servico-repository.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnProdutosReservados implements EventHandler {
+@Injectable()
+export class OnProdutosReservados implements EventHandler, OnModuleInit {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository
-  ) {
+  ) { }
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 

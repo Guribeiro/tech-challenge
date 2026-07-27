@@ -9,7 +9,7 @@ import { ClienteRepository } from '../../../os-orcamento/domain/repositories/cli
 export class OnOrcamentoEnviado implements EventHandler, OnModuleInit {
   constructor(
     private readonly clienteRepository: ClienteRepository,
-    private enviarNotificacao: EnviarNotificacaoUseCase
+    private readonly enviarNotificacao: EnviarNotificacaoUseCase,
   ) { }
 
   onModuleInit(): void {

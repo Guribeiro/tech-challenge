@@ -11,6 +11,7 @@ import { JwtStrategy } from '@/infra/auth/jwt.strategy.js'
 import { OnMecanicoCriado } from './application/subscribers/on-mecanico-criado.js'
 import { UsuariosRepository } from './domain/repositories/usuarios-repository.js'
 import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
+import { OnClienteCriado } from './application/subscribers/on-cliente-criado.js'
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/pr
     JwtStrategy,
     CriarCredenciaisUseCase,
     OnMecanicoCriado,
+    OnClienteCriado,
     {
       provide: UsuariosRepository,
       useClass: PrismaUsuarioRepository

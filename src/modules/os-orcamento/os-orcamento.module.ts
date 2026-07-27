@@ -24,7 +24,9 @@ import { EditarServicoController } from './controllers/servicos/editar-servico.c
 import { CriarOrdemServicoController } from './controllers/ordem-servico/criar-ordem-servico.controller.js'
 import { ObterFilaTrabalhoController } from './controllers/ordem-servico/obter-fila-trabalho.controller.js'
 import { IniciarDiagnosticoController } from './controllers/ordem-servico/iniciar-diagnostico.controller.js'
+
 import { ConcluirDiagnosticoController } from './controllers/ordem-servico/concluir-diagnostico.controller.js'
+import { AprovarOrcamentoController } from './controllers/orcamentos/aprovar-orcamento.controller.js'
 
 
 // Use Cases
@@ -50,7 +52,9 @@ import { CriarOrdemServicoUseCase } from './application/use-cases/ordens-servico
 import { ObterFilaTrabalhoUseCase } from './application/use-cases/ordens-servicos/obter-fila-trabalho.js'
 import { IniciarDiagnosticoUseCase } from './application/use-cases/ordens-servicos/iniciar-diagnostico.js'
 import { ConcluirDiagnosticoUseCase } from './application/use-cases/ordens-servicos/concluir-diagnostico.js'
+
 import { GerarOrcamentoUseCase } from './application/use-cases/orcamento/gerar-orcamento.js'
+import { AprovarOrcamentoUseCase } from './application/use-cases/orcamento/aprovar-orcamento.js'
 
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
@@ -72,6 +76,10 @@ import { OrcamentoRepository } from './domain/repositories/orcamento-repository.
 
 //Subscribers
 import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico-concluido.js'
+import { OnClienteAprovouOrcamento } from './application/subscribers/on-orcamento-aprovado.js'
+import { OnExecucaoAutorizada } from './application/subscribers/on-os-execucao-autorizada.js'
+import { ReservarProdutosEstoqueUseCase } from '../estoque/application/use-cases/reservar-produtos-estoque.js'
+import { OnProdutosReservados } from './application/subscribers/on-produtos-reservados.js'
 
 @Module({
   controllers: [
@@ -93,6 +101,7 @@ import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico
     ObterFilaTrabalhoController,
     IniciarDiagnosticoController,
     ConcluirDiagnosticoController,
+    AprovarOrcamentoController,
   ],
   providers: [
     // Database Service
@@ -118,9 +127,14 @@ import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico
     IniciarDiagnosticoUseCase,
     ConcluirDiagnosticoUseCase,
     GerarOrcamentoUseCase,
+    AprovarOrcamentoUseCase,
+    ReservarProdutosEstoqueUseCase,
 
     //Subscribers
     OnDiagnosticoConcluido,
+    OnClienteAprovouOrcamento,
+    OnExecucaoAutorizada,
+    OnProdutosReservados,
 
     // Inversão de Dependência dos Repositórios (Domínio -> Infra)
     {

@@ -1,6 +1,7 @@
 import { DomainEvents } from "@/core/events/domain-events.js"
 import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js" // Seu repositório de Produtos/Estoque
 import { ProdutosReservadosNoEstoqueEvent } from "@/modules/estoque/domain/events/produtos-reservados-no-estoque-event.js"
+import { Injectable } from "@nestjs/common"
 
 interface ReservarPecasEstoqueInput {
   ordemServicoId: string
@@ -10,6 +11,7 @@ interface ReservarPecasEstoqueInput {
   }>
 }
 
+@Injectable()
 export class ReservarProdutosEstoqueUseCase {
   constructor(
     private readonly produtoRepository: ProdutoRepository
@@ -37,8 +39,6 @@ export class ReservarProdutosEstoqueUseCase {
       }
     }
 
-    // 4. ⚡ Grita para o sistema: "Peças reservadas com sucesso para a OS tal!"
-    // Isso vai disparar o próximo post-it roxo: disponibilizar a OS na fila.
     DomainEvents.dispatch(new ProdutosReservadosNoEstoqueEvent(input.ordemServicoId))
   }
 }

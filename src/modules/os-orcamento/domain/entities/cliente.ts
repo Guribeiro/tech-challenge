@@ -5,6 +5,8 @@ import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objec
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
 import { Cpf } from './value-objects/cpf.js'
+import { AggregateRoot } from '@/core/entities/aggregate-root.js'
+import { ClienteCriadoEvent } from '../events/cliente-criado-event.js'
 
 export interface ClienteProps {
   nome: NomeCompleto
@@ -25,16 +27,22 @@ export type AtualizarClienteProps = Partial<{
   tipo: 'PF' | 'PJ'
 }>
 
-export class Cliente extends Entity<ClienteProps> {
+export class Cliente extends AggregateRoot<ClienteProps> {
   public static criar(props: Optional<ClienteProps, 'criadoEm'>, id?: UniqueEntityID): Cliente {
 
     this.validar(props)
 
-    return new Cliente({
+    const cliente = new Cliente({
       ...props,
       criadoEm: props.criadoEm ?? new Date(),
       deletadoEm: props.deletadoEm ?? null,
     }, id)
+
+
+    if (!id) {
+      cliente.addDomainEvent(new ClienteCriadoEvent(cliente))
+    }
+    return cliente
   }
 
   public atualizar(props: AtualizarClienteProps) {

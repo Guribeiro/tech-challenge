@@ -2,11 +2,15 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSExecucaoAutorizadaEvent } from '../../domain/events/os-execucao-autorizada-event.js'
 import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js' // Caminho fictício do seu outro módulo
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnExecucaoAutorizada implements EventHandler {
+@Injectable()
+export class OnExecucaoAutorizada implements EventHandler, OnModuleInit {
   constructor(
     private readonly reservarPecas: ReservarProdutosEstoqueUseCase
-  ) {
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
