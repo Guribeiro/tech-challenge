@@ -1,23 +1,50 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException } from '@nestjs/common'
 import { CriarClienteUseCase } from '../../application/use-cases/clientes/criar-cliente.js'
-import { CriarClienteBodyDto } from '../../dto/criar-cliente.dto.js'
+import { CriarClienteBodyDto } from '../../dto/cliente/criar-cliente.dto.js'
 import { ClientePresenter } from '../../presenters/cliente-presenter.js'
+import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { ApiBadRequestResponse, ApiBearerAuth, ApiConflictResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { CriarClienteResponseDto } from '../../dto/cliente/criar-cliente-response.dto.js'
 
+@ApiTags('Clientes')
+@ApiBearerAuth()
 @Controller('clientes')
 export class CriarClienteController {
   constructor(private readonly criarCliente: CriarClienteUseCase) { }
 
   @Post()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Cadastrar um novo cliente' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Cliente criado com sucesso.',
+    type: CriarClienteResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'E-mail ou CPF já cadastrado no sistema.',
+    schema: {
+      example: {
+        statusCode: 409,
+        message: 'Este e-mail já está cadastrado.',
+        error: 'EmailJaCadastradoError',
+      },
+    },
+  })
+  @ApiBadRequestResponse({
+    description: 'Erro de validação nos dados fornecidos.',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: ['email deve ser um e-mail válido', 'cpf não pode ser vazio'],
+        error: 'Bad Request',
+      },
+    },
+  })
   async handle(@Body() body: CriarClienteBodyDto) {
-    try {
-      const { cliente } = await this.criarCliente.execute(body)
-      return ClientePresenter.toHTTP(cliente)
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new UnauthorizedException(error.message)
-      }
-      throw error
+    const result = await this.criarCliente.execute(body)
+    const { cliente } = unwrapEither(result)
+    return {
+      cliente: ClientePresenter.toHTTP(cliente)
     }
   }
 }

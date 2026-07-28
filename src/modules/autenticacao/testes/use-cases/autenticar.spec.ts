@@ -7,6 +7,7 @@ import { Email } from "@/shared/domain/value-objects/email.js";
 import { FakeEncrypter } from "../cryptography/fake-encrypter.js";
 import { FakeHasher } from "../cryptography/fake-hasher.js";
 import { InMemoryUsuariosRepository } from "../repositories/in-memory-users-repository.js";
+import { CredenciaisInvalidasError } from "@/core/errors/credenciais-invalidas-error.js";
 
 describe('Caso de Uso: Autenticar', () => {
   let sut: AutenticarUseCase
@@ -29,53 +30,73 @@ describe('Caso de Uso: Autenticar', () => {
   it('Deve ser possivel autenticar', async () => {
     const senhaHash = await hashGenerator.generateHash('senha')
 
-    const usuario = new Usuario({
+    const usuario = Usuario.create({
       email: Email.criar('usuario@email.com'),
       role: 'ADMIN',
-      senhaHash
+      senhaHash,
     })
 
     await usuariosRepository.create(usuario)
 
-    const { accessToken } = await sut.execute({
+    const result = await sut.execute({
       email: usuario.getEmail().getValor(),
       senha: 'senha'
     })
 
-    expect(accessToken).toBeTruthy()
+    expect(result.isRight()).toBe(true)
+
+    if (result.isRight()) {
+      expect(result.value.accessToken).toEqual(expect.any(String))
+      expect(result.value.usuario).toEqual({
+        email: 'usuario@email.com',
+        role: 'ADMIN',
+      })
+    }
   })
 
   it('Não deve ser possivel autenticar com um email invalido', async () => {
     const senhaHash = await hashGenerator.generateHash('senha')
 
-    const usuario = new Usuario({
+    const usuario = Usuario.create({
       email: Email.criar('usuario@email.com'),
       role: 'ADMIN',
-      senhaHash
+      senhaHash,
     })
 
     await usuariosRepository.create(usuario)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       email: 'invalid@email.com',
       senha: 'senha'
-    })).rejects.toBeInstanceOf(Error)
+    })
+
+    expect(result.isLeft()).toBe(true)
+
+    if (result.isLeft()) {
+      expect(result.value).toBeInstanceOf(CredenciaisInvalidasError)
+    }
   })
 
   it('Não deve ser possivel autenticar com uma senha invalida', async () => {
     const senhaHash = await hashGenerator.generateHash('senha')
 
-    const usuario = new Usuario({
+    const usuario = Usuario.create({
       email: Email.criar('usuario@email.com'),
       role: 'ADMIN',
-      senhaHash
+      senhaHash,
     })
 
     await usuariosRepository.create(usuario)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       email: usuario.getEmail().getValor(),
       senha: 'invalid-password'
-    })).rejects.toBeInstanceOf(Error)
+    })
+
+    expect(result.isLeft()).toBe(true)
+
+    if (result.isLeft()) {
+      expect(result.value).toBeInstanceOf(CredenciaisInvalidasError)
+    }
   })
 })

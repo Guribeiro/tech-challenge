@@ -1,12 +1,22 @@
+// src/infra/http/dto/autenticar.dto.ts
+import { ApiProperty } from '@nestjs/swagger'
 import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator'
 
 export class AutenticarBodyDto {
-  @IsEmail({}, { message: 'Formato de e-mail inválido' })
-  @IsNotEmpty({ message: 'E-mail é obrigatório' })
+  @ApiProperty({
+    example: 'usuario@email.com',
+    description: 'E-mail cadastrado do usuário',
+  })
+  @IsEmail({}, { message: 'E-mail inválido' })
+  @IsNotEmpty()
   email!: string
 
+  @ApiProperty({
+    example: '123456',
+    description: 'Senha do usuário',
+  })
   @IsString()
-  @IsNotEmpty({ message: 'Senha é obrigatória' })
-  @MinLength(6, { message: 'A senha deve ter no mínimo 6 caracteres' })
+  @IsNotEmpty()
+  @MinLength(6)
   senha!: string
 }

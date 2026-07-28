@@ -6,6 +6,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.setGlobalPrefix('api')
+
   const config = new DocumentBuilder()
     .setTitle('API Tech Challenge - NestJS')
     .setDescription('Documentação dos endpoints da API (Bounded Contexts: Faturamento, Liberação, Notificações, OS/Orçamento)')
@@ -18,7 +20,6 @@ async function bootstrap() {
   // Endpoint onde a documentação ficará acessível (ex: http://localhost:3000/docs)
   SwaggerModule.setup('docs', app, document)
 
-  app.setGlobalPrefix('api')
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -1,3 +1,6 @@
+import { Either, left, right } from '@/core/either.js';
+import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js';
+import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js';
 import { Mecanico } from '@/modules/os-orcamento/domain/entities/mecanico.js'
 import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js';
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js';
@@ -12,9 +15,14 @@ interface CriarMecanicoUseCaseInput {
   especialidade?: string
 }
 
-interface CriarMecanicoUseCaseOutput {
-  mecanico: Mecanico
-}
+type Errors = EmailJaCadastradoError | CpfJaCadastradoError
+
+type CriarMecanicoUseCaseOutput = Either<
+  Errors,
+  {
+    mecanico: Mecanico
+  }
+>
 
 @Injectable()
 export class CriarMecanicoUseCase {
@@ -32,13 +40,13 @@ export class CriarMecanicoUseCase {
     const mecanicoComMesmoEmail = await this.mecanicoRepository.findByEmail(email)
 
     if (mecanicoComMesmoEmail) {
-      throw new Error('este email já está cadastrado')
+      return left(new EmailJaCadastradoError())
     }
 
     const mecanicoComMesmoCpf = await this.mecanicoRepository.findByCpf(cpf)
 
     if (mecanicoComMesmoCpf) {
-      throw new Error('este cpf já está cadastrado')
+      return left(new CpfJaCadastradoError())
     }
 
     const mecanico = Mecanico.criar({
@@ -50,8 +58,8 @@ export class CriarMecanicoUseCase {
 
     await this.mecanicoRepository.create(mecanico)
 
-    return {
+    return right({
       mecanico
-    }
+    })
   }
 }

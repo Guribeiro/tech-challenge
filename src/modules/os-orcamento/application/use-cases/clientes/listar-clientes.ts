@@ -1,8 +1,9 @@
+import { Either, right } from '@/core/either.js'
 import { BuscarClientesParams, BuscarClientesResultado, ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
 import { Injectable } from '@nestjs/common'
 
 export type ListarClienteInput = Partial<BuscarClientesParams>
-export type ListarClienteOutput = BuscarClientesResultado
+export type ListarClienteOutput = Either<never, BuscarClientesResultado>
 
 @Injectable()
 export class ListarClientesUseCase {
@@ -19,11 +20,11 @@ export class ListarClientesUseCase {
       status
     })
 
-    return {
+    return right({
       clientes,
       total,
       pagina,
       limite,
-    }
+    })
   }
 }
