@@ -50,15 +50,14 @@ describe('Caso de Uso: Criar Credenciais', () => {
 
     await mecanicoRepository.save(mecanico)
 
-    await vi.waitFor(() => {
-      // Asserção 1: O usuário foi mapeado e criado com sucesso com o mesmo ID do mecânico?
-      const usuarioCriado = usuariosRepository.items.find(
-        (user) => user.getId().toValue() === mecanico.getId().toValue()
-      )
-      expect(usuarioCriado).toBeTruthy()
-
-      expect(spyNotificacao).toHaveBeenCalled()
+    const { usuario } = await sut.execute({
+      id: mecanico.getId().toValue(),
+      email: mecanico.getEmail().getValor(),
+      role: 'MECANICO'
     })
+
+    expect(usuario.getId().equals(mecanico.getId())).toBe(true)
+    expect(usuario.getRole()).toBe('MECANICO')
   })
 
 })

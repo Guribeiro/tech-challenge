@@ -2,15 +2,13 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao-event.js'
 import { EmitirTermoRejeicaoUseCase } from '@/modules/liberacao/application/use-cases/emitir-termo-liberacao-rejeicao.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class OnOrdemServicoEncerradaPorRejeicao implements EventHandler, OnModuleInit {
+export class OnOrdemServicoEncerradaPorRejeicao implements EventHandler {
   constructor(
     private readonly emitirTermoRejeicao: EmitirTermoRejeicaoUseCase,
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 

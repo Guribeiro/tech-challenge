@@ -2,18 +2,15 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSEncerradaEvent } from '../../../os-orcamento/domain/events/os-encerrada-event.js'
 import { EmitirTermoLiberacaoUseCase } from '@/modules/liberacao/application/use-cases/emitir-termo-liberacao.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class OnOrdemServicoEncerrada implements EventHandler, OnModuleInit {
+export class OnOrdemServicoEncerrada implements EventHandler {
   constructor(
     private readonly emitirTermoLiberacao: EmitirTermoLiberacaoUseCase,
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
-
 
   public setupSubscriptions(): void {
     DomainEvents.register(

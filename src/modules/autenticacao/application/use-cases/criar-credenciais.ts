@@ -12,6 +12,11 @@ interface CriarCredenciaisInput {
   role: 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
 }
 
+interface CriarCredenciaisOutput {
+  usuario: Usuario
+}
+
+
 @Injectable()
 export class CriarCredenciaisUseCase {
   constructor(
@@ -19,10 +24,14 @@ export class CriarCredenciaisUseCase {
     private readonly hashGenerator: HashGenerator,
   ) { }
 
-  async execute({ id, email, role }: CriarCredenciaisInput): Promise<void> {
+  async execute({ id, email, role }: CriarCredenciaisInput): Promise<CriarCredenciaisOutput> {
     const usuarioExistente = await this.usuariosRepository.findByEmail(email)
-    if (usuarioExistente) return
 
+    if (usuarioExistente) {
+      return {
+        usuario: usuarioExistente
+      }
+    }
     const senhaPlanaProvisoria = `oficina-${randomBytes(3).toString('hex')}`
 
     const senhaHash = await this.hashGenerator.generateHash(senhaPlanaProvisoria)
@@ -38,5 +47,9 @@ export class CriarCredenciaisUseCase {
     )
 
     await this.usuariosRepository.create(usuario)
+
+    return {
+      usuario
+    }
   }
 }

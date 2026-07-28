@@ -8,11 +8,11 @@ import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produto
 import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js"
 import { Servico } from "@/modules/os-orcamento/domain/entities/servico.js"
 import { Produto } from "@/modules/estoque/domain/entities/produto.js"
+import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
 
 interface ConcluirDiagnosticoInput {
   ordemServicoId: string
   usuarioId: string
-  usuarioRole: Role
   servicos?: Array<ServicoItemInput & { id?: string }>
   componentes?: Array<ComponenteItemInput & { id?: string }>
 }
@@ -23,9 +23,17 @@ export class ConcluirDiagnosticoUseCase {
     private readonly ordemServicoRepository: OrdemServicoRepository,
     private readonly produtoRepository: ProdutoRepository,
     private readonly servicoRepository: ServicoRepository,
+    private readonly usuarioRepository: UsuariosRepository,
   ) { }
 
   public async execute(input: ConcluirDiagnosticoInput): Promise<void> {
+
+    const usuario = await this.usuarioRepository.findById(input.usuarioId)
+
+    if (!usuario) {
+      throw new Error('usuario nao encontrado')
+    }
+
     const ordemServico = await this.ordemServicoRepository.findById(input.ordemServicoId)
     if (!ordemServico) {
       throw new Error(`Ordem de Serviço ${input.ordemServicoId} não encontrada.`)
@@ -33,7 +41,7 @@ export class ConcluirDiagnosticoUseCase {
 
     const isOwner = ordemServico.getMecanicoId()?.toValue() === input.usuarioId
 
-    const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(input.usuarioRole)
+    const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(usuario.getRole())
 
     if (!isOwner && !isAdminOrReception) {
       throw new UnauthorizedException(

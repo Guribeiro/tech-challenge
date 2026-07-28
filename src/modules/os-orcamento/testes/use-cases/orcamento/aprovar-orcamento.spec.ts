@@ -1,153 +1,105 @@
+import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { DomainEvents } from '@/core/events/domain-events.js'
 import { AprovarOrcamentoUseCase } from '@/modules/os-orcamento/application/use-cases/orcamento/aprovar-orcamento.js'
-
-// Repositórios em Memória
-import { InMemoryProdutoRepository } from '@/modules/estoque/testes/repositories/in-memory-produto-repository.js'
 import { InMemoryOrcamentoRepository } from '../../repositories/in-memory-orcamento-repository.js'
-import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordem-servico-repository.js'
-
-// Entidades e Factories (substitua pelos seus caminhos/factories de teste)
-import { Orcamento } from '@/modules/os-orcamento/domain/entities/orcamento.js'
-import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
-import { OrdemServicoComponente } from '@/modules/os-orcamento/domain/entities/ordem-servico-componente.js'
-
-// Caso de Uso Auxiliar e Subscribers
-import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js'
-import { makeProduto } from '@/modules/estoque/testes/factories/make-produto.js'
-import { OnClienteAprovouOrcamento } from '@/modules/os-orcamento/application/subscribers/on-orcamento-aprovado.js'
-import { OnExecucaoAutorizada } from '@/modules/os-orcamento/application/subscribers/on-os-execucao-autorizada.js'
-import { OnProdutosReservados } from '@/modules/os-orcamento/application/subscribers/on-produtos-reservados.js'
-import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
-import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
-import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/ordem-servico-servico.js'
-import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
-import { makeCliente } from '../../factories/make-cliente.js'
-import { makeServico } from '../../factories/make-servico.js'
-import { makeVeiculo } from '../../factories/make-veiculo.js'
 import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
-import { InMemoryServicoRepository } from '../../repositories/in-memory-servico-repository.js'
-import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
+import { makeCliente } from '../../factories/make-cliente.js'
+import { Orcamento } from '@/modules/os-orcamento/domain/entities/orcamento.js'
+import { OrcamentoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/orcamento-componente-list.js'
+import { OrcamentoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/orcamento-servico-list.js'
 
-describe('Caso de Uso: Aprovar Orçamento (Caminho Feliz)', () => {
+describe('Caso de Uso: Aprovar Orçamento', () => {
   let orcamentoRepository: InMemoryOrcamentoRepository
-  let ordemServicoRepository: InMemoryOrdemServicoRepository
-  let produtoRepository: InMemoryProdutoRepository
-  let servicoRepository: InMemoryServicoRepository
   let clienteRepository: InMemoryClienteRepository
-  let veiculoRepository: InMemoryVeiculoRepository
-
-  // Casos de Uso
-  let sut: AprovarOrcamentoUseCase // System Under Test
-  let reservarPecasEstoque: ReservarProdutosEstoqueUseCase
+  let sut: AprovarOrcamentoUseCase
 
   beforeEach(() => {
-    // 1. Inicializa repositórios em memória
-    orcamentoRepository = new InMemoryOrcamentoRepository()
-    ordemServicoRepository = new InMemoryOrdemServicoRepository()
-    produtoRepository = new InMemoryProdutoRepository()
-    servicoRepository = new InMemoryServicoRepository()
-    clienteRepository = new InMemoryClienteRepository()
-    veiculoRepository = new InMemoryVeiculoRepository()
+    DomainEvents.clearSubscribers()
 
-    // 2. Inicializa os Casos de Uso
-    reservarPecasEstoque = new ReservarProdutosEstoqueUseCase(produtoRepository)
+    orcamentoRepository = new InMemoryOrcamentoRepository()
+    clienteRepository = new InMemoryClienteRepository()
+
     sut = new AprovarOrcamentoUseCase(
       orcamentoRepository,
       clienteRepository
     )
-
-    // 3. Registra os Subscribers (Ouvintes) para o teste
-    new OnClienteAprovouOrcamento(ordemServicoRepository)
-    new OnExecucaoAutorizada(reservarPecasEstoque)
-    new OnProdutosReservados(ordemServicoRepository)
-
-    vi.clearAllMocks()
   })
 
-  it('deve aprovar o orçamento, autorizar a OS, reservar os produtos no estoque e deixar a OS pronta para iniciar', async () => {
+  it('deve aprovar um orçamento com sucesso', async () => {
+    // 1. Arrange
     const cliente = makeCliente()
     await clienteRepository.create(cliente)
 
-    const produto = makeProduto({ quantidadeEstoque: 10, quantidadeReservada: 0 })
-    await produtoRepository.create(produto)
-
-    const servico = makeServico({ nome: 'Troca de óleo' })
-    await servicoRepository.create(servico)
-
-    const veiculo = makeVeiculo()
-    await veiculoRepository.create(veiculo)
-
-    // Cria componentes da OS associados ao produto cadastrado
-    const componenteOS = new OrdemServicoComponente({
-      produtoId: produto.getId(),
-      quantidade: 2,
-      precoUnitario: produto.getPrecoUnitario(),
-      tipo: produto.getTipo(),
-      descricao: produto.getDescricao()
-    })
-
-    const osServicos = new OrdemServicoServico({
-      categoria: servico.getCategoria(),
-      nome: servico.getNome(),
-      precoUnitario: servico.getValorReferencia(),
-      servicoId: servico.getId(),
-    })
-
-    const prioridade = Prioridade.calcular({
-      eGarantia: true,
-      eClienteCorporativo: cliente.getTipo() === 'PJ',
-      anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: [osServicos.getCategoria()]
-    });
-
-    // Cria a Ordem de Serviço em estado de diagnóstico aguardando aprovação
-    const ordemServico = OrdemServico.criar({
-      clienteId: cliente.getId(),
-      componentes: new OrdemServicoComponenteList([componenteOS]),
-      servicos: new OrdemServicoServicoList([osServicos]),
-      prioridade,
-      status: 'AGUARDANDO_APROVACAO',
-      eGarantia: true,
-      veiculoId: veiculo.getId(),
-      descricao: 'Algum problema com o veiculo'
-    })
-    await ordemServicoRepository.create(ordemServico)
-
-    // Cria o orçamento vinculado à OS
     const orcamento = Orcamento.criar({
-      ordemServicoId: ordemServico.getId(),
+      ordemServicoId: new UniqueEntityID(),
       status: 'ENVIADO',
       clienteId: cliente.getId(),
-      componentes: ordemServico.getComponentes().getItems(),
-      servicos: ordemServico.getServicos().getItems()
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList()
     })
     await orcamentoRepository.save(orcamento)
 
-    // --- ACT (Executar a ação) ---
+    // 2. Act
     const resultado = await sut.execute({
       orcamentoId: orcamento.getId().toValue(),
       clienteId: cliente.getId().toValue()
     })
 
-    // --- ASSERT (Verificar resultados e efeitos colaterais assíncronos) ---
-    expect(resultado.orcamento.getId().toValue()).toBe(orcamento.getId().toValue())
-
-    // 1. O Orçamento mudou para APROVADO?
+    // 3. Assert (Verifica estritamente o papel do Caso de Uso)
     expect(resultado.orcamento.getStatus()).toBe('APROVADO')
 
-    // 2. O Estoque reservou os produtos corretos? (Tinha 10, reservou 2)
-    await vi.waitFor(async () => {
-      // 1. O Estoque reservou os produtos corretos?
-      const produtoNoEstoque = await produtoRepository.findById(produto.getId().toValue())
-
-
-      expect(produtoNoEstoque?.getQuantidadeReservada()).toBe(2)
-
-      // 2. A OS passou por toda a esteira e terminou como PRONTA_PARA_INICIAR?
-      const osNoBanco = await ordemServicoRepository.findById(ordemServico.getId().toValue())
-      expect(osNoBanco?.getStatus()).toBe('PRONTA_PARA_INICIAR')
-    }, { timeout: 1000 })
+    // Valida se foi realmente persistido no repositório
+    const orcamentoNoBanco = await orcamentoRepository.findById(orcamento.getId().toValue())
+    expect(orcamentoNoBanco?.getStatus()).toBe('APROVADO')
   })
 
+  it('deve lançar erro caso o orçamento não exista', async () => {
+    const cliente = makeCliente()
+    await clienteRepository.create(cliente)
 
+    await expect(sut.execute({
+      orcamentoId: 'orcamento-inexistente',
+      clienteId: cliente.getId().toValue()
+    })).rejects.toThrow('Orçamento com ID orcamento-inexistente não encontrado.')
+  })
+
+  it('deve lançar erro caso o cliente não exista', async () => {
+    const orcamento = Orcamento.criar({
+      ordemServicoId: new UniqueEntityID(),
+      status: 'ENVIADO',
+      clienteId: new UniqueEntityID(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList()
+    })
+    await orcamentoRepository.save(orcamento)
+
+    await expect(sut.execute({
+      orcamentoId: orcamento.getId().toValue(),
+      clienteId: 'cliente-inexistente'
+    })).rejects.toThrow('Cliente não encontrado')
+  })
+
+  it('não deve permitir que um cliente aprove o orçamento de outro cliente', async () => {
+    const clienteDono = makeCliente()
+    const clienteIntruso = makeCliente()
+
+    await clienteRepository.create(clienteDono)
+    await clienteRepository.create(clienteIntruso)
+
+    const orcamento = Orcamento.criar({
+      ordemServicoId: new UniqueEntityID(),
+      status: 'ENVIADO',
+      clienteId: clienteDono.getId(), // Pertence ao clienteDono
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList()
+    })
+    await orcamentoRepository.save(orcamento)
+
+    // Tenta aprovar usando o ID do clienteIntruso
+    await expect(sut.execute({
+      orcamentoId: orcamento.getId().toValue(),
+      clienteId: clienteIntruso.getId().toValue()
+    })).rejects.toThrow('Você não tem permissão para aprovar este orçamento')
+  })
 })

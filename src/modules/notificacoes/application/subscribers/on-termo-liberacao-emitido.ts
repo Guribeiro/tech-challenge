@@ -5,18 +5,16 @@ import { ClienteOrdemServicoGateway } from '@/modules/liberacao/application/gate
 import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-emitido-event.js'
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js' // ◄ Importa o segundo evento
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 type TermoLiberacaoEvents = TermoLiberacaoEmitidoEvent | TermoLiberacaoPorRejeicaoEmitidoEvent
 
 @Injectable()
-export class OnTermoLiberacaoEmitido implements EventHandler, OnModuleInit {
+export class OnTermoLiberacaoEmitido implements EventHandler {
   constructor(
     private readonly clienteOrdemServicoGateway: ClienteOrdemServicoGateway,
     private readonly enviarNotificacao: EnviarNotificacaoUseCase
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 

@@ -15,14 +15,19 @@ import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
 import { makeMecanico } from "../../factories/make-mecanico.js";
 import { InMemoryMecanicosRepository } from "../../repositories/in-memory-mecanicos-repository.js";
+import { InMemoryProdutoRepository } from "@/modules/estoque/testes/repositories/in-memory-produto-repository.js";
+import { InMemoryUsuariosRepository } from "@/modules/autenticacao/testes/repositories/in-memory-users-repository.js";
+import { makeUsuario } from "@/modules/autenticacao/testes/factories/make-usuario.js";
 
 
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let orcamentoRepository: InMemoryOrcamentoRepository
 let clienteRepository: InMemoryClienteRepository
 let veiculoRepository: InMemoryVeiculoRepository
+let produtoRepository: InMemoryProdutoRepository
 let servicoRepository: InMemoryServicoRepository
 let mecanicoRepository: InMemoryMecanicosRepository
+let usuarioRepository: InMemoryUsuariosRepository
 
 let sut: ConcluirDiagnosticoUseCase
 
@@ -33,14 +38,24 @@ describe('Concluir diagnostico', () => {
     clienteRepository = new InMemoryClienteRepository()
     veiculoRepository = new InMemoryVeiculoRepository()
     servicoRepository = new InMemoryServicoRepository()
+    produtoRepository = new InMemoryProdutoRepository()
     mecanicoRepository = new InMemoryMecanicosRepository()
+    usuarioRepository = new InMemoryUsuariosRepository()
 
     sut = new ConcluirDiagnosticoUseCase(
       ordemServicoRepository,
+      produtoRepository,
+      servicoRepository,
+      usuarioRepository
     )
   })
 
   it('deve concluir diagnostico do veiculo', async () => {
+
+    const usuario = makeUsuario()
+
+    usuarioRepository.create(usuario)
+
     const cliente = makeCliente()
 
     await clienteRepository.create(cliente)
@@ -53,15 +68,21 @@ describe('Concluir diagnostico', () => {
 
     await servicoRepository.create(servico)
 
-    const mecanico = makeMecanico()
+    const mecanico = makeMecanico({
+      email: usuario.getEmail()
+    }, usuario.getId())
 
     await mecanicoRepository.create(mecanico)
+
+    const ordemServicoId = new UniqueEntityID()
 
     const osServicos = new OrdemServicoServico({
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
       servicoId: servico.getId(),
+      ordemServicoId,
+      criadoEm: new Date()
     })
 
     const servicos = new OrdemServicoServicoList([osServicos])
@@ -82,7 +103,7 @@ describe('Concluir diagnostico', () => {
       prioridade,
       servicos,
       componentes: new OrdemServicoComponenteList(),
-    })
+    }, ordemServicoId)
 
     ordemServico.iniciarDiagnostico(mecanico.getId())
 
@@ -90,6 +111,9 @@ describe('Concluir diagnostico', () => {
 
     await sut.execute({
       ordemServicoId: ordemServico.getId().toValue(),
+      usuarioId: mecanico.getId().toValue(),
+      componentes: [],
+      servicos: []
     })
 
   })

@@ -16,12 +16,16 @@ export interface OrdemServicoServicoProps {
 
 export class OrdemServicoServico extends Entity<OrdemServicoServicoProps> {
   public static criar(props: Optional<OrdemServicoServicoProps, 'criadoEm'>, id?: UniqueEntityID) {
-    this.validar(props)
-
-    return new OrdemServicoServico({
+    // 1. Cria o objeto garantindo o tipo completo OrdemServicoServicoProps
+    const propsCompletas: OrdemServicoServicoProps = {
       ...props,
-      criadoEm: props.criadoEm ?? new Date()
-    }, id)
+      criadoEm: props.criadoEm ?? new Date(),
+    }
+
+    // 2. Passa as propriedades completas para a validação e o construtor
+    this.validar(propsCompletas)
+
+    return new OrdemServicoServico(propsCompletas, id)
   }
 
   private static validar(props: Optional<OrdemServicoServicoProps, 'criadoEm'>) {

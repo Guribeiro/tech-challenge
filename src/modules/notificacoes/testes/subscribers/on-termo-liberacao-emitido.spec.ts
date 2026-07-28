@@ -15,12 +15,13 @@ import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servi
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
 import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
+import { InMemoryClienteOrdemServicoGateway } from '@/modules/liberacao/testes/gateways/in-memory-cliente-ordem-servico-gateway.js'
 
 describe('Subscriber: On Fatura Emitida', () => {
-  let ordemServicoRepository: OrdemServicoRepository
-  let clienteRepository: ClienteRepository
+  let ordemServicoRepository: InMemoryOrdemServicoRepository
+  let clienteRepository: InMemoryClienteRepository
   let enviarNotificacao: EnviarNotificacaoUseCase
-
+  let clienteOrdemServicoGateway: InMemoryClienteOrdemServicoGateway
 
   beforeEach(() => {
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
@@ -29,9 +30,13 @@ describe('Subscriber: On Fatura Emitida', () => {
       execute: vi.fn()
     } as unknown as EnviarNotificacaoUseCase
 
-    new OnTermoLiberacaoEmitido(
+    clienteOrdemServicoGateway = new InMemoryClienteOrdemServicoGateway(
       ordemServicoRepository,
-      clienteRepository,
+      clienteRepository
+    )
+
+    new OnTermoLiberacaoEmitido(
+      clienteOrdemServicoGateway,
       enviarNotificacao
     )
   })
@@ -130,8 +135,9 @@ describe('Subscriber: On Fatura Emitida', () => {
     })
   })
 
-  it('não deve chamar caso de uso Enviar Notificacao quando Cliente não existe', async () => {
+  it('[Subscriber]: Deve lancar ERRO quando o cliente nao existir', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+
     const cliente = makeCliente()
 
     const veiculo = makeVeiculo()
@@ -168,7 +174,7 @@ describe('Subscriber: On Fatura Emitida', () => {
     await vi.waitFor(() => {
       // Verifica se o warn exato foi emitido
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${termoLiberacao.getId().toValue()}`),
+        expect.stringContaining(`[Subscriber Warning]: Falha ao notificar cliente sobre a emissão do termo de liberação #${termoLiberacao.getId().toValue()}`,),
         expect.any(Error)
       )
       // Garante que o caso de uso realmente NÃO foi chamado

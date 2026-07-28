@@ -5,7 +5,7 @@ import { Placa } from "../../domain/entities/value-objects/placa.js";
 import { gerarPlacaMercosul } from "./utils.js";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
 
-export function makeVeiculo(override: Partial<VeiculoProps> = {}): Veiculo {
+export function makeVeiculo(override: Partial<VeiculoProps> = {}, id?: UniqueEntityID): Veiculo {
   const veiculo = Veiculo.criar({
     placa: Placa.criar(gerarPlacaMercosul()),
     marca: faker.vehicle.manufacturer(),
@@ -17,6 +17,6 @@ export function makeVeiculo(override: Partial<VeiculoProps> = {}): Veiculo {
     combustivel: faker.vehicle.fuel(),
     observacoes: faker.lorem.sentence(),
     ...override
-  })
+  }, id)
   return veiculo
 }

@@ -6,12 +6,11 @@ import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-case
 import { Injectable, OnModuleInit } from '@nestjs/common'
 
 @Injectable()
-export class OnFaturaEmitida implements EventHandler, OnModuleInit {
+export class OnFaturaEmitida implements EventHandler {
   constructor(
     private readonly clienteOrcamentoGateway: ClienteOrcamentoGateway,
     private readonly enviarNotificacao: EnviarNotificacaoUseCase
-  ) { }
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 

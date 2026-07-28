@@ -11,6 +11,8 @@ import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veicul
 import { makeCliente } from "@/modules/os-orcamento/testes/factories/make-cliente.js"
 import { makeMecanico } from "@/modules/os-orcamento/testes/factories/make-mecanico.js"
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
+import { OrcamentoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/orcamento-componente-list.js"
+import { OrcamentoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/orcamento-servico-list.js"
 
 
 describe('Caso de Uso: Confirmar Pagamento', () => {
@@ -53,14 +55,14 @@ describe('Caso de Uso: Confirmar Pagamento', () => {
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
-      componentes: os.getComponentes().getItems(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
       ordemServicoId: os.getId(),
-      servicos: os.getServicos().getItems(),
       status: 'APROVADO',
     })
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 
@@ -98,14 +100,14 @@ describe('Caso de Uso: Confirmar Pagamento', () => {
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
-      componentes: os.getComponentes().getItems(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
       ordemServicoId: os.getId(),
-      servicos: os.getServicos().getItems(),
       status: 'APROVADO',
     })
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 

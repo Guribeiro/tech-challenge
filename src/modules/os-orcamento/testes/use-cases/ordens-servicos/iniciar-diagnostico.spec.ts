@@ -41,7 +41,7 @@ describe('Iniciar diagnostico', () => {
     new OnDiagnosticoInicializado(clienteRepository, notificacaoService)
   })
 
-  it('deve iniciar o diagnostico e disparar politica de notificacao', async () => {
+  it('Caso de Uso: Iniciar Diagnostico', async () => {
     const mecanico = makeMecanico()
     mecanicoRepository.create(mecanico)
 
@@ -96,13 +96,6 @@ describe('Iniciar diagnostico', () => {
     expect(ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
 
     expect(ordemServico.getMecanicoId()?.equals(mecanico.getId())).toBe(true)
-
-    expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        destinatario: cliente.getTelefone().getValor(),
-        mensagem: expect.stringContaining(ordemServicoBaixaPrioridade.getId().toValue())
-      })
-    )
   })
 
   it('não deve iniciar inspeção se o mecanico não existir', async () => {

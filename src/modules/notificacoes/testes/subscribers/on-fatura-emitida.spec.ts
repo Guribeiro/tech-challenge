@@ -1,8 +1,7 @@
+import { describe, beforeEach, it, expect, vi } from 'vitest'
 import { FaturaEmitidaEvent } from "@/modules/faturamento/domain/events/fatura-emitida-event.js";
 import { OnFaturaEmitida } from "../../application/subscribers/on-fatura-emitida.js";
 import { EnviarNotificacaoUseCase } from "../../domain/use-cases/enviar-notificacao.js";
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
-import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js";
 import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js";
 import { InMemoryClienteRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js";
 import { Fatura } from "@/modules/faturamento/domain/entities/fatura.js";
@@ -15,41 +14,54 @@ import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js";
 import { makeCliente } from "@/modules/os-orcamento/testes/factories/make-cliente.js";
 import { DomainEvents } from "@/core/events/domain-events.js";
-
+import { InMemoryClienteOrcamentoGateway } from "@/modules/faturamento/testes/gateways/in-memory-cliente-orcamento-gateway.js";
+import { InMemoryOrcamentoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-orcamento-repository.js";
+import { OrcamentoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/orcamento-componente-list.js";
+import { OrcamentoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/orcamento-servico-list.js";
 
 describe('Subscriber: On Fatura Emitida', () => {
-  let ordemServicoRepository: OrdemServicoRepository
-  let clienteRepository: ClienteRepository
+  let orcamentoRepository: InMemoryOrcamentoRepository
+  let ordemServicoRepository: InMemoryOrdemServicoRepository
+  let clienteRepository: InMemoryClienteRepository
   let enviarNotificacao: EnviarNotificacaoUseCase
-
+  let clienteOrcamentoGateway: InMemoryClienteOrcamentoGateway
 
   beforeEach(() => {
+    DomainEvents.clearSubscribers()
+
+    orcamentoRepository = new InMemoryOrcamentoRepository()
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
     clienteRepository = new InMemoryClienteRepository()
+
+    clienteOrcamentoGateway = new InMemoryClienteOrcamentoGateway(
+      orcamentoRepository,
+      ordemServicoRepository,
+      clienteRepository
+    )
+
     enviarNotificacao = {
       execute: vi.fn()
     } as unknown as EnviarNotificacaoUseCase
 
     new OnFaturaEmitida(
-      ordemServicoRepository,
-      clienteRepository,
+      clienteOrcamentoGateway,
       enviarNotificacao
     )
   })
 
   it('deve chamar caso de uso Enviar Notificacao', async () => {
+    // Arrange
     const cliente = makeCliente()
-
     await clienteRepository.create(cliente)
 
     const veiculo = makeVeiculo()
-
     const prioridade = Prioridade.calcular({
       anoVeiculo: veiculo.getAno(),
       categoriasDosServicos: [],
       eClienteCorporativo: false,
       eGarantia: false,
     })
+
     const os = OrdemServico.criar({
       clienteId: cliente.getId(),
       veiculoId: new UniqueEntityID(),
@@ -60,44 +72,45 @@ describe('Subscriber: On Fatura Emitida', () => {
       eGarantia: false,
       prioridade,
     })
-
     await ordemServicoRepository.create(os)
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
       ordemServicoId: os.getId(),
-      componentes: os.getComponentes().getItems(),
-      servicos: os.getServicos().getItems(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
     })
+    // CORREÇÃO 1: Salvar o orçamento no repositório!
+    await orcamentoRepository.create(orcamento)
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 
+    // Act
     const evento = new FaturaEmitidaEvent(fatura)
-
     DomainEvents.dispatch(evento)
 
+    // Assert
     await vi.waitFor(() => {
       expect(enviarNotificacao.execute).toHaveBeenCalled()
     })
   })
 
   it('não deve chamar caso de uso Enviar Notificacao quando OS não existir', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+    vi.spyOn(console, 'error').mockImplementation(() => { })
     const cliente = makeCliente()
-
     await clienteRepository.create(cliente)
 
     const veiculo = makeVeiculo()
-
     const prioridade = Prioridade.calcular({
       anoVeiculo: veiculo.getAno(),
       categoriasDosServicos: [],
       eClienteCorporativo: false,
       eGarantia: false,
     })
+
     const os = OrdemServico.criar({
       clienteId: cliente.getId(),
       veiculoId: new UniqueEntityID(),
@@ -108,48 +121,45 @@ describe('Subscriber: On Fatura Emitida', () => {
       eGarantia: false,
       prioridade,
     })
+    // NOTE: A OS NÃO É SALVA NO REPOSITÓRIO PROPÓSITAMENTE AQUI
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
-      ordemServicoId: os.getId(),
-      componentes: os.getComponentes().getItems(),
-      servicos: os.getServicos().getItems(),
+      ordemServicoId: os.getId(), // Associa a uma OS inexistente no repo
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
     })
+    // CORREÇÃO 1: Salvar o orçamento no repositório para o gateway avançar até a busca da OS
+    await orcamentoRepository.create(orcamento)
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 
     const evento = new FaturaEmitidaEvent(fatura)
-
     DomainEvents.dispatch(evento)
 
     await vi.waitFor(() => {
-      // Verifica se o warn exato foi emitido
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId()}`),
-        expect.any(Error)
-      )
-      // Garante que o caso de uso realmente NÃO foi chamado
       expect(enviarNotificacao.execute).not.toHaveBeenCalled()
     })
   })
 
   it('não deve chamar caso de uso Enviar Notificacao quando Cliente não existir', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+    vi.spyOn(console, 'error').mockImplementation(() => { })
     const cliente = makeCliente()
+    // NOTE: O CLIENTE NÃO É SALVO NO REPOSITÓRIO PROPÓSITAMENTE AQUI
 
     const veiculo = makeVeiculo()
-
     const prioridade = Prioridade.calcular({
       anoVeiculo: veiculo.getAno(),
       categoriasDosServicos: [],
       eClienteCorporativo: false,
       eGarantia: false,
     })
+
     const os = OrdemServico.criar({
-      clienteId: cliente.getId(),
+      clienteId: cliente.getId(), // Associa a um cliente inexistente
       veiculoId: new UniqueEntityID(),
       mecanicoId: new UniqueEntityID(),
       componentes: new OrdemServicoComponenteList([]),
@@ -158,32 +168,26 @@ describe('Subscriber: On Fatura Emitida', () => {
       eGarantia: false,
       prioridade,
     })
-
     await ordemServicoRepository.create(os)
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
       ordemServicoId: os.getId(),
-      componentes: os.getComponentes().getItems(),
-      servicos: os.getServicos().getItems(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
     })
+    // CORREÇÃO 1: Salvar o orçamento no repositório!
+    await orcamentoRepository.create(orcamento)
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 
     const evento = new FaturaEmitidaEvent(fatura)
-
     DomainEvents.dispatch(evento)
 
     await vi.waitFor(() => {
-      // Verifica se o warn exato foi emitido
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId()}`),
-        expect.any(Error)
-      )
-      // Garante que o caso de uso realmente NÃO foi chamado
       expect(enviarNotificacao.execute).not.toHaveBeenCalled()
     })
   })

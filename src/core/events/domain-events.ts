@@ -19,6 +19,10 @@ export class DomainEvents {
     this.handlersMap.get(eventClassName)?.push(callback)
   }
 
+  public static clearSubscribers(): void {
+    this.handlersMap.clear()
+  }
+
   /**
    * Dispara o evento imediatamente para todos os inscritos ouvirem
    */
