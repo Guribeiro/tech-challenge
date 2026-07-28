@@ -11,8 +11,15 @@ import { EnviarNotificacaoUseCase } from './domain/use-cases/enviar-notificacao.
 import { InMemoryNotificacaoService } from './testes/services/in-memory-notificacao-service.js'
 import { ClienteOrcamentoGateway } from '../faturamento/application/gateways/cliente-orcamento-gateway.js'
 import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento-gateway.js'
+import { ClienteOrdemServicoGateway } from '@/modules/liberacao/application/gateways/cliente-ordem-servico-gateway.js'
+import { DbClienteOrdemServicoGateway } from '@/infra/gateways/db-cliente-ordem-servico-gateway.js'
+
 import { OsOrcamentoModule } from '../os-orcamento/os-orcamento.module.js'
 import { OnFaturaEmitida } from './application/subscribers/on-fatura-emitida.js'
+import { OnOrcamentoRecusado } from './application/subscribers/on-orcamento-recusado.js'
+import { OnOrcamentoRenegociadoRecusado } from './application/subscribers/on-orcamento-renegociado-recusado.js'
+import { OnOrcamentoRenegociado } from './application/subscribers/on-orcamento-renegociado.js'
+import { OnTermoLiberacaoEmitido } from './application/subscribers/on-termo-liberacao-emitido.js'
 
 @Module({
   imports: [
@@ -26,6 +33,10 @@ import { OnFaturaEmitida } from './application/subscribers/on-fatura-emitida.js'
     OnOrcamentoEnviado,
     OnExecucaoIniciada,
     OnFaturaEmitida,
+    OnOrcamentoRecusado,
+    OnOrcamentoRenegociadoRecusado,
+    OnOrcamentoRenegociado,
+    OnTermoLiberacaoEmitido,
     {
       provide: NotificacaoService,
       useClass: InMemoryNotificacaoService,
@@ -33,6 +44,10 @@ import { OnFaturaEmitida } from './application/subscribers/on-fatura-emitida.js'
     {
       provide: ClienteRepository,
       useClass: PrismaClienteRepository,
+    },
+    {
+      provide: ClienteOrdemServicoGateway,
+      useClass: DbClienteOrdemServicoGateway
     },
     {
       provide: ClienteOrcamentoGateway,

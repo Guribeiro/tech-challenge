@@ -1,7 +1,11 @@
 import { Injectable } from "@nestjs/common";
 
 import { Cliente } from "@/modules/os-orcamento/domain/entities/cliente.js";
-import { BuscarClientesParams, BuscarClientesResultado, ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js";
+import {
+  BuscarClientesParams,
+  BuscarClientesResultado,
+  ClienteRepository
+} from "@/modules/os-orcamento/domain/repositories/clientes-repository.js";
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 import { PrismaClienteMapper } from "../mappers/prisma-cliente-mapper.js";
 import { Prisma } from "@/generated/prisma/client.js";

@@ -3,12 +3,16 @@ import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoRenegociadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-renegociado-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnOrcamentoRenegociado implements EventHandler {
+@Injectable()
+export class OnOrcamentoRenegociado implements EventHandler, OnModuleInit {
   constructor(
     private readonly enviarNotificacao: EnviarNotificacaoUseCase,
     private readonly clienteRepository: ClienteRepository
-  ) {
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
@@ -26,7 +30,6 @@ export class OnOrcamentoRenegociado implements EventHandler {
       const cliente = await this.clienteRepository.findById(orcamento.getClienteId().toValue())
       if (!cliente) return
 
-      // Envia o novo orçamento linkado/atualizado para o WhatsApp do cliente
       await this.enviarNotificacao.execute({
         destinatario: cliente.getTelefone().getValor(),
         mensagem: `Olá! Preparamos uma proposta especial revisada para o seu veículo. Acesse o link para conferir as novas condições: [Link do Orçamento #${orcamento.getId()}]`

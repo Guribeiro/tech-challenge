@@ -29,8 +29,8 @@ import { ConcluirDiagnosticoController } from './controllers/ordem-servico/concl
 import { AprovarOrcamentoController } from './controllers/orcamentos/aprovar-orcamento.controller.js'
 import { IniciarExecucaoController } from './controllers/ordem-servico/iniciar-execucao.controller.js'
 import { FinalizarExecucaoController } from './controllers/ordem-servico/finalizar-execucao.controller.js'
-
-
+import { RecusarOrcamentoController } from './controllers/orcamentos/recusar-orcamento.controller.js'
+import { RenegociarOrcamentoController } from './controllers/orcamentos/renegociar-orcamento.controller.js'
 
 // Use Cases
 import { CriarMecanicoUseCase } from '@/modules/os-orcamento/application/use-cases/mecanicos/criar-mecanico.js'
@@ -55,11 +55,15 @@ import { CriarOrdemServicoUseCase } from './application/use-cases/ordens-servico
 import { ObterFilaTrabalhoUseCase } from './application/use-cases/ordens-servicos/obter-fila-trabalho.js'
 import { IniciarDiagnosticoUseCase } from './application/use-cases/ordens-servicos/iniciar-diagnostico.js'
 import { ConcluirDiagnosticoUseCase } from './application/use-cases/ordens-servicos/concluir-diagnostico.js'
+import { EncerrarOrdemServicoUseCase } from './application/use-cases/ordens-servicos/encerrar-os-por-rejeicao.js'
+
 
 import { GerarOrcamentoUseCase } from './application/use-cases/orcamento/gerar-orcamento.js'
 import { AprovarOrcamentoUseCase } from './application/use-cases/orcamento/aprovar-orcamento.js'
 import { IniciarExecucaoUseCase } from './application/use-cases/ordens-servicos/iniciar-execucao.js'
 import { FinalizarExecucaoUseCase } from './application/use-cases/ordens-servicos/finalizar-execucao.js'
+import { RecusarOrcamentoUseCase } from './application/use-cases/orcamento/recusar-orcamento.js'
+import { RenegociarOrcamentoUseCase } from './application/use-cases/orcamento/renegociar-orcamento.js'
 
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
@@ -87,12 +91,18 @@ import { ReservarProdutosEstoqueUseCase } from '../estoque/application/use-cases
 import { OnProdutosReservados } from './application/subscribers/on-produtos-reservados.js'
 import { EncerrarOrdemServicoFaturaPagaUseCase } from './application/use-cases/ordens-servicos/encerrar-os-fatura-paga.js'
 import { OnFaturaPagaEncerrarOrdemServico } from './application/subscribers/on-fatura-paga.js'
+import { OnOrcamentoRenegociadoRecusadoEncerrarOS } from './application/subscribers/on-orcamento-renegociado-recusado-encerrar-os.js'
+
+
 import { FaturamentoModule } from '../faturamento/faturamento.module.js'
+import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
+import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
+
 
 
 @Module({
   imports: [
-    forwardRef(() => FaturamentoModule), // ➔ Envolva com forwardRef
+    forwardRef(() => FaturamentoModule), // ➔ Envolva com forwardRef,
   ],
   controllers: [
     CriarMecanicoController,
@@ -116,6 +126,8 @@ import { FaturamentoModule } from '../faturamento/faturamento.module.js'
     AprovarOrcamentoController,
     IniciarExecucaoController,
     FinalizarExecucaoController,
+    RecusarOrcamentoController,
+    RenegociarOrcamentoController,
   ],
   providers: [
     // Database Service
@@ -146,6 +158,9 @@ import { FaturamentoModule } from '../faturamento/faturamento.module.js'
     IniciarExecucaoUseCase,
     FinalizarExecucaoUseCase,
     EncerrarOrdemServicoFaturaPagaUseCase,
+    EncerrarOrdemServicoUseCase,
+    RecusarOrcamentoUseCase,
+    RenegociarOrcamentoUseCase,
 
     //Subscribers
     OnDiagnosticoConcluido,
@@ -153,6 +168,7 @@ import { FaturamentoModule } from '../faturamento/faturamento.module.js'
     OnExecucaoAutorizada,
     OnProdutosReservados,
     OnFaturaPagaEncerrarOrdemServico,
+    OnOrcamentoRenegociadoRecusadoEncerrarOS,
 
     {
       provide: MecanicoRepository,
@@ -181,12 +197,17 @@ import { FaturamentoModule } from '../faturamento/faturamento.module.js'
     {
       provide: OrcamentoRepository,
       useClass: PrismaOrcamentoRepository
+    },
+    {
+      provide: UsuariosRepository,
+      useClass: PrismaUsuarioRepository
     }
   ],
   exports: [
     ClienteRepository,
     OrcamentoRepository,
     OrdemServicoRepository,
+    VeiculoRepository,
   ],
 })
 export class OsOrcamentoModule { }

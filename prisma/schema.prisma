@@ -75,6 +75,11 @@ enum StatusFatura {
   CANCELADA
 }
 
+enum MotivoTermoLiberacao {
+  PAGAMENTO_APROVADO
+  REJEICAO_ORCAMENTO
+}
+
 model Usuario {
   id           String    @id
   email        String    @unique
@@ -201,12 +206,13 @@ model OrdemServico {
 
   eGarantia Boolean @map("e_garantia")
 
-  status       StatusOS
-  criadoEm     DateTime                 @default(now()) @map("criado_em")
-  atualizadoEm DateTime?                @updatedAt @map("atualizado_em")
-  servicos     OrdemServicoServico[]
-  componentes  OrdemServicoComponente[]
-  orcamentos   Orcamento[]
+  status          StatusOS
+  criadoEm        DateTime                 @default(now()) @map("criado_em")
+  atualizadoEm    DateTime?                @updatedAt @map("atualizado_em")
+  servicos        OrdemServicoServico[]
+  componentes     OrdemServicoComponente[]
+  orcamentos      Orcamento[]
+  termoLiberacaos TermoLiberacao[]
 
   @@map("ordem_servicos")
 }
@@ -328,4 +334,19 @@ model Fatura {
   pagaEm    DateTime? @updatedAt @map("paga_em")
 
   @@map("faturas")
+}
+
+model TermoLiberacao {
+  id String @id
+
+  ordemServicoId String       @map("ordem_servico_id")
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id])
+
+  placaVeiculo String
+  motivo       MotivoTermoLiberacao
+  conteudo     String
+
+  emitidoEm DateTime @default(now()) @map("emitido_em")
+
+  @@map("termo_liberacoes")
 }

@@ -3,10 +3,11 @@ import { TermoLiberacaoEmitidoEvent } from "../events/termo-liberacao-emitido-ev
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from "../events/termo-liberacao-por-rejeicao-emitido-event.js"
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
 
+type Motivo = 'PAGAMENTO_APROVADO' | 'REJEICAO_ORCAMENTO'
 interface TermoLiberacaoProps {
   ordemServicoId: UniqueEntityID
   placaVeiculo: string
-  motivo: 'PAGAMENTO_APROVADO' | 'REJEICAO_ORCAMENTO'
+  motivo: Motivo
   conteudo: string
   emitidoEm: Date
 }
@@ -15,6 +16,7 @@ const termoLiberacaoVariations = {
   PAGAMENTO_APROVADO: 'Pagamento Confirmado',
   REJEICAO_ORCAMENTO: 'Orçamento Rejeitado'
 }
+
 export class TermoLiberacao extends AggregateRoot<TermoLiberacaoProps> {
   public static criar(props: Omit<TermoLiberacaoProps, 'conteudo' | 'emitidoEm'>, id?: UniqueEntityID): TermoLiberacao {
     const emitidoEm = new Date()
@@ -45,7 +47,7 @@ export class TermoLiberacao extends AggregateRoot<TermoLiberacaoProps> {
   }
 
   public getOrdemServicoId(): UniqueEntityID { return this.props.ordemServicoId }
-  public getMotivo(): string { return this.props.motivo }
+  public getMotivo(): Motivo { return this.props.motivo }
   public getConteudo(): string { return this.props.conteudo }
   public getPlacaVeiculo(): string { return this.props.placaVeiculo }
   public getEmitidoEm(): Date { return this.props.emitidoEm }

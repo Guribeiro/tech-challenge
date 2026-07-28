@@ -3,13 +3,15 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoRecusadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-recusado-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { EncerrarOrdemServicoUseCase } from '../use-cases/ordens-servicos/encerrar-os-por-rejeicao.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
-export class OnOrcamentoRenegociadoRecusado implements EventHandler {
+@Injectable()
+export class OnOrcamentoRecusado implements EventHandler, OnModuleInit {
   constructor(
-    private readonly enviarNotificacao: EnviarNotificacaoUseCase,
-    private readonly encerrarOrdemServico: EncerrarOrdemServicoUseCase
-  ) {
+    private readonly enviarNotificacao: EnviarNotificacaoUseCase
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
@@ -22,14 +24,12 @@ export class OnOrcamentoRenegociadoRecusado implements EventHandler {
 
   private async executar(event: OrcamentoRecusadoEvent): Promise<void> {
     const { orcamento } = event
-    try {
-      await this.encerrarOrdemServico.execute({
-        ordemServicoId: orcamento.getOrdemServicoId().toValue()
-      })
 
+    try {
+      // Notifica a recepcionista (ou o canal de atendimento) para renegociar
       await this.enviarNotificacao.execute({
-        destinatario: 'gerencia@oficina.com',
-        mensagem: `O orçamento da OS #${orcamento.getOrdemServicoId().toValue()} foi REJEITADO DEFINITIVAMENTE pelo cliente após tentativas de renegociação. O processo foi encerrado.`
+        destinatario: 'recepcao@oficina.com', // Ou buscar dinamicamente a recepcionista responsável
+        mensagem: `Atenção! O cliente recusou o orçamento original da OS #${orcamento.getOrdemServicoId().toValue()}. Inicie o processo de renegociação.`
       })
     } catch (error) {
       console.error(`Falha ao notificar recepção sobre a recusa do orçamento ${orcamento.getId()}`, error)

@@ -1,19 +1,22 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
+import { ClienteOrcamentoGateway } from '@/modules/faturamento/application/gateways/cliente-orcamento-gateway.js'
+import { ClienteOrdemServicoGateway } from '@/modules/liberacao/application/gateways/cliente-ordem-servico-gateway.js'
 import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-emitido-event.js'
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js' // ◄ Importa o segundo evento
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
+import { Injectable, OnModuleInit } from '@nestjs/common'
 
 type TermoLiberacaoEvents = TermoLiberacaoEmitidoEvent | TermoLiberacaoPorRejeicaoEmitidoEvent
 
-export class OnTermoLiberacaoEmitido implements EventHandler {
+@Injectable()
+export class OnTermoLiberacaoEmitido implements EventHandler, OnModuleInit {
   constructor(
-    private readonly ordemServicoRepository: OrdemServicoRepository,
-    private readonly clienteRepository: ClienteRepository,
+    private readonly clienteOrdemServicoGateway: ClienteOrdemServicoGateway,
     private readonly enviarNotificacao: EnviarNotificacaoUseCase
-  ) {
+  ) { }
+
+  onModuleInit(): void {
     this.setupSubscriptions()
   }
 
@@ -31,38 +34,33 @@ export class OnTermoLiberacaoEmitido implements EventHandler {
 
   private async executar({ termo }: TermoLiberacaoEvents): Promise<void> {
     try {
-      const osId = termo.getOrdemServicoId().toValue()
+      const ordemServico = termo.getOrdemServicoId().toValue() // ou busque o ID do orçamento correspondente
 
-      const ordemServico = await this.ordemServicoRepository.findById(osId)
+      // Resolve nome, telefone e OS via Gateway da infraestrutura
+      const dadosCliente = await this.clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId(ordemServico)
 
-      if (!ordemServico) {
-        throw new Error(`[Subscriber Warning]: OS #${osId} não encontrada para envio do termo de liberação.`)
+      if (!dadosCliente) {
+        throw new Error(`[Subscriber Warning]: Dados do cliente não encontrados para a liberação da OS/Orçamento #${ordemServico}.`)
       }
 
-      const clienteId = ordemServico.getClienteId().toValue()
-      const cliente = await this.clienteRepository.findById(clienteId)
+      const { ordemServicoId, clienteNome, clienteTelefone } = dadosCliente
 
-      if (!cliente) {
-        throw new Error(`[Subscriber Warning]: Cliente com ID ${clienteId} não encontrado para envio do termo de liberação.`)
-      }
-
-      const telefone = cliente.getTelefone().getValor()
-      const nome = cliente.getNome().getValor()
-
-      // 💡 Mensagem Dinâmica: Descobre o motivo para personalizar o texto enviado ao cliente
+      // Mensagem personalizada conforme o motivo
       const mensagem = termo.getMotivo() === 'PAGAMENTO_APROVADO'
-        ? `Olá, ${nome}! O pagamento da sua OS #${osId} foi confirmado e o seu veículo está liberado para retirada no pátio físico.`
-        : `Olá, ${nome}! Conforme sua solicitação, a OS #${osId} foi encerrada e o seu veículo está liberado para retirada no pátio físico.`
+        ? `Olá, ${clienteNome}! O pagamento da sua OS #${ordemServicoId} foi confirmado e o seu veículo está liberado para retirada no pátio físico.`
+        : `Olá, ${clienteNome}! Conforme sua solicitação, a OS #${ordemServicoId} foi encerrada e o seu veículo está liberado para retirada no pátio físico.`
 
-      // Dispara a notificação usando o seu use-case existente!
       await this.enviarNotificacao.execute({
-        destinatario: telefone,
-        mensagem
+        destinatario: clienteTelefone,
+        mensagem,
       })
 
-      console.log(`[Notification Success]: Cliente ${nome} notificado da liberação da OS #${osId} por motivo de ${termo.getMotivo()}`)
+      console.log(`[Notification Success]: Cliente ${clienteNome} notificado da liberação da OS #${ordemServicoId}`)
     } catch (error) {
-      console.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${termo.getId().toValue()}`, error)
+      console.error(
+        `[Subscriber Warning]: Falha ao notificar cliente sobre a emissão do termo de liberação #${termo.getId().toValue()}`,
+        error,
+      )
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
 import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js"
 import { OrcamentoRepository } from "@/modules/os-orcamento/domain/repositories/orcamento-repository.js"
+import { Injectable } from "@nestjs/common"
 
 interface RecusarOrcamentoInput {
   orcamentoId: string
@@ -11,6 +12,7 @@ interface RecusarOrcamentoOutput {
   orcamento: Orcamento
 }
 
+@Injectable()
 export class RecusarOrcamentoUseCase {
   constructor(
     private readonly orcamentoRepository: OrcamentoRepository,
@@ -31,7 +33,10 @@ export class RecusarOrcamentoUseCase {
       throw new Error(`Orçamento com ID ${orcamentoId} não encontrado.`)
     }
 
-    // Altera o estado do orçamento e registra o evento na sacola
+    if (!orcamento.getClienteId().equals(cliente.getId())) {
+      throw new Error('Você não tem permissão para aprovar este orçamento')
+    }
+
     orcamento.recusar()
 
     // O save vai persistir e despachar o 'ClienteAprovouOrcamentoEvent' automaticamente

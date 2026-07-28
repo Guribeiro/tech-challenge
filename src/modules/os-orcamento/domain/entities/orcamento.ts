@@ -8,6 +8,8 @@ import { OrcamentoRecusadoEvent } from '../events/orcamento-recusado-event.js'
 import { OrcamentoRenegociadoRecusadoEvent } from '../events/orcamento-renegociado-recusado-event.js'
 import { OrcamentoServicoList } from './value-objects/orcamento-servico-list.js'
 import { OrcamentoComponenteList } from './value-objects/orcamento-componente-list.js'
+import { OrcamentoServico } from './orcamento-servico.js'
+import { OrcamentoComponente } from './orcamento-componente.js'
 
 export type StatusOrcamento =
   | 'CRIADO'
@@ -70,8 +72,8 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
   }
 
   public recusar(): void {
-    if (this.props.status !== 'ENVIADO') {
-      throw new Error('Apenas orçamentos enviados podem ser recusados.')
+    if (!['ENVIADO', 'RENEGOCIADO'].includes(this.props.status)) {
+      throw new Error('Apenas orçamentos enviados ou renegociados podem ser recusados.')
     }
 
     // Se já estava no status de renegociado antes de ser enviado e o cliente recusou de novo...
@@ -86,8 +88,8 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
   }
 
   public renegociar(
-    servicos: OrcamentoServicoList,
-    componentes: OrcamentoComponenteList,
+    servicos: OrcamentoServico[],
+    componentes: OrcamentoComponente[],
     descontoPorcentagem: number,
   ): void {
     if (this.props.status !== 'RECUSADO') {
@@ -98,8 +100,14 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
       throw new Error('O desconto em porcentagem deve estar entre 0 e 100.')
     }
 
-    this.props.servicos = servicos
-    this.props.componentes = componentes
+    if (servicos) {
+      this.props.servicos.update(servicos)
+    }
+
+    if (componentes) {
+      this.props.componentes.update(componentes)
+    }
+
     this.props.descontoPorcentagem = descontoPorcentagem
     this.props.versao += 1
     this.props.status = 'RENEGOCIADO'

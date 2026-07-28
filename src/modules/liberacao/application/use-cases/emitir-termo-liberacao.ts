@@ -2,6 +2,7 @@ import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositori
 import { TermoLiberacao } from "../../domain/entities/termo-liberacao.js"
 import { VeiculoRepository } from "@/modules/os-orcamento/domain/repositories/veiculos-repository.js"
 import { TermoLiberacaoRepository } from "../../domain/repositories/termoRepository.js"
+import { Injectable } from "@nestjs/common"
 
 interface EmitirTermoInput {
   ordemServicoId: string
@@ -11,6 +12,7 @@ interface EmitirTermoOutput {
   termo: TermoLiberacao
 }
 
+@Injectable()
 export class EmitirTermoLiberacaoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
