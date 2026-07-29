@@ -1,8 +1,16 @@
-import { ServicoRepository, BuscarServicosParams, BuscarServicosResultado } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js";
 import { Injectable } from "@nestjs/common";
+import { Either, right } from "@/core/either.js";
+import {
+  ServicoRepository,
+  BuscarServicosParams,
+  BuscarServicosResultado
+} from "@/modules/os-orcamento/domain/repositories/servicos-repository.js";
 
 export type ListarServicosInput = Partial<BuscarServicosParams>
-export type ListarServicosOutput = BuscarServicosResultado
+export type ListarServicosOutput = Either<
+  never,
+  BuscarServicosResultado
+>
 
 @Injectable()
 export class ListarServicosUseCase {
@@ -19,11 +27,11 @@ export class ListarServicosUseCase {
       status
     })
 
-    return {
+    return right({
       servicos,
       total,
       pagina,
       limite,
-    }
+    })
   }
 }

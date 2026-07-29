@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { MetaPaginacaoResponseDto } from "../meta-paginacao-response.dto.js"
+import { MetaPaginacaoResponseDto } from "../../../../infra/http/dto/meta-paginacao-response.dto.js"
 import { VeiculoResponseDto } from "./veiculo-response.dto.js"
 
 export class ListarVeiculosResponseDto {

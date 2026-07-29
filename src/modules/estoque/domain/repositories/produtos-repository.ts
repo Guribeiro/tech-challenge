@@ -17,6 +17,7 @@ export abstract class ProdutoRepository {
   abstract save(produto: Produto): Promise<void>
   abstract findById(id: string): Promise<Produto | null>
   abstract findByNome(nome: string): Promise<Produto | null>
+  abstract findByCodigoSku(codigoSku: string): Promise<Produto | null>
   abstract delete(id: string): Promise<void>
   abstract list(): Promise<Produto[]>
   abstract findManyByIds(ids: string[]): Promise<Produto[]>

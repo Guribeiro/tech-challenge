@@ -1,38 +1,54 @@
-import { Controller, Get, HttpCode, HttpStatus, Query, UnauthorizedException } from '@nestjs/common'
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Query
+} from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ListarProdutosUseCase } from '../../application/use-cases/listar-produtos.js'
 import { ProdutoPresenter } from '../../presenters/produto-presenter.js'
 import { ListarProdutosQueryDto } from '../../dto/listar-produtos-query.dto.js'
+import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { ListarProdutosResponseDto } from '../../dto/listar-produtos-response.dto.js'
 
+@ApiTags('Produtos')
+@ApiBearerAuth()
 @Controller('produtos')
 export class ListarProdutosController {
   constructor(private readonly listarProdutos: ListarProdutosUseCase) { }
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Listar produtos com paginação e filtros' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de produtos retornada com sucesso.',
+    type: ListarProdutosResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Não autorizado ou erro na busca.',
+  })
   async handle(@Query() query: ListarProdutosQueryDto) {
-    try {
-      const output = await this.listarProdutos.execute({
-        tipo: query.tipo,
-        pagina: query.pagina,
-        limite: query.limite,
-        status: query.status,
-        nome: query.nome,
-      })
+    const result = await this.listarProdutos.execute({
+      tipo: query.tipo,
+      pagina: query.pagina,
+      limite: query.limite,
+      status: query.status,
+      nome: query.nome,
+    })
 
-      return {
-        produtos: output.produtos.map(ProdutoPresenter.toHTTP),
-        meta: {
-          total: output.total,
-          pagina: output.pagina,
-          limite: output.limite,
-          totalPaginas: Math.ceil(output.total / output.limite),
-        },
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new UnauthorizedException(error.message)
-      }
-      throw error
+    const { produtos, limite, pagina, total } = unwrapEither(result)
+
+    return {
+      produtos: produtos.map(ProdutoPresenter.toHTTP),
+      meta: {
+        total: total,
+        pagina: pagina,
+        limite: limite,
+        totalPaginas: Math.ceil(total / limite),
+      },
     }
   }
 }

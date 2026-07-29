@@ -1,8 +1,12 @@
+import { Either, right } from "@/core/either.js";
 import { BuscarProdutosParams, BuscarProdutosResultado, ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 import { Injectable } from "@nestjs/common";
 
 export type ListarProdutoInput = Partial<BuscarProdutosParams>
-export type ListarProdutosOutput = BuscarProdutosResultado
+export type ListarProdutosOutput = Either<
+  never,
+  BuscarProdutosResultado
+>
 
 @Injectable()
 export class ListarProdutosUseCase {
@@ -21,11 +25,11 @@ export class ListarProdutosUseCase {
       status
     })
 
-    return {
+    return right({
       produtos,
       total,
       pagina,
       limite,
-    }
+    })
   }
 }

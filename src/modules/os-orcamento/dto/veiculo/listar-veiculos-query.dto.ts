@@ -1,20 +1,3 @@
-import { IsEnum, IsOptional, IsString, Max, Min } from 'class-validator'
-import { Type } from 'class-transformer'
-import { type QueryStatus } from '@/core/repositories/pagination-params.js'
+import { PaginacaoQueryDto } from '@/infra/http/dto/paginacao-query.dto.js'
 
-export class ListarClientesQueryDto {
-  @IsOptional()
-  @Type(() => Number)
-  @Min(1)
-  pagina?: number = 1
-
-  @IsOptional()
-  @Type(() => Number)
-  @Min(1)
-  @Max(100)
-  limite?: number = 10
-
-  @IsOptional()
-  @IsEnum(['ativos', 'deletados', 'todos'])
-  status?: QueryStatus = 'ativos'
-}
+export class ListarClientesQueryDto extends PaginacaoQueryDto { }

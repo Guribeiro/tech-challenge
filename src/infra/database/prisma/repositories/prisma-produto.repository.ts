@@ -42,6 +42,19 @@ export class PrismaProdutoRepository implements ProdutoRepository {
     return PrismaProdutoMapper.toDomain(raw)
   }
 
+  public async findByCodigoSku(codigoSKU: string): Promise<Produto | null> {
+    const raw = await this.prisma.produto.findFirst({
+      where: {
+        codigoSKU,
+        desativadoEm: null,
+      }
+    })
+
+    if (!raw) return null
+
+    return PrismaProdutoMapper.toDomain(raw)
+  }
+
   public async findManyByIds(ids: string[]): Promise<Produto[]> {
     const raw = await this.prisma.produto.findMany({
       where: {

@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { Produto, TipoProduto, UnidadeMedida } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
+import { CodigoSKUJaCadastradoError, ProdutoJaCadastradoError } from "@/core/errors/index.js";
+import { Either, left, right } from "@/core/either.js";
 
 export interface CriarProdutoInput {
   nome: string
@@ -21,9 +23,14 @@ export interface CriarProdutoInput {
   localizacao?: string
 }
 
-interface CriarProdutoOutput {
-  produto: Produto
-}
+type Errors = ProdutoJaCadastradoError | CodigoSKUJaCadastradoError
+
+type CriarProdutoOutput = Either<
+  Errors,
+  {
+    produto: Produto
+  }
+>
 
 @Injectable()
 export class CriarProdutoUseCase {
@@ -47,7 +54,15 @@ export class CriarProdutoUseCase {
     const produtoFromNome = await this.produtoRepository.findByNome(nome)
 
     if (produtoFromNome) {
-      throw new Error(`Já existe um produto ativo cadastrado com o nome "${nome}".`);
+      return left(new ProdutoJaCadastradoError(nome))
+    }
+
+    if (codigoSKU) {
+      const produtoFromCodigoSku = await this.produtoRepository.findByCodigoSku(codigoSKU)
+
+      if (produtoFromCodigoSku) {
+        return left(new CodigoSKUJaCadastradoError())
+      }
     }
 
     const produto = Produto.criar({
@@ -68,8 +83,8 @@ export class CriarProdutoUseCase {
 
     await this.produtoRepository.create(produto)
 
-    return {
+    return right({
       produto
-    }
+    })
   }
 }

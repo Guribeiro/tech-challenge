@@ -1,14 +1,21 @@
 import { Injectable } from "@nestjs/common";
 import { Produto } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/index.js";
+import { Either, left, right } from "@/core/either.js";
 
 interface DesativarProdutoInput {
   produtoId: string
 }
 
-interface DesativarProdutoOutput {
-  produto: Produto
-}
+type Errors = RecursoNaoEncontradoError
+
+type DesativarProdutoOutput = Either<
+  Errors,
+  {
+    produto: Produto
+  }
+>
 
 @Injectable()
 export class DesativarProdutoUseCase {
@@ -19,16 +26,15 @@ export class DesativarProdutoUseCase {
     const produto = await this.produtoRepository.findById(produtoId)
 
     if (!produto) {
-      throw new Error(`Produto com ID ${produtoId} não encontrado`)
+      return left(new RecursoNaoEncontradoError('Produto'))
     }
 
     produto.desativar()
 
     await this.produtoRepository.save(produto)
 
-    return {
+    return right({
       produto
-    }
-
+    })
   }
 }

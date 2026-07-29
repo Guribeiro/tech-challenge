@@ -27,6 +27,9 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
   async findByNome(nome: string): Promise<Produto | null> {
     return this.produtos.find(c => c.getNome() === nome) || null
   }
+  async findByCodigoSku(codigoSku: string): Promise<Produto | null> {
+    return this.produtos.find(c => c.getCodigoSKU() === codigoSku) || null
+  }
 
   async delete(id: string): Promise<void> {
     this.produtos = this.produtos.filter(c => c.getId().toValue() !== id)
