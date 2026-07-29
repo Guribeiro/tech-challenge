@@ -1,10 +1,10 @@
-import { Controller, Get, HttpCode, HttpStatus, Query, UnauthorizedException } from '@nestjs/common'
+import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ListarClientesUseCase } from '../../application/use-cases/clientes/listar-clientes.js'
-import { ClientePresenter } from '../../presenters/cliente-presenter.js'
 import { ListarClientesQueryDto } from '../../dto/cliente/listar-clientes-query.dto.js'
 import { ListarClientesResponseDto } from '../../dto/cliente/listar-clientes-response.dto.js'
-import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { ClientePresenter } from '../../presenters/cliente-presenter.js'
 
 @ApiTags('Clientes')
 @ApiBearerAuth()

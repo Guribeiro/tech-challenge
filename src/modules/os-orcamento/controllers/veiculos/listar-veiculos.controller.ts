@@ -1,36 +1,47 @@
-import { Controller, Get, HttpCode, HttpStatus, Query, UnauthorizedException } from '@nestjs/common'
+import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common'
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ListarVeiculosUseCase } from '../../application/use-cases/veiculos/listar-veiculos.js'
-import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 import { ListarClientesQueryDto } from '../../dto/listar-veiculos-query.dto.js'
+import { ListarVeiculosResponseDto } from '../../dto/veiculo/listar-veiculos-response.dto.js'
+import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 
+
+@ApiTags('Veículos')
+@ApiBearerAuth()
 @Controller('veiculos')
 export class ListarVeiculosController {
   constructor(private readonly listarVeiculos: ListarVeiculosUseCase) { }
 
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Listar veículos com paginação e filtros' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de veículos retornada com sucesso.',
+    type: ListarVeiculosResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Não autorizado ou erro na busca.',
+  })
   async handle(@Query() query: ListarClientesQueryDto) {
-    try {
-      const output = await this.listarVeiculos.execute({
-        pagina: query.pagina,
-        limite: query.limite,
-        status: query.status,
-      })
+    const result = await this.listarVeiculos.execute({
+      pagina: query.pagina,
+      limite: query.limite,
+      status: query.status,
+    })
 
-      return {
-        veiculos: output.veiculos.map(VeiculoPresenter.toHTTP),
-        meta: {
-          total: output.total,
-          pagina: output.pagina,
-          limite: output.limite,
-          totalPaginas: Math.ceil(output.total / output.limite),
-        },
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new UnauthorizedException(error.message)
-      }
-      throw error
+    const { veiculos, limite, pagina, total } = unwrapEither(result)
+
+    return {
+      veiculos: veiculos.map(VeiculoPresenter.toHTTP),
+      meta: {
+        total: total,
+        pagina: pagina,
+        limite: limite,
+        totalPaginas: Math.ceil(total / limite),
+      },
     }
   }
 }

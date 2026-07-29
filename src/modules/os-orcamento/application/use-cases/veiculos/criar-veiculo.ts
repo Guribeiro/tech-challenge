@@ -3,6 +3,9 @@ import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/plac
 import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
 import { Injectable } from '@nestjs/common'
+import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
+import { PlacaJaCadastradaError } from '@/core/errors/placa-ja-cadastrada.js'
+import { Either, left, right } from '@/core/either.js'
 
 export type CriarVeiculoInput = {
   clienteId: string
@@ -16,9 +19,14 @@ export type CriarVeiculoInput = {
   observacoes?: string
 }
 
-export type CriarVeiculoOutput = {
-  veiculo: Veiculo
-}
+type Errors = RecursoNaoEncontradoError | PlacaJaCadastradaError
+
+export type CriarVeiculoOutput = Either<
+  Errors,
+  {
+    veiculo: Veiculo
+  }
+>
 
 @Injectable()
 export class CriarVeiculoUseCase {
@@ -31,13 +39,13 @@ export class CriarVeiculoUseCase {
     const cliente = await this.clienteRepository.findById(input.clienteId)
 
     if (!cliente) {
-      throw new Error('Cliente não registrado')
+      return left(new RecursoNaoEncontradoError('Cliente'))
     }
 
     const veiculoComMesmaPlaca = await this.veiculosRepository.findByLicensePlate(input.placa)
 
     if (veiculoComMesmaPlaca) {
-      throw new Error('Placa já registrada em outro veiculo')
+      return left(new PlacaJaCadastradaError())
     }
 
     const veiculo = Veiculo.criar({
@@ -54,8 +62,8 @@ export class CriarVeiculoUseCase {
 
     await this.veiculosRepository.create(veiculo)
 
-    return {
+    return right({
       veiculo
-    }
+    })
   }
 }

@@ -1,9 +1,13 @@
+import { Either, right } from '@/core/either.js'
 import { BuscarVeiculosParams, BuscarVeiculosResultado, VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
 import { Injectable } from '@nestjs/common'
 
 export type ListarVeiculosInput = Partial<BuscarVeiculosParams>
 
-export type ListarVeiculosOutput = BuscarVeiculosResultado
+export type ListarVeiculosOutput = Either<
+  never,
+  BuscarVeiculosResultado
+>
 
 @Injectable()
 export class ListarVeiculosUseCase {
@@ -21,11 +25,11 @@ export class ListarVeiculosUseCase {
       limite,
       status
     })
-    return {
+    return right({
       veiculos,
       total,
       pagina,
       limite,
-    }
+    })
   }
 }
