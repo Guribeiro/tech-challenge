@@ -1,3 +1,5 @@
+import { Either, left, right } from "@/core/either.js"
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js"
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
 import { MecanicoRepository } from "@/modules/os-orcamento/domain/repositories/mecanicos-repository.js"
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
@@ -8,9 +10,14 @@ export type IniciarExecucaoInput = {
   mecanicoId: string
 }
 
-export type IniciarExecucaoOutput = {
-  ordemServico: OrdemServico
-}
+type Errors = RecursoNaoEncontradoError
+
+export type IniciarExecucaoOutput = Either<
+  Errors,
+  {
+    ordemServico: OrdemServico
+  }
+>
 
 @Injectable()
 export class IniciarExecucaoUseCase {
@@ -23,21 +30,21 @@ export class IniciarExecucaoUseCase {
     const ordemServico = await this.ordemServicoRepository.findById(ordemServicoId)
 
     if (!ordemServico) {
-      throw new Error(`Ordem de serviço com ID ${ordemServicoId} não encontrada.`)
+      return left(new RecursoNaoEncontradoError('Ordem de Serviço'))
     }
 
     const mecanico = await this.mecanicoRepository.findById(mecanicoId)
 
     if (!mecanico) {
-      throw new Error(`Mecânico com ID ${mecanicoId} não encontrado.`)
+      return left(new RecursoNaoEncontradoError('Mecânico'))
     }
 
     ordemServico.iniciaExecucao()
 
     await this.ordemServicoRepository.save(ordemServico)
 
-    return {
+    return right({
       ordemServico
-    }
+    })
   }
 }

@@ -8,11 +8,10 @@ import {
   ServicoJaCadastradoError,
   CodigoSKUJaCadastradoError,
   ProdutoJaCadastradoError,
-  AcessoNegadoError
+  AcessoNegadoError,
+  EstoqueInsuficienteError
 } from '@/core/errors/index.js'
 import { HttpStatus, Type } from '@nestjs/common'
-
-
 
 export const DOMAIN_ERROR_MAP = new Map<Type<Error>, HttpStatus>([
   [CredenciaisInvalidasError, HttpStatus.UNAUTHORIZED],
@@ -23,5 +22,6 @@ export const DOMAIN_ERROR_MAP = new Map<Type<Error>, HttpStatus>([
   [ServicoJaCadastradoError, HttpStatus.CONFLICT],
   [CodigoSKUJaCadastradoError, HttpStatus.CONFLICT],
   [ProdutoJaCadastradoError, HttpStatus.CONFLICT],
+  [EstoqueInsuficienteError, HttpStatus.BAD_REQUEST],
   [RecursoNaoEncontradoError, HttpStatus.NOT_FOUND],
 ])

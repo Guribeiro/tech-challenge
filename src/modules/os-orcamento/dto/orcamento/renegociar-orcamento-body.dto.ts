@@ -1,15 +1,19 @@
 import {
   IsArray,
+  IsNumber,
   IsOptional,
   ValidateNested,
 } from 'class-validator'
 import { Type } from 'class-transformer'
 
-import { ComponenteItemDto } from './componente-item.dto.js'
-import { ServicoItemDto } from './servico-item.dto.js'
+import { ComponenteItemDto } from '../ordem-servico/componente-item.dto.js'
+import { ServicoItemDto } from '../ordem-servico/servico-item.dto.js'
 
 
-export class ConcluirDiagnosticoBodyDto {
+export class RenegocicarOrcamentoBodyDto {
+  @IsNumber({}, { message: 'A quantidade deve ser um número.' })
+  descontoPorcentagem!: number
+
   @IsOptional()
   @IsArray({ message: 'Serviços deve ser um array.' })
   @ValidateNested({ each: true })

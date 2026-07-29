@@ -7,6 +7,7 @@ export { ServicoJaCadastradoError } from '@/core/errors/servico-ja-cadastrado-er
 export { CodigoSKUJaCadastradoError } from '@/core/errors/codigo-sku-ja-cadastrado.js'
 export { ProdutoJaCadastradoError } from '@/core/errors/produto-ja-cadastrado-error.js'
 export { AcessoNegadoError } from '@/core/errors/acesso-negado-error.js'
+export { EstoqueInsuficienteError } from '@/core/errors/estoque-insuficiente-error.js'
 
 
 

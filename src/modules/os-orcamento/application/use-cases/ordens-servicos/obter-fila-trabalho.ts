@@ -1,8 +1,12 @@
+import { Either, right } from "@/core/either.js"
 import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { Injectable } from "@nestjs/common"
 
 export type ObterFilaTrabalhoInput = Partial<BuscarFilaTrabalhoParams>
-export type ObterFilaTrabalhoOutput = BuscarFilaTrabalhoResultado
+export type ObterFilaTrabalhoOutput = Either<
+  never,
+  BuscarFilaTrabalhoResultado
+>
 
 @Injectable()
 export class ObterFilaTrabalhoUseCase {
@@ -21,11 +25,11 @@ export class ObterFilaTrabalhoUseCase {
       status
     })
 
-    return {
+    return right({
       ordensServicos,
       total,
       pagina,
       limite,
-    }
+    })
   }
 }

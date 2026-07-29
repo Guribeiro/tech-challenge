@@ -1,14 +1,16 @@
-import { Role } from "@/modules/autenticacao/domain/entities/usuario.js"
+import { Either, left, right } from "@/core/either.js"
+import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
+import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
+import { Produto } from "@/modules/estoque/domain/entities/produto.js"
+import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js"
 import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/ordem-servico-componente.js"
 import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
-import { Injectable, UnauthorizedException } from "@nestjs/common"
-import { ComponenteItemInput, ServicoItemInput } from "./criar-ordem-servico.js"
-import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js"
-import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js"
+import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
 import { Servico } from "@/modules/os-orcamento/domain/entities/servico.js"
-import { Produto } from "@/modules/estoque/domain/entities/produto.js"
-import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
+import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
+import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js"
+import { Injectable } from "@nestjs/common"
+import { ComponenteItemInput, ServicoItemInput } from "./criar-ordem-servico.js"
 
 interface ConcluirDiagnosticoInput {
   ordemServicoId: string
@@ -16,6 +18,15 @@ interface ConcluirDiagnosticoInput {
   servicos?: Array<ServicoItemInput & { id?: string }>
   componentes?: Array<ComponenteItemInput & { id?: string }>
 }
+
+type Errors = RecursoNaoEncontradoError | AcessoNegadoError
+
+type ConcluirDiagnosticoOutput = Either<
+  Errors,
+  {
+    ordemServico: OrdemServico
+  }
+>
 
 @Injectable()
 export class ConcluirDiagnosticoUseCase {
@@ -26,17 +37,18 @@ export class ConcluirDiagnosticoUseCase {
     private readonly usuarioRepository: UsuariosRepository,
   ) { }
 
-  public async execute(input: ConcluirDiagnosticoInput): Promise<void> {
+  public async execute(input: ConcluirDiagnosticoInput): Promise<ConcluirDiagnosticoOutput> {
 
     const usuario = await this.usuarioRepository.findById(input.usuarioId)
 
     if (!usuario) {
-      throw new Error('usuario nao encontrado')
+      return left(new AcessoNegadoError())
     }
 
     const ordemServico = await this.ordemServicoRepository.findById(input.ordemServicoId)
+
     if (!ordemServico) {
-      throw new Error(`Ordem de Serviço ${input.ordemServicoId} não encontrada.`)
+      return left(new RecursoNaoEncontradoError('Ordem de Serviço'))
     }
 
     const isOwner = ordemServico.getMecanicoId()?.toValue() === input.usuarioId
@@ -44,14 +56,11 @@ export class ConcluirDiagnosticoUseCase {
     const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(usuario.getRole())
 
     if (!isOwner && !isAdminOrReception) {
-      throw new UnauthorizedException(
-        'Apenas o mecânico responsável que iniciou o diagnóstico (ou um gestor) pode concluí-lo.'
-      )
+      return left(new AcessoNegadoError('Apenas o mecânico responsável que iniciou o diagnóstico (ou um gestor) pode concluí-lo.'))
     }
 
     const ordemServicoId = ordemServico.getId()
 
-    // 3. Processamento de Serviços
     const servicosFinais: OrdemServicoServico[] = []
 
     if (input.servicos && input.servicos.length > 0) {
@@ -82,7 +91,7 @@ export class ConcluirDiagnosticoUseCase {
           const servicoDoCatalogo = servicosCatalogoMap.get(item.servicoId)
 
           if (!servicoDoCatalogo) {
-            throw new Error(`Serviço com ID ${item.servicoId} não encontrado no catálogo.`)
+            return left(new RecursoNaoEncontradoError(`Serviço com ID ${item.servicoId}`))
           }
 
           servicosFinais.push(
@@ -128,7 +137,7 @@ export class ConcluirDiagnosticoUseCase {
           const produtoDoCatalogo = produtosCatalogoMap.get(item.produtoId)
 
           if (!produtoDoCatalogo) {
-            throw new Error(`Produto com ID ${item.produtoId} não encontrado no catálogo.`)
+            return left(new RecursoNaoEncontradoError(`Produto com ID ${item.produtoId}`))
           }
 
           componentesFinais.push(
@@ -153,5 +162,9 @@ export class ConcluirDiagnosticoUseCase {
     ordemServico.concluirDiagnostico(servicosFinais, componentesFinais)
 
     await this.ordemServicoRepository.save(ordemServico)
+
+    return right({
+      ordemServico
+    })
   }
 }

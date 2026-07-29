@@ -18,7 +18,7 @@ import type { UserPayload } from '@/infra/auth/jwt.strategy.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '../../../../infra/auth/current-user.decorator.js'
 import { RenegociarOrcamentoUseCase } from '../../application/use-cases/orcamento/renegociar-orcamento.js'
-import { RenegocicarOrcamentoBodyDto } from '../../dto/renegociar-orcamento-body.dto.js'
+import { RenegocicarOrcamentoBodyDto } from '../../dto/orcamento/renegociar-orcamento-body.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 
 @ApiTags('Orçamentos')

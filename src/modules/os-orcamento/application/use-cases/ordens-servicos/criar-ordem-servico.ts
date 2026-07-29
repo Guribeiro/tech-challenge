@@ -12,6 +12,8 @@ import { ProdutoRepository } from '@/modules/estoque/domain/repositories/produto
 import { CategoriaServico, Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 import { Injectable } from '@nestjs/common'
+import { EstoqueInsuficienteError, RecursoNaoEncontradoError } from '@/core/errors/index.js'
+import { Either, left, right } from '@/core/either.js'
 
 export type ComponenteItemInput = {
   produtoId: string
@@ -31,9 +33,14 @@ export type CriarOrdemServicoInput = {
   componentes?: Array<ComponenteItemInput>
 }
 
-export type CriarOrdemServicoOutput = {
-  ordemServico: OrdemServico
-}
+type Errors = RecursoNaoEncontradoError | EstoqueInsuficienteError
+
+export type CriarOrdemServicoOutput = Either<
+  Errors,
+  {
+    ordemServico: OrdemServico
+  }
+>
 
 @Injectable()
 export class CriarOrdemServicoUseCase {
@@ -49,13 +56,13 @@ export class CriarOrdemServicoUseCase {
     const cliente = await this.clienteRepository.findById(input.clienteId)
 
     if (!cliente) {
-      throw new Error(`Cliente com ID ${input.clienteId} não encontrado.`)
+      return left(new RecursoNaoEncontradoError('Cliente'))
     }
 
     const veiculo = await this.veiculoRepository.findById(input.veiculoId)
 
     if (!veiculo) {
-      throw new Error(`Veículo com ID ${input.veiculoId} não encontrado.`)
+      return left(new RecursoNaoEncontradoError('Veículo'))
     }
 
     const ordemServicoId = new UniqueEntityID()
@@ -72,7 +79,7 @@ export class CriarOrdemServicoUseCase {
       if (servicosExistentes.length !== idsUnicos.length) {
         const idsExistentes = servicosExistentes.map((s) => s.getId().toValue())
         const idsInvalidos = idsUnicos.filter((id) => !idsExistentes.includes(id))
-        throw new Error(`Os seguintes serviços não foram encontrados: ${idsInvalidos.join(', ')}`)
+        return left(new RecursoNaoEncontradoError(`Seguintes serviços : ${idsInvalidos.join(', ')}`))
       }
 
       // Cria um mapa para busca O(1) de preço/dados
@@ -107,7 +114,7 @@ export class CriarOrdemServicoUseCase {
       if (produtosExistentes.length !== idsUnicos.length) {
         const idsExistentes = produtosExistentes.map((p) => p.getId().toValue())
         const idsInvalidos = idsUnicos.filter((id) => !idsExistentes.includes(id))
-        throw new Error(`Os seguintes produtos/componentes não foram encontrados: ${idsInvalidos.join(', ')}`)
+        return left(new RecursoNaoEncontradoError(`Seguintes componentes : ${idsInvalidos.join(', ')}`))
       }
 
       const produtosMap = new Map(
@@ -119,7 +126,7 @@ export class CriarOrdemServicoUseCase {
 
         // Opcional: Valida estoque disponível antes de vincular à OS
         if (produtoDoCatalogo.getQuantidadeEstoque() < item.quantidade) {
-          throw new Error(`Estoque insuficiente para o produto "${produtoDoCatalogo.getNome()}".`)
+          return left(new EstoqueInsuficienteError(produtoDoCatalogo.getNome()))
         }
 
         itensComponente.push(
@@ -162,8 +169,8 @@ export class CriarOrdemServicoUseCase {
 
     await this.ordemServicoRepository.create(ordemServico)
 
-    return {
+    return right({
       ordemServico
-    }
+    })
   }
 }

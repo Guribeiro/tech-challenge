@@ -6,7 +6,6 @@ import { ListarClientesQueryDto } from '../../dto/veiculo/listar-veiculos-query.
 import { ListarVeiculosResponseDto } from '../../dto/veiculo/listar-veiculos-response.dto.js'
 import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 
-
 @ApiTags('Veículos')
 @ApiBearerAuth()
 @Controller('veiculos')
