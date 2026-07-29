@@ -1,7 +1,6 @@
 import { InMemoryVeiculoRepository } from "../../repositories/in-memory-veiculo-repository.js";
 import { makeVeiculo } from "../../factories/make-veiculo.js";
 import { DeletarVeiculoUseCase } from "@/modules/os-orcamento/application/use-cases/veiculos/deletar-veiculo.js";
-import { RegraDeNegocioVioladaError } from "@/core/errors/domain-errors/regra-de-negocio-violada-error.js";
 import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 
 describe('Caso de Uso: Deletar Veiculo', () => {
