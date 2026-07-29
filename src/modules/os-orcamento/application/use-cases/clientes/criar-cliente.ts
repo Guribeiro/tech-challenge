@@ -8,6 +8,7 @@ import { Injectable } from '@nestjs/common'
 import { Either, left, right } from '@/core/either.js'
 import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js'
 import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js'
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js'
 
 export type CriarClienteInput = {
   nome: string
@@ -43,18 +44,25 @@ export class CriarClienteUseCase {
       return left(new CpfJaCadastradoError())
     }
 
-    const cliente = Cliente.criar({
-      nome: NomeCompleto.criar(input.nome),
-      email: Email.criar(input.email),
-      cpf: Cpf.criar(input.cpf),
-      tipo: input.tipo,
-      telefone: Telefone.criar(input.telefone),
-    })
+    try {
+      const cliente = Cliente.criar({
+        nome: NomeCompleto.criar(input.nome),
+        email: Email.criar(input.email),
+        cpf: Cpf.criar(input.cpf),
+        tipo: input.tipo,
+        telefone: Telefone.criar(input.telefone),
+      })
 
-    await this.clienteRepository.create(cliente)
+      await this.clienteRepository.create(cliente)
 
-    return right({
-      cliente
-    })
+      return right({
+        cliente
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }

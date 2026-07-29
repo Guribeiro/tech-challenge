@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js"
+
 export class Telefone {
   private readonly valor: string
 
@@ -10,7 +12,7 @@ export class Telefone {
    */
   public static criar(numero: string): Telefone {
     if (!numero) {
-      throw new Error('O número de telefone não pode estar vazio.')
+      throw new ArgumentoInvalidoError('O número de telefone não pode estar vazio.')
     }
 
     // Remove qualquer caractere não numérico (parênteses, hifens, espaços)
@@ -28,7 +30,7 @@ export class Telefone {
   private static validar(numeroLimpo: string): void {
     // Regra 1: Deve ter 10 dígitos (fixo) ou 11 dígitos (celular), incluindo o DDD
     if (numeroLimpo.length < 10 || numeroLimpo.length > 11) {
-      throw new Error(
+      throw new ArgumentoInvalidoError(
         'O telefone deve conter um DDD válido seguido de 8 ou 9 dígitos.',
       )
     }
@@ -36,18 +38,18 @@ export class Telefone {
     // Regra 2: Impedir números falsos repetidos comuns (ex: 1111111111, 00000000000)
     const todosDigitosIguais = /^(.)\1+$/
     if (todosDigitosIguais.test(numeroLimpo)) {
-      throw new Error('Número de telefone inválido (padrão repetitivo).')
+      throw new ArgumentoInvalidoError('Número de telefone inválido (padrão repetitivo).')
     }
 
     // Regra 3: Validar os primeiros dígitos do DDD (Não existem DDDs começando com 0 ou menores que 11)
     const ddd = parseInt(numeroLimpo.substring(0, 2), 10)
     if (ddd < 11 || ddd > 99) {
-      throw new Error('O código de área (DDD) informado é inválido.')
+      throw new ArgumentoInvalidoError('O código de área (DDD) informado é inválido.')
     }
 
     // Regra 4: Se for celular (11 dígitos), obrigatoriamente deve começar com o dígito 9
     if (numeroLimpo.length === 11 && numeroLimpo.charAt(2) !== '9') {
-      throw new Error(
+      throw new ArgumentoInvalidoError(
         'Números de celular com 11 dígitos devem iniciar com o dígito 9 após o DDD.',
       )
     }

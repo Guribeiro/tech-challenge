@@ -23,12 +23,14 @@ describe('Caso de Uso: Listar Clientes', () => {
       await clientesRepository.create(cliente)
     }
 
-    const output = await sut.execute({})
+    const result = await sut.execute({})
 
-    expect(output.clientes).toHaveLength(3)
-    expect(output.total).toBe(3)
-    expect(output.pagina).toBe(1)
-    expect(output.limite).toBe(10)
+    expect(result.isRight()).toBe(true)
+
+    expect(result.value.clientes).toHaveLength(3)
+    expect(result.value.total).toBe(3)
+    expect(result.value.pagina).toBe(1)
+    expect(result.value.limite).toBe(10)
   })
 
   it('deve permitir paginar a listagem de clientes', async () => {
@@ -42,14 +44,15 @@ describe('Caso de Uso: Listar Clientes', () => {
     }
 
     // Busca a página 2 com limite de 5 itens por página
-    const output = await sut.execute({
+    const result = await sut.execute({
       pagina: 2,
       limite: 5,
     })
 
-    expect(output.clientes).toHaveLength(5)
-    expect(output.total).toBe(15)
-    expect(output.pagina).toBe(2)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.clientes).toHaveLength(5)
+    expect(result.value.total).toBe(15)
+    expect(result.value.pagina).toBe(2)
   })
 
   it('deve filtrar clientes deletados (soft delete)', async () => {
@@ -61,13 +64,14 @@ describe('Caso de Uso: Listar Clientes', () => {
     await clientesRepository.create(clienteDeletado1)
     await clientesRepository.create(clienteDeletado2)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'deletados',
     })
 
-    expect(output.clientes).toHaveLength(2)
-    expect(output.total).toBe(2)
-    expect(output.clientes.map(cliente => cliente.getId())).toEqual([
+    expect(result.isRight()).toBe(true)
+    expect(result.value.clientes).toHaveLength(2)
+    expect(result.value.total).toBe(2)
+    expect(result.value.clientes.map(cliente => cliente.getId())).toEqual([
       clienteDeletado1.getId(),
       clienteDeletado2.getId()
     ])
@@ -80,12 +84,14 @@ describe('Caso de Uso: Listar Clientes', () => {
     await clientesRepository.create(clienteAtivo)
     await clientesRepository.create(clienteDeletado)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'todos',
     })
 
-    expect(output.clientes).toHaveLength(2)
-    expect(output.total).toBe(2)
+
+    expect(result.isRight()).toBe(true)
+    expect(result.value.clientes).toHaveLength(2)
+    expect(result.value.total).toBe(2)
   })
 
   it('deve buscar clientes por trecho do nome (case insensitive)', async () => {
@@ -97,14 +103,14 @@ describe('Caso de Uso: Listar Clientes', () => {
     await clientesRepository.create(cliente2)
     await clientesRepository.create(cliente3)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       nome: 'eduardo', // em minúsculas para testar case-insensitivity
     })
 
-    expect(output.clientes).toHaveLength(2)
-    expect(output.total).toBe(2)
-
-    expect(output.clientes.map(cliente => cliente.getNome().getValor())).toEqual([
+    expect(result.isRight()).toBe(true)
+    expect(result.value.clientes).toHaveLength(2)
+    expect(result.value.total).toBe(2)
+    expect(result.value.clientes.map(cliente => cliente.getNome().getValor())).toEqual([
       cliente1.getNome().getValor(),
       cliente3.getNome().getValor(),
     ])

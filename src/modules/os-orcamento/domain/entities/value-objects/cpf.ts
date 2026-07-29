@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/index.js"
+
 export class Cpf {
   private readonly valor: string
 
@@ -9,7 +11,7 @@ export class Cpf {
     const cpfLimpo = this.limpar(cpfBruto)
 
     if (!this.validar(cpfLimpo)) {
-      throw new Error('CPF informado é inválido.')
+      throw new ArgumentoInvalidoError('CPF informado é inválido.')
     }
 
     return new Cpf(cpfLimpo)

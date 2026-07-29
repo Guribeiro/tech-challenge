@@ -1,4 +1,3 @@
-import { Entity } from '@/core/entities/entity.js'
 import { Email } from '@/shared/domain/value-objects/email.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
@@ -7,6 +6,7 @@ import { Optional } from '@/core/types/optional.js'
 import { Cpf } from './value-objects/cpf.js'
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { ClienteCriadoEvent } from '../events/cliente-criado-event.js'
+import { ArgumentoInvalidoError, RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/index.js'
 
 export interface ClienteProps {
   nome: NomeCompleto
@@ -59,15 +59,15 @@ export class Cliente extends AggregateRoot<ClienteProps> {
 
   private static validar(props: Optional<ClienteProps, 'criadoEm'>) {
     if (!props.nome.getValor()?.trim()) {
-      throw new Error('Nome do cliente é obrigatório.')
+      throw new ArgumentoInvalidoError('Nome do cliente é obrigatório.')
     }
 
     if (!props.cpf?.getValor().trim()) {
-      throw new Error('CPF do mecânico é obrigatório.')
+      throw new ArgumentoInvalidoError('CPF do mecânico é obrigatório.')
     }
 
     if (!props.email.getValor()?.trim()) {
-      throw new Error('Email do cliente é obrigatório.')
+      throw new ArgumentoInvalidoError('Email do cliente é obrigatório.')
     }
   }
 
@@ -77,7 +77,7 @@ export class Cliente extends AggregateRoot<ClienteProps> {
 
   public deletar(): void {
     if (this.props.deletadoEm) {
-      throw new Error('Este cliente já está excluído.')
+      throw new RegraDeNegocioVioladaError('Este cliente já está excluído.')
     }
 
     this.props.deletadoEm = new Date()

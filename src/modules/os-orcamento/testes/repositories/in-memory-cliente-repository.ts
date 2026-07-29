@@ -2,7 +2,7 @@ import { BuscarClientesParams, BuscarClientesResultado, ClienteRepository } from
 import { Cliente } from "@/modules/os-orcamento/domain/entities/cliente.js"
 
 export class InMemoryClienteRepository implements ClienteRepository {
-  private clientes: Cliente[] = []
+  public clientes: Cliente[] = []
 
   async create(cliente: Cliente): Promise<void> {
     this.clientes.push(cliente)

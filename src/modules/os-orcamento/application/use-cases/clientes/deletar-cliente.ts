@@ -1,4 +1,5 @@
 import { Either, left, right } from '@/core/either.js'
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js'
 import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js'
 import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
 import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
@@ -9,7 +10,10 @@ export type DeletarClienteInput = {
   id: string
 }
 
-type Errors = RecursoNaoEncontradoError | EmailJaCadastradoError
+type Errors =
+  RecursoNaoEncontradoError |
+  EmailJaCadastradoError |
+  DomainError
 
 export type DeletarClienteOutput = Either<
   Errors,
@@ -28,12 +32,19 @@ export class DeletarClienteUseCase {
       return left(new RecursoNaoEncontradoError('Cliente'))
     }
 
-    cliente.deletar()
+    try {
+      cliente.deletar()
 
-    await this.clienteRepository.save(cliente)
+      await this.clienteRepository.save(cliente)
 
-    return right({
-      cliente
-    })
+      return right({
+        cliente
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }

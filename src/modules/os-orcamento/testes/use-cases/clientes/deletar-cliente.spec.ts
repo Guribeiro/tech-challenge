@@ -1,6 +1,7 @@
 import { DeletarClienteUseCase } from "@/modules/os-orcamento/application/use-cases/clientes/deletar-cliente.js";
 import { InMemoryClienteRepository } from "../../repositories/in-memory-cliente-repository.js";
 import { makeCliente } from "../../factories/make-cliente.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 
 describe('Caso de Uso: Editar Cliente', () => {
   let sut: DeletarClienteUseCase
@@ -16,19 +17,27 @@ describe('Caso de Uso: Editar Cliente', () => {
 
     await clienteRepository.create(cliente)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       id: cliente.getId().toValue()
     })
 
-    expect(output.cliente.isDeletado()).toBe(true)
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.cliente.isDeletado()).toBe(true)
+    }
   })
 
-  it('não deve atualizar um cliente inexistente', async () => {
+  it('não deve deletar um cliente inexistente', async () => {
     const cliente = makeCliente()
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       id: cliente.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
+
+    expect(result.isLeft()).toBe(true)
+    if (result.isLeft()) {
+      expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
+    }
   })
 
 })
