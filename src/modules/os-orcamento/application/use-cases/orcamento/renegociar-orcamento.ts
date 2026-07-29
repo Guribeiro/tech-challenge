@@ -11,6 +11,8 @@ import { OrcamentoServico } from "@/modules/os-orcamento/domain/entities/orcamen
 import { OrcamentoComponente } from "@/modules/os-orcamento/domain/entities/orcamento-componente.js"
 import { Injectable, UnauthorizedException } from "@nestjs/common"
 import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
+import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
+import { Either, left, right } from "@/core/either.js"
 
 interface RenegociarOrcamentoInput {
   orcamentoId: string
@@ -20,9 +22,14 @@ interface RenegociarOrcamentoInput {
   descontoPorcentagem: number
 }
 
-interface RenegociarOrcamentoOutput {
-  orcamento: Orcamento
-}
+type Errors = RecursoNaoEncontradoError | AcessoNegadoError
+
+type RenegociarOrcamentoOutput = Either<
+  Errors,
+  {
+    orcamento: Orcamento
+  }
+>
 
 @Injectable()
 export class RenegociarOrcamentoUseCase {
@@ -44,23 +51,19 @@ export class RenegociarOrcamentoUseCase {
     const usuario = await this.usuarioRepository.findById(usuarioId)
 
     if (!usuario) {
-      throw new UnauthorizedException(
-        'Você não tem permissão para isso'
-      )
+      return left(new AcessoNegadoError())
     }
 
     const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(usuario.getRole())
 
     if (!isAdminOrReception) {
-      throw new UnauthorizedException(
-        'Você não tem permissão para isso'
-      )
+      return left(new AcessoNegadoError())
     }
 
     const orcamento = await this.orcamentoRepository.findById(orcamentoId)
 
     if (!orcamento) {
-      throw new Error(`Orçamento com ID ${orcamentoId} não encontrado.`)
+      return left(new RecursoNaoEncontradoError('Orçamento'))
     }
 
     const servicosFinais: OrcamentoServico[] = []
@@ -88,14 +91,14 @@ export class RenegociarOrcamentoUseCase {
           const servicoDoCatalogo = servicosCatalogoMap.get(item.servicoId)
 
           if (!servicoDoCatalogo) {
-            throw new Error(`Serviço com ID ${item.servicoId} não encontrado no catálogo.`)
+            return left(new RecursoNaoEncontradoError('Serviço'))
           }
 
           servicosFinais.push(
             OrcamentoServico.criar({
               orcamentoId: orcamento.getId(),
               servicoId: servicoDoCatalogo.getId(),
-              precoUnitario: servicoDoCatalogo.getValorReferencia(), // Congela valor de referência
+              precoUnitario: servicoDoCatalogo.getValorReferencia(),
               categoria: servicoDoCatalogo.getCategoria(),
               nome: servicoDoCatalogo.getNome(),
             }),
@@ -130,7 +133,7 @@ export class RenegociarOrcamentoUseCase {
           const produtoDoCatalogo = produtosCatalogoMap.get(item.produtoId)
 
           if (!produtoDoCatalogo) {
-            throw new Error(`Produto com ID ${item.produtoId} não encontrado no catálogo.`)
+            return left(new RecursoNaoEncontradoError('Produto'))
           }
 
           componentesFinais.push(
@@ -157,8 +160,8 @@ export class RenegociarOrcamentoUseCase {
 
     await this.orcamentoRepository.save(orcamento)
 
-    return {
+    return right({
       orcamento
-    }
+    })
   }
 }

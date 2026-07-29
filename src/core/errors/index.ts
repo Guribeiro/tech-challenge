@@ -6,5 +6,7 @@ export { PlacaJaCadastradaError } from '@/core/errors/placa-ja-cadastrada.js'
 export { ServicoJaCadastradoError } from '@/core/errors/servico-ja-cadastrado-error.js'
 export { CodigoSKUJaCadastradoError } from '@/core/errors/codigo-sku-ja-cadastrado.js'
 export { ProdutoJaCadastradoError } from '@/core/errors/produto-ja-cadastrado-error.js'
+export { AcessoNegadoError } from '@/core/errors/acesso-negado-error.js'
+
 
 
