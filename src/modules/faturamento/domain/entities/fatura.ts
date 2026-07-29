@@ -50,6 +50,10 @@ export class Fatura extends AggregateRoot<FaturaProps> {
     this.addDomainEvent(new FaturaPagaEvent(this))
   }
 
+  public estaPaga(): boolean {
+    return this.props.status === 'PAGA'
+  }
+
   public getOrcamentoId(): UniqueEntityID { return this.props.orcamentoId }
   public getValorTotal(): number { return this.props.valorTotal }
   public getStatus(): StatusFatura { return this.props.status }
