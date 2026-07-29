@@ -1,9 +1,14 @@
-import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
+import { Injectable } from '@nestjs/common'
 import { Email } from '@/shared/domain/value-objects/email.js'
+
+import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
-import { Injectable } from '@nestjs/common'
+
+import { Either, left, right } from '@/core/either.js'
+import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js'
+import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
 
 export type EditarClienteInput = {
   id: string
@@ -13,9 +18,14 @@ export type EditarClienteInput = {
   tipo?: 'PF' | 'PJ'
 }
 
-export type EditarClienteOutput = {
-  cliente: Cliente
-}
+type Errors = RecursoNaoEncontradoError | EmailJaCadastradoError
+
+export type EditarClienteOutput = Either<
+  Errors,
+  {
+    cliente: Cliente
+  }
+>
 
 @Injectable()
 export class EditarClienteUseCase {
@@ -24,14 +34,14 @@ export class EditarClienteUseCase {
     const cliente = await this.clienteRepository.findById(input.id)
 
     if (!cliente) {
-      throw new Error('Cliente não encontrado')
+      return left(new RecursoNaoEncontradoError('Cliente'))
     }
 
     let email = cliente.getEmail()
     if (input.email && input.email !== cliente.getEmail().getValor()) {
       const clienteComMesmoEmail = await this.clienteRepository.findByEmail(input.email)
       if (clienteComMesmoEmail && !clienteComMesmoEmail.getId().equals(cliente.getId())) {
-        throw new Error('Email já em uso')
+        return left(new EmailJaCadastradoError())
       }
       email = Email.criar(input.email)
     }
@@ -55,8 +65,8 @@ export class EditarClienteUseCase {
 
     await this.clienteRepository.save(cliente)
 
-    return {
+    return right({
       cliente
-    }
+    })
   }
 }
