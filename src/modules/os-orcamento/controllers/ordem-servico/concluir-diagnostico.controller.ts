@@ -19,7 +19,7 @@ import { ConcluirDiagnosticoUseCase } from '../../application/use-cases/ordens-s
 import type { UserPayload } from '@/infra/auth/jwt.strategy.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '@/infra/auth/current-user.decorator.js'
-import { ConcluirDiagnosticoBodyDto } from '../../dto/concluir-diagnostico-body.dto.js'
+import { ConcluirDiagnosticoBodyDto } from '../../dto/ordem-servico/concluir-diagnostico-body.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 
 @ApiTags('Ordens de Serviço')
