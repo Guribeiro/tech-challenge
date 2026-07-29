@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common'
 import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
 import { PlacaJaCadastradaError } from '@/core/errors/placa-ja-cadastrada.js'
 import { Either, left, right } from '@/core/either.js'
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js'
 
 export type CriarVeiculoInput = {
   clienteId: string
@@ -48,22 +49,29 @@ export class CriarVeiculoUseCase {
       return left(new PlacaJaCadastradaError())
     }
 
-    const veiculo = Veiculo.criar({
-      clienteId: cliente.getId(),
-      placa: Placa.criar(input.placa),
-      marca: input.marca,
-      modelo: input.modelo,
-      ano: input.ano,
-      cor: input.cor,
-      quilometragem: input.quilometragem,
-      combustivel: input.combustivel,
-      observacoes: input.observacoes,
-    })
+    try {
+      const veiculo = Veiculo.criar({
+        clienteId: cliente.getId(),
+        placa: Placa.criar(input.placa),
+        marca: input.marca,
+        modelo: input.modelo,
+        ano: input.ano,
+        cor: input.cor,
+        quilometragem: input.quilometragem,
+        combustivel: input.combustivel,
+        observacoes: input.observacoes,
+      })
 
-    await this.veiculosRepository.create(veiculo)
+      await this.veiculosRepository.create(veiculo)
 
-    return right({
-      veiculo
-    })
+      return right({
+        veiculo
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }

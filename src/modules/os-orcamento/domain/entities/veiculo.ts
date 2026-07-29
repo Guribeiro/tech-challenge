@@ -1,5 +1,7 @@
 import { Entity } from '@/core/entities/entity.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { ArgumentoInvalidoError } from '@/core/errors/domain-errors/argumento-invalido-error.js'
+import { RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/regra-de-negocio-violada-error.js'
 import { Optional } from '@/core/types/optional.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 
@@ -67,7 +69,7 @@ export class Veiculo extends Entity<VeiculoProps> {
     props: Pick<VeiculoProps, 'marca' | 'modelo' | 'ano' | 'quilometragem'>,
   ): void {
     if (!props.marca?.trim() || !props.modelo?.trim()) {
-      throw new Error(
+      throw new ArgumentoInvalidoError(
         'Marca e modelo são obrigatórios para o cadastro do veículo.',
       )
     }
@@ -77,17 +79,17 @@ export class Veiculo extends Entity<VeiculoProps> {
       props.ano < 1900 ||
       props.ano > new Date().getFullYear() + 1
     ) {
-      throw new Error('Ano do veículo inválido.')
+      throw new ArgumentoInvalidoError('Ano do veículo inválido.')
     }
 
     if (props.quilometragem !== undefined && props.quilometragem < 0) {
-      throw new Error('Quilometragem não pode ser negativa.')
+      throw new ArgumentoInvalidoError('Quilometragem não pode ser negativa.')
     }
   }
 
   public deletar(): void {
     if (this.props.deletadoEm) {
-      throw new Error('Este veículo já está excluído.')
+      throw new RegraDeNegocioVioladaError('Este veículo já está excluído.')
     }
 
     this.props.deletadoEm = new Date()
@@ -148,18 +150,5 @@ export class Veiculo extends Entity<VeiculoProps> {
 
   public getAtualizadoEm(): Date | undefined {
     return this.props.atualizadoEm
-  }
-
-  public toJSON(): Record<string, unknown> {
-    return {
-      placa: this.props.placa.getValor(),
-      marca: this.props.marca,
-      modelo: this.props.modelo,
-      ano: this.props.ano,
-      cor: this.props.cor,
-      quilometragem: this.props.quilometragem,
-      combustivel: this.props.combustivel,
-      observacoes: this.props.observacoes,
-    }
   }
 }

@@ -1,6 +1,8 @@
 import { InMemoryVeiculoRepository } from "../../repositories/in-memory-veiculo-repository.js";
 import { makeVeiculo } from "../../factories/make-veiculo.js";
 import { DeletarVeiculoUseCase } from "@/modules/os-orcamento/application/use-cases/veiculos/deletar-veiculo.js";
+import { RegraDeNegocioVioladaError } from "@/core/errors/domain-errors/regra-de-negocio-violada-error.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 
 describe('Caso de Uso: Deletar Veiculo', () => {
   let sut: DeletarVeiculoUseCase
@@ -20,16 +22,20 @@ describe('Caso de Uso: Deletar Veiculo', () => {
 
     const [veiculo1] = veiculos
 
-    const output = await sut.execute({ id: veiculo1.getId().toValue() })
+    const result = await sut.execute({ id: veiculo1.getId().toValue() })
 
-    expect(output.veiculo.isDeletado()).toBe(true)
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.veiculo.isDeletado()).toBe(true)
+    }
   })
 
   it('não deve deletar veiculo já deletado', async () => {
     const veiculo = makeVeiculo({ deletadoEm: new Date() })
 
+    const result = await sut.execute({ id: veiculo.getId().toValue() })
 
-    await expect(sut.execute({ id: veiculo.getId().toValue() })).rejects.toBeInstanceOf(Error)
-
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 })

@@ -20,12 +20,13 @@ describe('Caso de Uso: Listar Veículos', () => {
       await veiculosRepository.create(veiculo)
     }
 
-    const output = await sut.execute({})
+    const result = await sut.execute({})
 
-    expect(output.veiculos).toHaveLength(3)
-    expect(output.total).toBe(3)
-    expect(output.pagina).toBe(1)
-    expect(output.limite).toBe(10)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.veiculos).toHaveLength(3)
+    expect(result.value.total).toBe(3)
+    expect(result.value.pagina).toBe(1)
+    expect(result.value.limite).toBe(10)
   })
 
   it('deve permitir paginar a listagem de veículos', async () => {
@@ -37,14 +38,15 @@ describe('Caso de Uso: Listar Veículos', () => {
       )
     }
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       pagina: 2,
       limite: 5,
     })
 
-    expect(output.veiculos).toHaveLength(5)
-    expect(output.total).toBe(15)
-    expect(output.pagina).toBe(2)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.veiculos).toHaveLength(5)
+    expect(result.value.total).toBe(15)
+    expect(result.value.pagina).toBe(2)
   })
 
   it('deve filtrar veículos deletados (soft delete)', async () => {
@@ -56,13 +58,14 @@ describe('Caso de Uso: Listar Veículos', () => {
     await veiculosRepository.create(veiculoDeletado1)
     await veiculosRepository.create(veiculoDeletado2)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'deletados',
     })
 
-    expect(output.veiculos).toHaveLength(2)
-    expect(output.total).toBe(2)
-    expect(output.veiculos.map(veiculo => veiculo.getId().toValue())).toEqual([
+    expect(result.isRight()).toBe(true)
+    expect(result.value.veiculos).toHaveLength(2)
+    expect(result.value.total).toBe(2)
+    expect(result.value.veiculos.map(veiculo => veiculo.getId().toValue())).toEqual([
       veiculoDeletado1.getId().toValue(),
       veiculoDeletado2.getId().toValue()
     ])
@@ -75,11 +78,11 @@ describe('Caso de Uso: Listar Veículos', () => {
     await veiculosRepository.create(veiculoAtivo)
     await veiculosRepository.create(veiculoDeletado)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'todos',
     })
-
-    expect(output.veiculos).toHaveLength(2)
-    expect(output.total).toBe(2)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.veiculos).toHaveLength(2)
+    expect(result.value.total).toBe(2)
   })
 })

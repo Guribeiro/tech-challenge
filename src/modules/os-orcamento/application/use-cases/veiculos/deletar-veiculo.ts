@@ -1,4 +1,5 @@
 import { Either, left, right } from '@/core/either.js'
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js'
 import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
 import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
 import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/veiculos-repository.js'
@@ -30,12 +31,19 @@ export class DeletarVeiculoUseCase {
       return left(new RecursoNaoEncontradoError('Veículo'))
     }
 
-    veiculo.deletar()
+    try {
+      veiculo.deletar()
 
-    await this.veiculosRepository.save(veiculo)
+      await this.veiculosRepository.save(veiculo)
 
-    return right({
-      veiculo
-    })
+      return right({
+        veiculo
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }
