@@ -3,6 +3,8 @@ import { Produto } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 import { RecursoNaoEncontradoError } from "@/core/errors/index.js";
 import { Either, left, right } from "@/core/either.js";
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js";
+import { RegraDeNegocioVioladaError } from "@/core/errors/domain-errors/regra-de-negocio-violada-error.js";
 
 interface DesativarProdutoInput {
   produtoId: string
@@ -29,7 +31,14 @@ export class DesativarProdutoUseCase {
       return left(new RecursoNaoEncontradoError('Produto'))
     }
 
-    produto.desativar()
+    try {
+      produto.desativar()
+    } catch (error) {
+      if (error instanceof RegraDeNegocioVioladaError) {
+        return left(error)
+      }
+      throw error // Lança novamente erros inesperados (ex: falhas de infra/banco)
+    }
 
     await this.produtoRepository.save(produto)
 

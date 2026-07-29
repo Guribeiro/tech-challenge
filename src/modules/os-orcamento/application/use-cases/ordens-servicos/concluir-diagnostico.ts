@@ -38,7 +38,6 @@ export class ConcluirDiagnosticoUseCase {
   ) { }
 
   public async execute(input: ConcluirDiagnosticoInput): Promise<ConcluirDiagnosticoOutput> {
-
     const usuario = await this.usuarioRepository.findById(input.usuarioId)
 
     if (!usuario) {
@@ -52,24 +51,27 @@ export class ConcluirDiagnosticoUseCase {
     }
 
     const isOwner = ordemServico.getMecanicoId()?.toValue() === input.usuarioId
-
     const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(usuario.getRole())
 
     if (!isOwner && !isAdminOrReception) {
-      return left(new AcessoNegadoError('Apenas o mecânico responsável que iniciou o diagnóstico (ou um gestor) pode concluí-lo.'))
+      return left(
+        new AcessoNegadoError(
+          'Apenas o mecânico responsável que iniciou o diagnóstico (ou um gestor) pode concluí-lo.',
+        ),
+      )
     }
 
     const ordemServicoId = ordemServico.getId()
 
-    const servicosFinais: OrdemServicoServico[] = []
+    // --- PROCESSAMENTO DE SERVIÇOS ---
+    let servicosFinais: OrdemServicoServico[] = ordemServico.getServicos().getItems()
 
-    if (input.servicos && input.servicos.length > 0) {
-      // Map dos serviços EXISTENTES na OS (chave = ID da Entidade OrdemServicoServico)
+    if (input.servicos) {
+      servicosFinais = []
       const servicosExistentesMap = new Map(
-        ordemServico.getServicos().getItems().map((s) => [s.getId().toValue(), s])
+        ordemServico.getServicos().getItems().map((s) => [s.getId().toValue(), s]),
       )
 
-      // Filtra itens NOVOS (sem `id` da relação) para buscar no catálogo de serviços
       const novosServicosInput = input.servicos.filter((s) => !s.id)
       const servicoIdsNovos = [...new Set(novosServicosInput.map((s) => s.servicoId))]
 
@@ -80,14 +82,11 @@ export class ConcluirDiagnosticoUseCase {
       }
 
       for (const item of input.servicos) {
-        // Busca no Map usando `item.id` (ID do serviço já associado à OS)
         const servicoExistente = item.id ? servicosExistentesMap.get(item.id) : null
 
         if (servicoExistente) {
-          // ➔ SERVIÇO JÁ EXISTIA NA OS: Preserva a instância intacta
           servicosFinais.push(servicoExistente)
         } else {
-          // ➔ SERVIÇO NOVO: Busca do catálogo e cria nova entidade congelando dados
           const servicoDoCatalogo = servicosCatalogoMap.get(item.servicoId)
 
           if (!servicoDoCatalogo) {
@@ -98,7 +97,7 @@ export class ConcluirDiagnosticoUseCase {
             OrdemServicoServico.criar({
               ordemServicoId,
               servicoId: servicoDoCatalogo.getId(),
-              precoUnitario: servicoDoCatalogo.getValorReferencia(), // Congela valor de referência
+              precoUnitario: servicoDoCatalogo.getValorReferencia(),
               categoria: servicoDoCatalogo.getCategoria(),
               nome: servicoDoCatalogo.getNome(),
             }),
@@ -107,15 +106,15 @@ export class ConcluirDiagnosticoUseCase {
       }
     }
 
-    const componentesFinais: OrdemServicoComponente[] = []
+    // --- PROCESSAMENTO DE COMPONENTES/PRODUTOS ---
+    let componentesFinais: OrdemServicoComponente[] = ordemServico.getComponentes().getItems()
 
-    if (input.componentes && input.componentes.length > 0) {
-      // Mapeia os componentes que JÁ EXISTEM na OS
+    if (input.componentes) {
+      componentesFinais = []
       const componentesExistentesMap = new Map(
-        ordemServico.getComponentes().getItems().map((c) => [c.getId().toValue(), c])
+        ordemServico.getComponentes().getItems().map((c) => [c.getId().toValue(), c]),
       )
 
-      // Filtra IDs de produtos que precisam ser buscados no catálogo (apenas para ITENS NOVOS)
       const novosItensInput = input.componentes.filter((c) => !c.id)
       const produtoIdsNovos = [...new Set(novosItensInput.map((c) => c.produtoId))]
 
@@ -129,11 +128,9 @@ export class ConcluirDiagnosticoUseCase {
         const componenteExistente = item.id ? componentesExistentesMap.get(item.id) : null
 
         if (componenteExistente) {
-          // ➔ ITEM JÁ EXISTIA NA OS: Apenas atualiza a quantidade se mudou
           componenteExistente.setQuantidade(item.quantidade)
           componentesFinais.push(componenteExistente)
         } else {
-          // ➔ ITEM NOVO: Busca dados do catálogo para congelar preços/snapshot
           const produtoDoCatalogo = produtosCatalogoMap.get(item.produtoId)
 
           if (!produtoDoCatalogo) {
@@ -159,12 +156,13 @@ export class ConcluirDiagnosticoUseCase {
         }
       }
     }
+
     ordemServico.concluirDiagnostico(servicosFinais, componentesFinais)
 
     await this.ordemServicoRepository.save(ordemServico)
 
     return right({
-      ordemServico
+      ordemServico,
     })
   }
 }

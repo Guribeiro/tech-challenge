@@ -1,6 +1,8 @@
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
+import { SaldoInsuficienteError, PrecoInvalidoError } from '../errors/index.js'
+import { ArgumentoInvalidoError, RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/index.js'
 
 export type TipoProduto = 'PECA' | 'INSUMO'
 export type UnidadeMedida = 'UN' | 'L' | 'KG' | 'JOGO' | 'METRO'
@@ -44,48 +46,48 @@ export class Produto extends AggregateRoot<ProdutoProps> {
 
   private static validar(props: ProdutoProps): void {
     if (!props.nome?.trim()) {
-      throw new Error('O nome do produto é obrigatório.')
+      throw new ArgumentoInvalidoError('O nome do produto é obrigatório.')
     }
 
     if (!props.tipo) {
-      throw new Error('O tipo do produto (PECA ou INSUMO) é obrigatório.')
+      throw new ArgumentoInvalidoError('O tipo do produto (PECA ou INSUMO) é obrigatório.')
     }
 
     if (props.precoCusto < 0) {
-      throw new Error('O preço de custo não pode ser negativo.')
+      throw new PrecoInvalidoError('O preço de custo não pode ser negativo.')
     }
 
     if (props.precoUnitario < 0) {
-      throw new Error('O preço de venda do produto não pode ser negativo.')
+      throw new PrecoInvalidoError('O preço de venda do produto não pode ser negativo.')
     }
 
     if (props.precoUnitario < props.precoCusto) {
-      throw new Error('O preço de venda não pode ser menor do que o preço de custo.')
+      throw new PrecoInvalidoError('O preço de venda não pode ser menor do que o preço de custo.')
     }
 
     if (props.quantidadeEstoque < 0) {
-      throw new Error('A quantidade em estoque não pode ser negativa.')
+      throw new ArgumentoInvalidoError('A quantidade em estoque não pode ser negativa.')
     }
 
     if (props.quantidadeReservada < 0) {
-      throw new Error('A quantidade reservada não pode ser negativa.')
+      throw new ArgumentoInvalidoError('A quantidade reservada não pode ser negativa.')
     }
 
     if (props.quantidadeReservada > props.quantidadeEstoque) {
-      throw new Error('A quantidade reservada não pode ser maior do que a quantidade em estoque.')
+      throw new RegraDeNegocioVioladaError('A quantidade reservada não pode ser maior do que a quantidade em estoque.')
     }
 
     if (props.quantidadeReservada < 0) {
-      throw new Error('A quantidade reservada não pode ser negativa.')
+      throw new ArgumentoInvalidoError('A quantidade reservada não pode ser negativa.')
     }
 
     // 4. Parâmetros Limite de Estoque
     if (props.estoqueMinimo !== undefined && props.estoqueMinimo < 0) {
-      throw new Error('O estoque mínimo não pode ser negativo.')
+      throw new ArgumentoInvalidoError('O estoque mínimo não pode ser negativo.')
     }
 
     if (props.estoqueMaximo !== undefined && props.estoqueMaximo < 0) {
-      throw new Error('O estoque máximo não pode ser negativo.')
+      throw new ArgumentoInvalidoError('O estoque máximo não pode ser negativo.')
     }
 
     if (
@@ -93,27 +95,24 @@ export class Produto extends AggregateRoot<ProdutoProps> {
       props.estoqueMaximo !== undefined &&
       props.estoqueMaximo < props.estoqueMinimo
     ) {
-      throw new Error('O estoque máximo não pode ser menor do que o estoque mínimo.')
+      throw new RegraDeNegocioVioladaError('O estoque máximo não pode ser menor do que o estoque mínimo.')
     }
   }
 
 
   public reservar(quantidade: number): void {
     if (quantidade <= 0) {
-      throw new Error('A quantidade a ser reservada deve ser maior que zero.')
+      throw new ArgumentoInvalidoError('A quantidade a ser reservada deve ser maior que zero.')
     }
 
     const quantidadeDisponivel = this.props.quantidadeEstoque - this.props.quantidadeReservada
 
     if (quantidadeDisponivel < quantidade) {
-      throw new Error(
-        `Saldo disponível insuficiente do produto "${this.props.nome}" para reserva. ` +
-        `Disponível: ${quantidadeDisponivel}, Solicitado: ${quantidade}`
-      )
+      throw new SaldoInsuficienteError(this.props.nome, quantidadeDisponivel, quantidade)
     }
 
     this.props.quantidadeReservada += quantidade
-    this.props.atualizadoEm = new Date()
+    this.touch()
   }
 
   /**
@@ -122,15 +121,15 @@ export class Produto extends AggregateRoot<ProdutoProps> {
    */
   public confirmarReservaEDeduzir(quantidade: number): void {
     if (quantidade <= 0) {
-      throw new Error('A quantidade a ser baixada deve ser maior que zero.')
+      throw new ArgumentoInvalidoError('A quantidade a ser baixada deve ser maior que zero.')
     }
     if (this.props.quantidadeReservada < quantidade) {
-      throw new Error(`Tentativa de baixar mais reservas do que o produto "${this.props.nome}" possui atualmente.`)
+      throw new ArgumentoInvalidoError(`Tentativa de baixar mais reservas do que o produto "${this.props.nome}" possui atualmente.`)
     }
 
     this.props.quantidadeReservada -= quantidade
     this.props.quantidadeEstoque -= quantidade
-    this.props.atualizadoEm = new Date()
+    this.touch()
   }
 
   /**
@@ -138,14 +137,14 @@ export class Produto extends AggregateRoot<ProdutoProps> {
    */
   public cancelarReserva(quantidade: number): void {
     if (quantidade <= 0) {
-      throw new Error('A quantidade a ser cancelada deve ser maior que zero.')
+      throw new ArgumentoInvalidoError('A quantidade a ser cancelada deve ser maior que zero.')
     }
     if (this.props.quantidadeReservada < quantidade) {
-      throw new Error(`Tentativa de cancelar mais reservas do que o produto "${this.props.nome}" possui.`)
+      throw new ArgumentoInvalidoError(`Tentativa de cancelar mais reservas do que o produto "${this.props.nome}" possui.`)
     }
 
     this.props.quantidadeReservada -= quantidade
-    this.props.atualizadoEm = new Date()
+    this.touch()
   }
 
 
@@ -154,9 +153,10 @@ export class Produto extends AggregateRoot<ProdutoProps> {
    */
   public atualizarPreco(novoPreco: number): void {
     if (novoPreco < 0) {
-      throw new Error('O novo preço não pode ser negativo.')
+      throw new PrecoInvalidoError('O novo preço não pode ser negativo.')
     }
     this.props.precoUnitario = novoPreco
+    this.touch()
   }
 
   /**
@@ -164,14 +164,14 @@ export class Produto extends AggregateRoot<ProdutoProps> {
    */
   public adicionarEstoque(quantidade: number): void {
     if (quantidade <= 0) {
-      throw new Error('A quantidade a ser adicionada deve ser maior que zero.')
+      throw new ArgumentoInvalidoError('A quantidade a ser adicionada deve ser maior que zero.')
     }
     // Verifica se existe um limite maximo configurado
     if (this.props.estoqueMaximo !== undefined) {
       const estoqueFuturo = this.props.quantidadeEstoque + quantidade
 
       if (estoqueFuturo > this.props.estoqueMaximo) {
-        throw new Error(
+        throw new ArgumentoInvalidoError(
           `A quantidade adicionada excede o estoque máximo permitido (${this.props.estoqueMaximo} unidades).`
         )
       }
@@ -187,7 +187,7 @@ export class Produto extends AggregateRoot<ProdutoProps> {
 
   public desativar(): void {
     if (this.props.desativadoEm) {
-      throw new Error('Este produto já está desativado.')
+      throw new RegraDeNegocioVioladaError('Este produto já está desativado.')
     }
     this.props.desativadoEm = new Date() // Grava o timestamp atual
     this.touch()

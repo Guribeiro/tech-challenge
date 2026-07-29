@@ -24,12 +24,16 @@ describe('Caso de Uso: Listar Produtos', () => {
       await produtoRepository.create(produto)
     }
 
-    const output = await sut.execute({})
+    const result = await sut.execute({})
 
-    expect(output.produtos).toHaveLength(3)
-    expect(output.total).toBe(3)
-    expect(output.pagina).toBe(1)
-    expect(output.limite).toBe(10)
+    expect(result.isRight()).toBe(true)
+
+    if (result.isRight()) {
+      expect(result.value.produtos).toHaveLength(3)
+      expect(result.value.total).toBe(3)
+      expect(result.value.pagina).toBe(1)
+      expect(result.value.limite).toBe(10)
+    }
   })
 
   it('deve permitir paginar a listagem de produtos', async () => {
@@ -43,14 +47,18 @@ describe('Caso de Uso: Listar Produtos', () => {
     }
 
     // Busca a página 2 com limite de 5 itens por página
-    const output = await sut.execute({
+    const result = await sut.execute({
       pagina: 2,
       limite: 5,
     })
 
-    expect(output.produtos).toHaveLength(5)
-    expect(output.total).toBe(15)
-    expect(output.pagina).toBe(2)
+    expect(result.isRight()).toBe(true)
+
+    if (result.isRight()) {
+      expect(result.value.produtos).toHaveLength(5)
+      expect(result.value.total).toBe(15)
+      expect(result.value.pagina).toBe(2)
+    }
   })
 
   it('deve filtrar produtos deletados (soft delete)', async () => {
@@ -62,16 +70,19 @@ describe('Caso de Uso: Listar Produtos', () => {
     await produtoRepository.create(produtoDeletado1)
     await produtoRepository.create(produtoDeletado2)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'deletados',
     })
 
-    expect(output.produtos).toHaveLength(2)
-    expect(output.total).toBe(2)
-    expect(output.produtos.map(produto => produto.getId())).toEqual([
-      produtoDeletado1.getId(),
-      produtoDeletado2.getId()
-    ])
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.produtos).toHaveLength(2)
+      expect(result.value.total).toBe(2)
+      expect(result.value.produtos.map(produto => produto.getId())).toEqual([
+        produtoDeletado1.getId(),
+        produtoDeletado2.getId()
+      ])
+    }
   })
 
   it('deve listar todos os produtos (ativos e deletados) quando status for "todos"', async () => {
@@ -81,12 +92,15 @@ describe('Caso de Uso: Listar Produtos', () => {
     await produtoRepository.create(produtoAtivo)
     await produtoRepository.create(produtoDeletado)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'todos',
     })
 
-    expect(output.produtos).toHaveLength(2)
-    expect(output.total).toBe(2)
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.produtos).toHaveLength(2)
+      expect(result.value.total).toBe(2)
+    }
   })
 
   it('deve buscar produtos por trecho do nome (case insensitive)', async () => {
@@ -98,16 +112,18 @@ describe('Caso de Uso: Listar Produtos', () => {
     await produtoRepository.create(produto2)
     await produtoRepository.create(produto3)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       nome: 'fluido', // em minúsculas para testar case-insensitivity
     })
 
-    expect(output.produtos).toHaveLength(2)
-    expect(output.total).toBe(2)
-
-    expect(output.produtos.map(produto => produto.getNome())).toEqual([
-      produto1.getNome(),
-      produto3.getNome(),
-    ])
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.produtos).toHaveLength(2)
+      expect(result.value.total).toBe(2)
+      expect(result.value.produtos.map(produto => produto.getNome())).toEqual([
+        produto1.getNome(),
+        produto3.getNome(),
+      ])
+    }
   })
 })

@@ -3,6 +3,7 @@ import { Produto, TipoProduto, UnidadeMedida } from "../../domain/entities/produ
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 import { CodigoSKUJaCadastradoError, ProdutoJaCadastradoError } from "@/core/errors/index.js";
 import { Either, left, right } from "@/core/either.js";
+import { DomainError } from "@/core/errors/domain-errors/domain-error.js";
 
 export interface CriarProdutoInput {
   nome: string
@@ -23,7 +24,10 @@ export interface CriarProdutoInput {
   localizacao?: string
 }
 
-type Errors = ProdutoJaCadastradoError | CodigoSKUJaCadastradoError
+type Errors =
+  ProdutoJaCadastradoError |
+  CodigoSKUJaCadastradoError |
+  DomainError
 
 type CriarProdutoOutput = Either<
   Errors,
@@ -65,26 +69,35 @@ export class CriarProdutoUseCase {
       }
     }
 
-    const produto = Produto.criar({
-      nome,
-      tipo,
-      marca,
-      codigoSKU,
-      codigoFabricante,
-      descricao,
-      precoUnitario,
-      precoCusto,
-      quantidadeEstoque,
-      unidadeMedida,
-      estoqueMaximo,
-      estoqueMinimo,
-      localizacao,
-    })
+    try {
+      const produto = Produto.criar({
+        nome,
+        tipo,
+        marca,
+        codigoSKU,
+        codigoFabricante,
+        descricao,
+        precoUnitario,
+        precoCusto,
+        quantidadeEstoque,
+        unidadeMedida,
+        estoqueMaximo,
+        estoqueMinimo,
+        localizacao,
+      })
 
-    await this.produtoRepository.create(produto)
+      await this.produtoRepository.create(produto)
 
-    return right({
-      produto
-    })
+      return right({
+        produto
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+
+      throw error
+    }
+
   }
 }

@@ -1,22 +1,25 @@
 import { CriarOrdemServicoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/criar-ordem-servico.js'
+import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordem-servico-repository.js'
+import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
+import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
+import { InMemoryServicoRepository } from '../../repositories/in-memory-servico-repository.js'
 import { InMemoryProdutoRepository } from '@/modules/estoque/testes/repositories/in-memory-produto-repository.js'
-import { InMemoryClienteRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js'
-import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js'
-import { InMemoryServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-servico-repository.js'
-import { InMemoryVeiculoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-veiculo-repository.js'
+
+import { makeCliente } from '../../factories/make-cliente.js'
+import { makeVeiculo } from '../../factories/make-veiculo.js'
+import { makeServico } from '../../factories/make-servico.js'
 import { makeProduto } from '@/modules/estoque/testes/factories/make-produto.js'
-import { makeCliente } from '@/modules/os-orcamento/testes/factories/make-cliente.js'
-import { makeServico } from '@/modules/os-orcamento/testes/factories/make-servico.js'
-import { makeVeiculo } from '@/modules/os-orcamento/testes/factories/make-veiculo.js'
+import { EstoqueInsuficienteError, RecursoNaoEncontradoError } from '@/core/errors/index.js'
 
-describe('Criar ordem de serviço', () => {
-  let ordemServicoRepository: InMemoryOrdemServicoRepository
-  let clienteRepository: InMemoryClienteRepository
-  let veiculoRepository: InMemoryVeiculoRepository
-  let servicoRepository: InMemoryServicoRepository
-  let produtoRepository: InMemoryProdutoRepository
-  let sut: CriarOrdemServicoUseCase
+let ordemServicoRepository: InMemoryOrdemServicoRepository
+let clienteRepository: InMemoryClienteRepository
+let veiculoRepository: InMemoryVeiculoRepository
+let servicoRepository: InMemoryServicoRepository
+let produtoRepository: InMemoryProdutoRepository
 
+let sut: CriarOrdemServicoUseCase
+
+describe('Criar Ordem de Serviço Use Case', () => {
   beforeEach(() => {
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
     clienteRepository = new InMemoryClienteRepository()
@@ -31,156 +34,195 @@ describe('Criar ordem de serviço', () => {
       servicoRepository,
       ordemServicoRepository,
     )
-    vi.clearAllMocks()
   })
 
-  it('deve criar ordem de serviço simples', async () => {
+  it('deve criar uma ordem de serviço com sucesso (sem serviços e sem componentes)', async () => {
+    // Arrange
     const cliente = makeCliente()
-    await clienteRepository.create(cliente)
+    const veiculo = makeVeiculo({ clienteId: cliente.getId() })
 
-    const veiculo = makeVeiculo()
+    await clienteRepository.create(cliente)
     await veiculoRepository.create(veiculo)
 
-    const { ordemServico } = await sut.execute({
+    // Act
+    const result = await sut.execute({
       clienteId: cliente.getId().toValue(),
-      eGarantia: false,
-      descricao: 'Veículo com barulho na suspensão',
       veiculoId: veiculo.getId().toValue(),
+      descricao: 'Barulho estranho na suspensão',
+      eGarantia: false,
     })
 
-    expect(ordemServico.getClienteId().toValue()).toBe(cliente.getId().toValue())
-    expect(ordemServico.getVeiculoId().toValue()).toBe(veiculo.getId().toValue())
-    expect(ordemServicoRepository.items).toHaveLength(1)
+    // Assert
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const { ordemServico } = result.value
+      expect(ordemServicoRepository.items[0]).toEqual(ordemServico)
+      expect(ordemServico.getClienteId()).toEqual(cliente.getId())
+      expect(ordemServico.getVeiculoId()).toEqual(veiculo.getId())
+      expect(ordemServico.getDescricao()).toBe('Barulho estranho na suspensão')
+      expect(ordemServico.getStatus()).toBe('RECEBIDA')
+      expect(ordemServico.getServicos().getItems()).toHaveLength(0)
+      expect(ordemServico.getComponentes().getItems()).toHaveLength(0)
+    }
   })
 
-  it('deve criar ordem de serviço informando serviços', async () => {
-    const cliente = makeCliente()
-    await clienteRepository.create(cliente)
+  it('deve criar uma ordem de serviço incluindo serviços e componentes com estoque suficiente', async () => {
+    // Arrange
+    const cliente = makeCliente({ tipo: 'PJ' })
+    const veiculo = makeVeiculo({ ano: 2022, clienteId: cliente.getId() })
 
-    const veiculo = makeVeiculo()
+    await clienteRepository.create(cliente)
     await veiculoRepository.create(veiculo)
 
-    const servico = makeServico({ nome: 'Troca de óleo' })
+    const servico = makeServico({ categoria: 'ESTETICA', valorReferencia: 150 })
     await servicoRepository.create(servico)
 
-    const { ordemServico } = await sut.execute({
-      clienteId: cliente.getId().toValue(),
-      eGarantia: false,
-      descricao: 'Manutenção preventiva',
-      veiculoId: veiculo.getId().toValue(),
-      servicos: [{ servicoId: servico.getId().toValue() }],
+    const produto = makeProduto({
+      quantidadeEstoque: 10,
+      precoUnitario: 8000,
+      quantidadeReservada: 0,
+      precoCusto: 6000
     })
-
-    expect(ordemServico.getServicos().getItems()).toHaveLength(1)
-    expect(ordemServico.getServicos().getItems()[0].getServicoId().toValue()).toBe(
-      servico.getId().toValue(),
-    )
-  })
-
-  it('deve criar ordem de serviço informando componentes/produtos', async () => {
-    const cliente = makeCliente()
-    await clienteRepository.create(cliente)
-
-    const veiculo = makeVeiculo()
-    await veiculoRepository.create(veiculo)
-
-    const produto = makeProduto({ quantidadeEstoque: 10, precoUnitario: 150, precoCusto: 100 })
     await produtoRepository.create(produto)
 
-    const { ordemServico } = await sut.execute({
+    // Act
+    const result = await sut.execute({
       clienteId: cliente.getId().toValue(),
-      eGarantia: false,
-      descricao: 'Substituição de peça gasta',
       veiculoId: veiculo.getId().toValue(),
+      descricao: 'Troca de pastilhas de freio',
+      eGarantia: false,
+      servicos: [
+        { servicoId: servico.getId().toValue() },
+      ],
       componentes: [
-        {
-          produtoId: produto.getId().toValue(),
-          quantidade: 2,
-        },
+        { produtoId: produto.getId().toValue(), quantidade: 2 },
       ],
     })
 
-    expect(ordemServico.getComponentes().getItems()).toHaveLength(1)
-    expect(
-      ordemServico.getComponentes().getItems()[0].getQuantidade(),
-    ).toBe(2)
-    expect(
-      ordemServico.getComponentes().getItems()[0].getPrecoUnitario(),
-    ).toBe(150)
+    // Assert
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const { ordemServico } = result.value
+      expect(ordemServico.getServicos().getItems()).toHaveLength(1)
+      expect(ordemServico.getServicos().getItems()[0].getServicoId()).toEqual(servico.getId())
+      expect(ordemServico.getComponentes().getItems()).toHaveLength(1)
+      expect(ordemServico.getComponentes().getItems()[0].getQuantidade()).toBe(2)
+      expect(ordemServico.getPrioridade()).toBeDefined()
+    }
   })
 
-  it('não deve criar ordem de serviço quando o veículo não existir', async () => {
-    const cliente = makeCliente()
-    await clienteRepository.create(cliente)
-
-    const veiculo = makeVeiculo()
-
-    await expect(
-      sut.execute({
-        clienteId: cliente.getId().toValue(),
-        eGarantia: false,
-        descricao: 'Veículo não cadastrado',
-        veiculoId: veiculo.getId().toValue(),
-      }),
-    ).rejects.toThrow(`Veículo com ID ${veiculo.getId().toValue()} não encontrado.`)
-  })
-
-  it('não deve criar ordem de serviço quando o cliente não existir', async () => {
-    const cliente = makeCliente()
+  it('deve retornar RecursoNaoEncontradoError se o cliente não for encontrado', async () => {
+    // Arrange
     const veiculo = makeVeiculo()
     await veiculoRepository.create(veiculo)
 
-    await expect(
-      sut.execute({
-        clienteId: cliente.getId().toValue(),
-        eGarantia: false,
-        descricao: 'Cliente inexistente',
-        veiculoId: veiculo.getId().toValue(),
-      }),
-    ).rejects.instanceOf(Error)
+    // Act
+    const result = await sut.execute({
+      clienteId: 'cliente-inexistente',
+      veiculoId: veiculo.getId().toValue(),
+      descricao: 'Revisão periódica',
+      eGarantia: false,
+    })
+
+    // Assert
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 
-  it('não deve criar ordem de serviço quando algum serviço adicionado não existir', async () => {
+  it('deve retornar RecursoNaoEncontradoError se o veículo não for encontrado', async () => {
+    // Arrange
     const cliente = makeCliente()
     await clienteRepository.create(cliente)
 
-    const veiculo = makeVeiculo()
-    await veiculoRepository.create(veiculo)
+    // Act
+    const result = await sut.execute({
+      clienteId: cliente.getId().toValue(),
+      veiculoId: 'veiculo-inexistente',
+      descricao: 'Revisão periódica',
+      eGarantia: false,
+    })
 
-    await expect(
-      sut.execute({
-        clienteId: cliente.getId().toValue(),
-        eGarantia: false,
-        descricao: 'Serviço inexistente',
-        veiculoId: veiculo.getId().toValue(),
-        servicos: [{ servicoId: 'servico-inexistente-id' }],
-      }),
-    ).rejects.instanceOf(Error)
+    // Assert
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 
-  it('não deve criar ordem de serviço quando estoque de um componente for insuficiente', async () => {
+  it('deve retornar RecursoNaoEncontradoError se algum serviço informado não existir', async () => {
+    // Arrange
     const cliente = makeCliente()
-    await clienteRepository.create(cliente)
+    const veiculo = makeVeiculo({ clienteId: cliente.getId() })
 
-    const veiculo = makeVeiculo()
+    await clienteRepository.create(cliente)
     await veiculoRepository.create(veiculo)
 
-    const produto = makeProduto({ quantidadeEstoque: 1, nome: 'Filtro de Ar', quantidadeReservada: 0 })
-    await produtoRepository.create(produto)
+    // Act
+    const result = await sut.execute({
+      clienteId: cliente.getId().toValue(),
+      veiculoId: veiculo.getId().toValue(),
+      descricao: 'Serviço inexistente no catálogo',
+      eGarantia: false,
+      servicos: [
+        { servicoId: 'servico-inexistente' },
+      ],
+    })
 
-    await expect(
-      sut.execute({
-        clienteId: cliente.getId().toValue(),
-        eGarantia: false,
-        descricao: 'Troca de filtro',
-        veiculoId: veiculo.getId().toValue(),
-        componentes: [
-          {
-            produtoId: produto.getId().toValue(),
-            quantidade: 5, // Pedindo mais do que o estoque disponível
-          },
-        ],
-      }),
-    ).rejects.instanceOf(Error)
+    // Assert
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
+  })
+
+  it('deve retornar RecursoNaoEncontradoError se algum componente informado não existir', async () => {
+    // Arrange
+    const cliente = makeCliente()
+    const veiculo = makeVeiculo({ clienteId: cliente.getId() })
+
+    await clienteRepository.create(cliente)
+    await veiculoRepository.create(veiculo)
+
+    // Act
+    const result = await sut.execute({
+      clienteId: cliente.getId().toValue(),
+      veiculoId: veiculo.getId().toValue(),
+      descricao: 'Peça inexistente no catálogo',
+      eGarantia: false,
+      componentes: [
+        { produtoId: 'produto-inexistente', quantidade: 1 },
+      ],
+    })
+
+    // Assert
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
+  })
+
+  it('deve retornar EstoqueInsuficienteError se a quantidade do componente for maior do que o estoque disponível', async () => {
+    // Arrange
+    const cliente = makeCliente()
+    const veiculo = makeVeiculo({ clienteId: cliente.getId() })
+
+    await clienteRepository.create(cliente)
+    await veiculoRepository.create(veiculo)
+
+    const produtoComEstoqueBaixo = makeProduto({
+      nome: 'Óleo Sintético 5W30',
+      quantidadeReservada: 0,
+      quantidadeEstoque: 2,
+    })
+    await produtoRepository.create(produtoComEstoqueBaixo)
+
+    // Act
+    const result = await sut.execute({
+      clienteId: cliente.getId().toValue(),
+      veiculoId: veiculo.getId().toValue(),
+      descricao: 'Troca de óleo',
+      eGarantia: false,
+      componentes: [
+        { produtoId: produtoComEstoqueBaixo.getId().toValue(), quantidade: 5 }, // Pede 5, tem 2
+      ],
+    })
+
+    // Assert
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(EstoqueInsuficienteError)
   })
 })

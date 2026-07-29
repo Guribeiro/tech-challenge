@@ -1,6 +1,8 @@
 import { DesativarProdutoUseCase } from '@/modules/estoque/application/use-cases/desativar-produto.js'
 import { InMemoryProdutoRepository } from '@/modules/estoque/testes/repositories/in-memory-produto-repository.js'
 import { makeProduto } from '../../factories/make-produto.js'
+import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
+import { RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/regra-de-negocio-violada-error.js'
 
 let produtoRepository: InMemoryProdutoRepository
 let sut: DesativarProdutoUseCase
@@ -16,25 +18,37 @@ describe('Desativar produto', () => {
 
     await produtoRepository.create(produto)
 
-    const { produto: produtoDesativado } = await sut.execute({ produtoId: produto.getId().toValue() })
+    const result = await sut.execute({ produtoId: produto.getId().toValue() })
 
-    expect(produtoDesativado.isAtivo()).toBe(false)
+    if (result.isRight()) {
+      expect(result.value.produto.isAtivo()).toBe(false)
+    }
   })
 
   it('não deve desativar um produto inexistente', async () => {
-    const produto = makeProduto()
-    await expect(
-      sut.execute({ produtoId: produto.getId().toValue() })
-    ).rejects.toBeInstanceOf(Error)
-  })
+    // Act
+    const result = await sut.execute({ produtoId: 'produto-inexistente' })
 
+    // Assert
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
+
+    if (result.isLeft()) {
+      expect(result.value.message).toBe('Produto não encontrado(a).')
+    }
+  })
   it('não deve desativar um produto já desativado', async () => {
     const produto = makeProduto({ desativadoEm: new Date() })
 
     await produtoRepository.create(produto)
 
-    await expect(
-      sut.execute({ produtoId: produto.getId().toValue() })
-    ).rejects.toBeInstanceOf(Error)
+    const result = await sut.execute({ produtoId: produto.getId().toValue() })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RegraDeNegocioVioladaError)
+
+    if (result.isLeft()) {
+      expect(result.value.message).toBe('Este produto já está desativado.')
+    }
   })
 })

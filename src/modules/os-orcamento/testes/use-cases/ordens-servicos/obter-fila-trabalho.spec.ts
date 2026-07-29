@@ -1,4 +1,3 @@
-// src/modules/os-orcamento/application/use-cases/obter-fila-trabalho.spec.ts
 import { describe, beforeEach, it, expect } from 'vitest'
 import { ObterFilaTrabalhoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/obter-fila-trabalho.js'
 import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordem-servico-repository.js'
@@ -24,12 +23,13 @@ describe('Obter Fila de Trabalho Use Case', () => {
     // Act
     const result = await sut.execute({})
 
-    // Assert
-    expect(result.ordensServicos).toHaveLength(1)
-    expect(result.ordensServicos[0].getId().toValue()).toBe(osRecebida.getId().toValue())
-    expect(result.total).toBe(1)
-    expect(result.pagina).toBe(1)
-    expect(result.limite).toBe(10)
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toHaveLength(1)
+      expect(result.value.ordensServicos[0].getId().toValue()).toBe(osRecebida.getId().toValue())
+      expect(result.value.total).toBe(1)
+      expect(result.value.pagina).toBe(1)
+      expect(result.value.limite).toBe(10)
+    }
   })
 
   it('deve filtrar a fila de trabalho por um status específico', async () => {
@@ -48,8 +48,10 @@ describe('Obter Fila de Trabalho Use Case', () => {
     })
 
     // Assert
-    expect(result.ordensServicos).toHaveLength(2)
-    expect(result.total).toBe(2)
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toHaveLength(2)
+      expect(result.value.total).toBe(2)
+    }
   })
 
   it('deve aplicar a paginação corretamente', async () => {
@@ -67,11 +69,13 @@ describe('Obter Fila de Trabalho Use Case', () => {
       status: 'RECEBIDA',
     })
 
-    // Assert
-    expect(result.ordensServicos).toHaveLength(1) // Resta apenas 1 item na pág 2
-    expect(result.total).toBe(3)
-    expect(result.pagina).toBe(2)
-    expect(result.limite).toBe(2)
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toHaveLength(1) // Resta apenas 1 item na pág 2
+      expect(result.value.total).toBe(3)
+      expect(result.value.pagina).toBe(2)
+      expect(result.value.limite).toBe(2)
+    }
+
   })
 
   it('deve retornar uma lista vazia quando nenhuma ordem de serviço corresponder aos filtros', async () => {
@@ -81,7 +85,9 @@ describe('Obter Fila de Trabalho Use Case', () => {
     })
 
     // Assert
-    expect(result.ordensServicos).toEqual([])
-    expect(result.total).toBe(0)
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toEqual([])
+      expect(result.value.total).toBe(0)
+    }
   })
 })
