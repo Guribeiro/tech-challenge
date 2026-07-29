@@ -1,7 +1,7 @@
 import { Controller, Get, HttpCode, HttpStatus, Query, UnauthorizedException } from '@nestjs/common'
 import { ListarServicosUseCase } from '../../application/use-cases/servicos/listar-servicos.js'
 import { ServicoPresenter } from '../../presenters/servico-presenter.js'
-import { ListarServicosQueryDto } from '../../dto/listar-servicos-query.dto.js'
+import { ListarServicosQueryDto } from '../../dto/servico/listar-servicos-query.dto.js'
 
 @Controller('servicos')
 export class ListarServicosController {

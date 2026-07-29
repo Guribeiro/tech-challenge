@@ -1,3 +1,5 @@
+import { Either, left, right } from "@/core/either.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 import { type CategoriaServico, Servico } from "@/modules/os-orcamento/domain/entities/servico.js";
 import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js";
 import { Injectable } from "@nestjs/common";
@@ -10,9 +12,14 @@ export type EditarServicoInput = {
   valorReferencia?: number
 }
 
-type EditarServicoOutput = {
-  servico: Servico
-}
+type Errors = RecursoNaoEncontradoError
+
+type EditarServicoOutput = Either<
+  Errors,
+  {
+    servico: Servico
+  }
+>
 
 @Injectable()
 export class EditarServicoUseCase {
@@ -30,7 +37,7 @@ export class EditarServicoUseCase {
     const servico = await this.servicoRepository.findById(id)
 
     if (!servico) {
-      throw new Error('Servico não encontrado')
+      return left(new RecursoNaoEncontradoError('Serviço'))
     }
 
     servico.atualizar({
@@ -42,8 +49,8 @@ export class EditarServicoUseCase {
 
     await this.servicoRepository.save(servico)
 
-    return {
+    return right({
       servico
-    }
+    })
   }
 }

@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Param, Post, Put, UnauthorizedException } from '@nestjs/common'
 import { EditarVeiculoUseCase } from '../../application/use-cases/veiculos/editar-veiculo.js'
-import { EditarVeiculoBodyDto } from '../../dto/editar-veiculo.dto.js'
+import { EditarVeiculoBodyDto } from '../../dto/veiculo/editar-veiculo.dto.js'
 import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import {

@@ -14,6 +14,7 @@ export abstract class ServicoRepository {
   abstract create(servico: Servico): Promise<void>
   abstract save(servico: Servico): Promise<void>
   abstract findById(id: string): Promise<Servico | null>
+  abstract findByNome(nome: string): Promise<Servico | null>
   abstract findManyByIds(ids: string[]): Promise<Servico[]>
   abstract delete(id: string): Promise<void>
   abstract findMany(params: BuscarServicosParams): Promise<BuscarServicosResultado>

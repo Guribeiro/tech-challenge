@@ -3,8 +3,15 @@ import { CriarClienteUseCase } from '../../application/use-cases/clientes/criar-
 import { CriarClienteBodyDto } from '../../dto/cliente/criar-cliente.dto.js'
 import { ClientePresenter } from '../../presenters/cliente-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
-import { ApiBadRequestResponse, ApiBearerAuth, ApiConflictResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { CriarClienteResponseDto } from '../../dto/cliente/criar-cliente-response.dto.js'
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiConflictResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags
+} from '@nestjs/swagger'
 
 @ApiTags('Clientes')
 @ApiBearerAuth()

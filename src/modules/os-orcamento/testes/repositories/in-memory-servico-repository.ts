@@ -19,6 +19,10 @@ export class InMemoryServicoRepository implements ServicoRepository {
     return this.servicos.find(servico => servico.getId().toValue() === id) || null
   }
 
+  async findByNome(nome: string): Promise<Servico | null> {
+    return this.servicos.find(servico => servico.getNome() === nome) || null
+  }
+
   async findManyByIds(ids: string[]): Promise<Servico[]> {
     return this.servicos.filter(servico =>
       ids.includes(servico.getId().toValue())

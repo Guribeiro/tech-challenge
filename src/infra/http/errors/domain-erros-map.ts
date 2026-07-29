@@ -4,7 +4,8 @@ import {
   CredenciaisInvalidasError,
   EmailJaCadastradoError,
   RecursoNaoEncontradoError,
-  PlacaJaCadastradaError
+  PlacaJaCadastradaError,
+  ServicoJaCadastradoError
 } from '@/core/errors/index.js'
 import { HttpStatus, Type } from '@nestjs/common'
 
@@ -15,5 +16,6 @@ export const DOMAIN_ERROR_MAP = new Map<Type<Error>, HttpStatus>([
   [EmailJaCadastradoError, HttpStatus.CONFLICT],
   [CpfJaCadastradoError, HttpStatus.CONFLICT],
   [PlacaJaCadastradaError, HttpStatus.CONFLICT],
+  [ServicoJaCadastradoError, HttpStatus.CONFLICT],
   [RecursoNaoEncontradoError, HttpStatus.NOT_FOUND],
 ])

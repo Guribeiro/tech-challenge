@@ -2,7 +2,7 @@ import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ListarVeiculosUseCase } from '../../application/use-cases/veiculos/listar-veiculos.js'
-import { ListarClientesQueryDto } from '../../dto/listar-veiculos-query.dto.js'
+import { ListarClientesQueryDto } from '../../dto/veiculo/listar-veiculos-query.dto.js'
 import { ListarVeiculosResponseDto } from '../../dto/veiculo/listar-veiculos-response.dto.js'
 import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 
