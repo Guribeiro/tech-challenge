@@ -1,4 +1,5 @@
 import { Either, left, right } from "@/core/either.js";
+import { DomainError } from "@/core/errors/domain-errors/domain-error.js";
 import { RecursoNaoEncontradoError } from "@/core/errors/index.js";
 import { Servico } from "@/modules/os-orcamento/domain/entities/servico.js";
 import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js";
@@ -30,12 +31,19 @@ export class DesativarServicoUseCase {
       return left(new RecursoNaoEncontradoError('Serviço'))
     }
 
-    servico.desativar()
+    try {
+      servico.desativar()
 
-    await this.servicoRepository.save(servico)
+      await this.servicoRepository.save(servico)
 
-    return right({
-      servico
-    })
+      return right({
+        servico
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }

@@ -1,5 +1,7 @@
 import { Entity } from '@/core/entities/entity.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js';
+import { ArgumentoInvalidoError } from '@/core/errors/domain-errors/argumento-invalido-error.js';
+import { RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/regra-de-negocio-violada-error.js';
 import { Optional } from '@/core/types/optional.js';
 
 export type CategoriaServico = 'SEGURANCA' | 'MANUTENCAO_PREVENTIVA' | 'ESTETICA' | 'ELETRICA' | 'MECANICA_GERAL';
@@ -34,15 +36,15 @@ export class Servico extends Entity<ServicoProps> {
 
   private static validar(props: Optional<ServicoProps, 'criadoEm'>) {
     if (!props.nome?.trim()) {
-      throw new Error('Nome do serviço é obrigatório.')
+      throw new ArgumentoInvalidoError('Nome do serviço é obrigatório.')
     }
 
     if (!props.categoria) {
-      throw new Error('A categoria do serviço é obrigatória para fins de priorização e enturmação.')
+      throw new ArgumentoInvalidoError('A categoria do serviço é obrigatória para fins de priorização e enturmação.')
     }
 
     if (props.valorReferencia !== undefined && props.valorReferencia < 0) {
-      throw new Error('Valor de referência não pode ser negativo.')
+      throw new ArgumentoInvalidoError('Valor de referência não pode ser negativo.')
     }
 
   }
@@ -63,7 +65,7 @@ export class Servico extends Entity<ServicoProps> {
 
   public desativar(): void {
     if (this.props.desativadoEm) {
-      throw new Error('Este produto já está desativado.')
+      throw new RegraDeNegocioVioladaError('Este produto já está desativado.')
     }
     this.props.desativadoEm = new Date()
     this.touch()

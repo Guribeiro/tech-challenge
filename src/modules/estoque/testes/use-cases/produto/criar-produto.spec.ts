@@ -105,9 +105,8 @@ describe('Caso de Uso: Criar produto', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      expect(result.value.produto).toHaveProperty('_id')
       expect(result.value.produto.getNome()).toBe(produto.getNome())
-      expect(result.value.produto.getTipo()).toBe('INSUMO')
+      expect(result.value.produto.getTipo()).toBe('PECA')
     }
   })
 

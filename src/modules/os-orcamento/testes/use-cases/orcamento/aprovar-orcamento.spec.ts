@@ -8,6 +8,8 @@ import { makeCliente } from '../../factories/make-cliente.js'
 import { Orcamento } from '@/modules/os-orcamento/domain/entities/orcamento.js'
 import { OrcamentoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/orcamento-componente-list.js'
 import { OrcamentoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/orcamento-servico-list.js'
+import { RecursoNaoEncontradoError } from '@/core/errors/recurso-nao-encontrado.js'
+import { AcessoNegadoError } from '@/core/errors/acesso-negado-error.js'
 
 describe('Caso de Uso: Aprovar Orçamento', () => {
   let orcamentoRepository: InMemoryOrcamentoRepository
@@ -41,27 +43,29 @@ describe('Caso de Uso: Aprovar Orçamento', () => {
     await orcamentoRepository.save(orcamento)
 
     // 2. Act
-    const resultado = await sut.execute({
+    const result = await sut.execute({
       orcamentoId: orcamento.getId().toValue(),
       clienteId: cliente.getId().toValue()
     })
-
-    // 3. Assert (Verifica estritamente o papel do Caso de Uso)
-    expect(resultado.orcamento.getStatus()).toBe('APROVADO')
-
-    // Valida se foi realmente persistido no repositório
-    const orcamentoNoBanco = await orcamentoRepository.findById(orcamento.getId().toValue())
-    expect(orcamentoNoBanco?.getStatus()).toBe('APROVADO')
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.orcamento.getStatus()).toBe('APROVADO')
+      const orcamentoNoBanco = await orcamentoRepository.findById(orcamento.getId().toValue())
+      expect(orcamentoNoBanco?.getStatus()).toBe('APROVADO')
+    }
   })
 
   it('deve lançar erro caso o orçamento não exista', async () => {
     const cliente = makeCliente()
     await clienteRepository.create(cliente)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       orcamentoId: 'orcamento-inexistente',
       clienteId: cliente.getId().toValue()
-    })).rejects.toThrow('Orçamento com ID orcamento-inexistente não encontrado.')
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 
   it('deve lançar erro caso o cliente não exista', async () => {
@@ -74,10 +78,13 @@ describe('Caso de Uso: Aprovar Orçamento', () => {
     })
     await orcamentoRepository.save(orcamento)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       orcamentoId: orcamento.getId().toValue(),
       clienteId: 'cliente-inexistente'
-    })).rejects.toThrow('Cliente não encontrado')
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 
   it('não deve permitir que um cliente aprove o orçamento de outro cliente', async () => {
@@ -97,9 +104,11 @@ describe('Caso de Uso: Aprovar Orçamento', () => {
     await orcamentoRepository.save(orcamento)
 
     // Tenta aprovar usando o ID do clienteIntruso
-    await expect(sut.execute({
+    const result = await sut.execute({
       orcamentoId: orcamento.getId().toValue(),
       clienteId: clienteIntruso.getId().toValue()
-    })).rejects.toThrow('Você não tem permissão para aprovar este orçamento')
+    })
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(AcessoNegadoError)
   })
 })

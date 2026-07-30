@@ -96,22 +96,26 @@ describe('Iniciar execucao de OS', () => {
 
     await ordemServicoRepository.create(ordemServico)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       mecanicoId: mecanico.getId().toValue(),
       ordemServicoId: ordemServico.getId().toValue()
     })
 
-    expect(output.ordemServico.getId()).toBe(ordemServico.getId())
-    expect(output.ordemServico.getStatus()).toBe('EM_EXECUCAO')
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.ordemServico.getId()).toBe(ordemServico.getId())
+      expect(result.value.ordemServico.getStatus()).toBe('EM_EXECUCAO')
 
-    vi.waitFor(() => {
-      expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          destinatario: cliente.getTelefone().getValor(),
-          mensagem: expect.stringContaining(ordemServico.getId().toValue())
-        })
-      )
-    })
+      vi.waitFor(() => {
+        expect(spy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            destinatario: cliente.getTelefone().getValor(),
+            mensagem: expect.stringContaining(ordemServico.getId().toValue())
+          })
+        )
+      })
+    }
+
 
   })
 

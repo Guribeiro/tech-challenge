@@ -1,18 +1,16 @@
-import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
-import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/ordem-servico-componente.js"
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
-import { OrcamentoRepository } from "@/modules/os-orcamento/domain/repositories/orcamento-repository.js"
-import { ComponenteItemInput, ServicoItemInput } from "../ordens-servicos/criar-ordem-servico.js"
-import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js"
-import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js"
-import { Produto } from "@/modules/estoque/domain/entities/produto.js"
-import { Servico } from "@/modules/os-orcamento/domain/entities/servico.js"
-import { OrcamentoServico } from "@/modules/os-orcamento/domain/entities/orcamento-servico.js"
-import { OrcamentoComponente } from "@/modules/os-orcamento/domain/entities/orcamento-componente.js"
-import { Injectable, UnauthorizedException } from "@nestjs/common"
-import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
-import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
+import { Injectable } from "@nestjs/common"
 import { Either, left, right } from "@/core/either.js"
+import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
+import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
+import { Produto } from "@/modules/estoque/domain/entities/produto.js"
+import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js"
+import { OrcamentoComponente } from "@/modules/os-orcamento/domain/entities/orcamento-componente.js"
+import { OrcamentoServico } from "@/modules/os-orcamento/domain/entities/orcamento-servico.js"
+import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
+import { Servico } from "@/modules/os-orcamento/domain/entities/servico.js"
+import { OrcamentoRepository } from "@/modules/os-orcamento/domain/repositories/orcamento-repository.js"
+import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js"
+import { ComponenteItemInput, ServicoItemInput } from "../ordens-servicos/criar-ordem-servico.js"
 
 interface RenegociarOrcamentoInput {
   orcamentoId: string
@@ -54,7 +52,7 @@ export class RenegociarOrcamentoUseCase {
       return left(new AcessoNegadoError())
     }
 
-    const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(usuario.getRole())
+    const isAdminOrReception = ['ADMIN', 'RECEPCAO', 'MECANICO'].includes(usuario.getRole())
 
     if (!isAdminOrReception) {
       return left(new AcessoNegadoError())

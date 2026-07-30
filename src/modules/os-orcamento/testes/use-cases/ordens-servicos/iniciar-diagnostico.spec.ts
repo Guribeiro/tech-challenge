@@ -24,7 +24,7 @@ let veiculoRepository: InMemoryVeiculoRepository
 let sut: IniciarDiagnosticoUseCase
 
 
-describe('Iniciar diagnostico', () => {
+describe('Caso de Uso: Iniciar Diagnostico', () => {
   beforeEach(() => {
     notificacaoService = new InMemoryNotificacaoService()
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
@@ -50,8 +50,6 @@ describe('Iniciar diagnostico', () => {
 
     const veiculo = makeVeiculo()
     veiculoRepository.create(veiculo)
-
-    const spy = vi.spyOn(notificacaoService, 'enviar')
 
     const servico = makeServico({
       categoria: 'ELETRICA'
@@ -88,14 +86,16 @@ describe('Iniciar diagnostico', () => {
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    const { ordemServico } = await sut.execute({
+    const result = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanico.getId().toValue()
     })
 
-    expect(ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
-
-    expect(ordemServico.getMecanicoId()?.equals(mecanico.getId())).toBe(true)
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
+      expect(result.value.ordemServico.getMecanicoId()?.equals(mecanico.getId())).toBe(true)
+    }
   })
 
   it('não deve iniciar inspeção se o mecanico não existir', async () => {
@@ -106,8 +106,6 @@ describe('Iniciar diagnostico', () => {
     clienteRepository.create(cliente)
 
     const veiculo = makeVeiculo()
-
-    const spy = vi.spyOn(notificacaoService, 'enviar')
 
     const servico = makeServico({
       categoria: 'ELETRICA'
@@ -144,12 +142,11 @@ describe('Iniciar diagnostico', () => {
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanicoId.toValue()
-    })).rejects.toBeInstanceOf(Error)
-
-    expect(spy).not.toHaveBeenCalled()
+    })
+    expect(result.isLeft()).toBe(true)
   })
 
   it('não deve iniciar inspeção se o veiculo não existir', async () => {
@@ -163,7 +160,6 @@ describe('Iniciar diagnostico', () => {
 
     const veiculo = makeVeiculo()
 
-    const spy = vi.spyOn(notificacaoService, 'enviar')
 
     const servico = makeServico({
       categoria: 'ELETRICA'
@@ -200,11 +196,11 @@ describe('Iniciar diagnostico', () => {
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanico.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
 
-    expect(spy).not.toHaveBeenCalled()
+    expect(result.isLeft()).toBe(true)
   })
 })

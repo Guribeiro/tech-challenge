@@ -62,7 +62,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
   }
 
   public aprovar(): void {
-    if (this.props.status !== 'ENVIADO') {
+    if (!['ENVIADO', 'RENEGOCIADO'].includes(this.props.status)) {
       throw new Error('O orçamento precisa ser enviado ao cliente antes de ser aprovado.')
     }
     this.props.status = 'APROVADO'
@@ -92,6 +92,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
     componentes: OrcamentoComponente[],
     descontoPorcentagem: number,
   ): void {
+
     if (this.props.status !== 'RECUSADO') {
       throw new Error('Só é possível renegociar um orçamento que foi recusado pelo cliente.')
     }

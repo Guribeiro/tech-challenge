@@ -22,12 +22,13 @@ describe('Caso de Uso: Listar Produtos', () => {
       await servicoRepository.create(servico)
     }
 
-    const output = await sut.execute({})
+    const result = await sut.execute({})
 
-    expect(output.servicos).toHaveLength(3)
-    expect(output.total).toBe(3)
-    expect(output.pagina).toBe(1)
-    expect(output.limite).toBe(10)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.servicos).toHaveLength(3)
+    expect(result.value.total).toBe(3)
+    expect(result.value.pagina).toBe(1)
+    expect(result.value.limite).toBe(10)
   })
 
   it('deve permitir paginar a listagem de servicos', async () => {
@@ -41,14 +42,14 @@ describe('Caso de Uso: Listar Produtos', () => {
     }
 
     // Busca a página 2 com limite de 5 itens por página
-    const output = await sut.execute({
+    const result = await sut.execute({
       pagina: 2,
       limite: 5,
     })
-
-    expect(output.servicos).toHaveLength(5)
-    expect(output.total).toBe(15)
-    expect(output.pagina).toBe(2)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.servicos).toHaveLength(5)
+    expect(result.value.total).toBe(15)
+    expect(result.value.pagina).toBe(2)
   })
 
   it('deve filtrar servicos deletados (soft delete)', async () => {
@@ -60,13 +61,14 @@ describe('Caso de Uso: Listar Produtos', () => {
     await servicoRepository.create(servicoDeletado1)
     await servicoRepository.create(servicoDeletado2)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'deletados',
     })
 
-    expect(output.servicos).toHaveLength(2)
-    expect(output.total).toBe(2)
-    expect(output.servicos.map(servico => servico.getId())).toEqual([
+    expect(result.isRight()).toBe(true)
+    expect(result.value.servicos).toHaveLength(2)
+    expect(result.value.total).toBe(2)
+    expect(result.value.servicos.map(servico => servico.getId())).toEqual([
       servicoDeletado1.getId(),
       servicoDeletado2.getId()
     ])
@@ -79,12 +81,13 @@ describe('Caso de Uso: Listar Produtos', () => {
     await servicoRepository.create(servicoAtivo)
     await servicoRepository.create(servicoDeletado)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       status: 'todos',
     })
 
-    expect(output.servicos).toHaveLength(2)
-    expect(output.total).toBe(2)
+    expect(result.isRight()).toBe(true)
+    expect(result.value.servicos).toHaveLength(2)
+    expect(result.value.total).toBe(2)
   })
 
   it('deve buscar servicos por trecho do nome (case insensitive)', async () => {
@@ -96,14 +99,14 @@ describe('Caso de Uso: Listar Produtos', () => {
     await servicoRepository.create(servico2)
     await servicoRepository.create(servico3)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       nome: 'eduardo', // em minúsculas para testar case-insensitivity
     })
 
-    expect(output.servicos).toHaveLength(2)
-    expect(output.total).toBe(2)
-
-    expect(output.servicos.map(servico => servico.getNome())).toEqual([
+    expect(result.isRight()).toBe(true)
+    expect(result.value.servicos).toHaveLength(2)
+    expect(result.value.total).toBe(2)
+    expect(result.value.servicos.map(servico => servico.getNome())).toEqual([
       servico1.getNome(),
       servico3.getNome(),
     ])

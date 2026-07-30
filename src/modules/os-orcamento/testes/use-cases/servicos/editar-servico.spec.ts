@@ -1,6 +1,7 @@
 import { InMemoryServicoRepository } from '../../repositories/in-memory-servico-repository.js'
 import { makeServico } from '../../factories/make-servico.js'
 import { EditarServicoUseCase } from '@/modules/os-orcamento/application/use-cases/servicos/editar-servico.js'
+import { ArgumentoInvalidoError } from '@/core/errors/domain-errors/argumento-invalido-error.js'
 
 describe('Caso de Uso: Editar Serviço', () => {
   let servicoRepository: InMemoryServicoRepository
@@ -21,7 +22,7 @@ describe('Caso de Uso: Editar Serviço', () => {
 
     await servicoRepository.create(servico)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       id: servico.getId().toValue(),
       nome: 'Alinhamento e Balanceamento Completo',
       categoria: 'MANUTENCAO_PREVENTIVA',
@@ -29,14 +30,19 @@ describe('Caso de Uso: Editar Serviço', () => {
       valorReferencia: 150,
     })
 
-    expect(output.servico.getNome()).toBe('Alinhamento e Balanceamento Completo')
-    expect(output.servico.getCategoria()).toBe('MANUTENCAO_PREVENTIVA')
-    expect(output.servico.getDescricao()).toBe('Descrição atualizada')
-    expect(output.servico.getValorReferencia()).toBe(150)
-    expect(output.servico.getAtualizadoEm()).toBeInstanceOf(Date)
+    expect(result.isRight()).toBe(true)
 
-    expect(servicoRepository.servicos[0].getNome()).toBe('Alinhamento e Balanceamento Completo')
-    expect(servicoRepository.servicos[0].getValorReferencia()).toBe(150)
+    if (result.isRight()) {
+      expect(result.value.servico.getNome()).toBe('Alinhamento e Balanceamento Completo')
+      expect(result.value.servico.getCategoria()).toBe('MANUTENCAO_PREVENTIVA')
+      expect(result.value.servico.getDescricao()).toBe('Descrição atualizada')
+      expect(result.value.servico.getValorReferencia()).toBe(150)
+      expect(result.value.servico.getAtualizadoEm()).toBeInstanceOf(Date)
+
+
+      expect(servicoRepository.servicos[0].getNome()).toBe('Alinhamento e Balanceamento Completo')
+      expect(servicoRepository.servicos[0].getValorReferencia()).toBe(150)
+    }
   })
 
   it('deve atualizar apenas os campos informados (parcialmente)', async () => {
@@ -49,24 +55,29 @@ describe('Caso de Uso: Editar Serviço', () => {
 
     await servicoRepository.create(servico)
 
-    const output = await sut.execute({
+    const result = await sut.execute({
       id: servico.getId().toValue(),
       valorReferencia: 250,
     })
 
-    expect(output.servico.getNome()).toBe('Troca de Óleo')
-    expect(output.servico.getCategoria()).toBe('MANUTENCAO_PREVENTIVA')
-    expect(output.servico.getDescricao()).toBe('Óleo sintético 5w30')
-    expect(output.servico.getValorReferencia()).toBe(250)
+    expect(result.isRight()).toBe(true)
+
+    if (result.isRight()) {
+      expect(result.value.servico.getNome()).toBe('Troca de Óleo')
+      expect(result.value.servico.getCategoria()).toBe('MANUTENCAO_PREVENTIVA')
+      expect(result.value.servico.getDescricao()).toBe('Óleo sintético 5w30')
+      expect(result.value.servico.getValorReferencia()).toBe(250)
+    }
+
   })
 
   it('não deve editar um serviço que não existe', async () => {
-    await expect(
-      sut.execute({
-        id: 'id-inexistente',
-        nome: 'Serviço Qual quer',
-      }),
-    ).rejects.toThrow('Servico não encontrado')
+    const result = await sut.execute({
+      id: 'id-inexistente',
+      nome: 'Serviço Qual quer',
+    })
+
+    expect(result.isLeft()).toBe(true)
   })
 
   it('não deve permitir atualizar um serviço com valor de referência negativo', async () => {
@@ -76,11 +87,12 @@ describe('Caso de Uso: Editar Serviço', () => {
 
     await servicoRepository.create(servico)
 
-    await expect(
-      sut.execute({
-        id: servico.getId().toValue(),
-        valorReferencia: -50,
-      }),
-    ).rejects.toThrow('Valor de referência não pode ser negativo.')
+    const result = await sut.execute({
+      id: servico.getId().toValue(),
+      valorReferencia: -50,
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(ArgumentoInvalidoError)
   })
 })

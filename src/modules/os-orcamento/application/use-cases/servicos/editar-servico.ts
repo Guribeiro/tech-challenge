@@ -1,4 +1,5 @@
 import { Either, left, right } from "@/core/either.js";
+import { DomainError } from "@/core/errors/domain-errors/domain-error.js";
 import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 import { type CategoriaServico, Servico } from "@/modules/os-orcamento/domain/entities/servico.js";
 import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js";
@@ -12,7 +13,7 @@ export type EditarServicoInput = {
   valorReferencia?: number
 }
 
-type Errors = RecursoNaoEncontradoError
+type Errors = RecursoNaoEncontradoError | DomainError
 
 type EditarServicoOutput = Either<
   Errors,
@@ -40,17 +41,24 @@ export class EditarServicoUseCase {
       return left(new RecursoNaoEncontradoError('Serviço'))
     }
 
-    servico.atualizar({
-      nome,
-      categoria,
-      descricao,
-      valorReferencia
-    })
+    try {
+      servico.atualizar({
+        nome,
+        categoria,
+        descricao,
+        valorReferencia
+      })
 
-    await this.servicoRepository.save(servico)
+      await this.servicoRepository.save(servico)
 
-    return right({
-      servico
-    })
+      return right({
+        servico
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }
