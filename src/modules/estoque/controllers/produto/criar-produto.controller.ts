@@ -1,5 +1,4 @@
-// src/infra/http/controllers/produtos/criar-produto.controller.ts
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -11,14 +10,19 @@ import { CriarProdutoBodyDto } from '../../dto/criar-produto-body.dto.js'
 import { ProdutoResponseDto } from '../../dto/produto-response.dto.js'
 import { ProdutoPresenter } from '../../presenters/produto-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Produtos')
 @ApiBearerAuth()
 @Controller('produtos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CriarProdutoController {
   constructor(private readonly criarProduto: CriarProdutoUseCase) { }
 
   @Post()
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Cadastrar produto',

@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  UseGuards,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -16,14 +17,19 @@ import {
 } from '@nestjs/swagger'
 import { DeletarClienteUseCase } from '../../application/use-cases/clientes/deletar-cliente.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Clientes')
 @ApiBearerAuth()
 @Controller('clientes')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class DeletarClienteController {
   constructor(private readonly deletarCliente: DeletarClienteUseCase) { }
 
   @Delete(':id')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Deletar um cliente',

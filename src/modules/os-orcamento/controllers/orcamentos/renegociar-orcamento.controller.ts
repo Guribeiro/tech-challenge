@@ -20,17 +20,20 @@ import { CurrentUser } from '../../../../infra/auth/current-user.decorator.js'
 import { RenegociarOrcamentoUseCase } from '../../application/use-cases/orcamento/renegociar-orcamento.js'
 import { RenegocicarOrcamentoBodyDto } from '../../dto/orcamento/renegociar-orcamento-body.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Orçamentos')
 @ApiBearerAuth()
 @Controller('orcamentos')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class RenegociarOrcamentoController {
   constructor(
     private readonly renegociarOrcamento: RenegociarOrcamentoUseCase,
   ) { }
 
   @Patch(':orcamentoId/renegociar-orcamento')
+  @Roles('RECEPCAO')
   @ApiOperation({
     summary: 'Renegociar orçamento',
     description:

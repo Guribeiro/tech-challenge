@@ -19,10 +19,12 @@ import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '@/infra/auth/current-user.decorator.js'
 import { FinalizarExecucaoUseCase } from '../../application/use-cases/ordens-servicos/finalizar-execucao.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ordens-servicos')
 export class FinalizarExecucaoController {
   constructor(
@@ -30,6 +32,7 @@ export class FinalizarExecucaoController {
   ) { }
 
   @Patch(':ordemServicoId/finalizar-execucao')
+  @Roles('MECANICO')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Finalizar execução da Ordem de Serviço',

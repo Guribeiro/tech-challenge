@@ -17,17 +17,20 @@ import type { UserPayload } from '@/infra/auth/jwt.strategy.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '../../../../infra/auth/current-user.decorator.js'
 import { RecusarOrcamentoUseCase } from '../../application/use-cases/orcamento/recusar-orcamento.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Orçamentos')
 @ApiBearerAuth()
 @Controller('orcamentos')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class RecusarOrcamentoController {
   constructor(
     private readonly recusarOrcamento: RecusarOrcamentoUseCase,
   ) { }
 
   @Patch(':orcamentoId/recusar-orcamento')
+  @Roles('CLIENTE')
   @ApiOperation({
     summary: 'Recusar orçamento',
     description:

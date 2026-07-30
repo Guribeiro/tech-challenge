@@ -14,33 +14,33 @@ import {
   Post,
   UseGuards
 } from '@nestjs/common'
-import { CriarMecanicoUseCase } from '../../application/use-cases/mecanicos/criar-mecanico.js'
-import { CriarMecanicoBodyDto } from '../../dto/mecanico/criar-mecanico.dto.js'
-import { CriarMecanicoResponseDto } from '../../dto/mecanico/mecanico-response.dto.js'
-import { MecanicoPresenter } from '../../presenters/mecanico-presenter.js'
+import { CriarRecepcionistaUseCase } from '../../application/use-cases/recepcionistas/criar-recepcionista.js'
+import { CriarRecepcionistaBodyDto } from '../../dto/recepcionista/criar-recepcionista.dto.js'
+import { CriarRecepcionistaResponseDto } from '../../dto/recepcionista/recepcionista-response.dto.js'
+import { RecepcionistaPresenter } from '../../presenters/recepcionista-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { RolesGuard } from '@/infra/auth/roles.guard.js'
 import { Roles } from '@/infra/auth/roles.decorator.js'
 
-@ApiTags('Mecânicos')
+@ApiTags('Recepcionistas')
 @ApiBearerAuth()
-@Controller('mecanicos')
+@Controller('recepcionistas')
 @UseGuards(JwtAuthGuard, RolesGuard)
-export class CriarMecanicoController {
-  constructor(private readonly criarMecanico: CriarMecanicoUseCase) { }
+export class CriarRecepcionistaController {
+  constructor(private readonly criarRecepcionista: CriarRecepcionistaUseCase) { }
 
   @Post()
   @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
-    summary: 'Cadastrar novo mecânico',
-    description: 'Cadastra um novo mecânico na oficina garantindo que e-mail e CPF sejam únicos.',
+    summary: 'Cadastrar novo recepcionista',
+    description: 'Cadastra um novo recepcionista na oficina garantindo que e-mail e CPF sejam únicos.',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
-    description: 'Mecânico cadastrado com sucesso.',
-    type: CriarMecanicoResponseDto,
+    description: 'Recepcionista cadastrado com sucesso.',
+    type: CriarRecepcionistaResponseDto,
   })
   @ApiConflictResponse({
     description: 'E-mail ou CPF já cadastrado no sistema.',
@@ -62,12 +62,12 @@ export class CriarMecanicoController {
       },
     },
   })
-  async handle(@Body() body: CriarMecanicoBodyDto) {
-    const result = await this.criarMecanico.execute(body)
-    const { mecanico } = unwrapEither(result)
+  async handle(@Body() body: CriarRecepcionistaBodyDto) {
+    const result = await this.criarRecepcionista.execute(body)
+    const { recepcionista } = unwrapEither(result)
 
     return {
-      mecanico: MecanicoPresenter.toHTTP(mecanico)
+      recepcionista: RecepcionistaPresenter.toHTTP(recepcionista)
     }
   }
 }

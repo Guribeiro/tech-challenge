@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { CriarClienteUseCase } from '../../application/use-cases/clientes/criar-cliente.js'
 import { CriarClienteBodyDto } from '../../dto/cliente/criar-cliente.dto.js'
 import { ClientePresenter } from '../../presenters/cliente-presenter.js'
@@ -12,14 +12,19 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Clientes')
 @ApiBearerAuth()
 @Controller('clientes')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CriarClienteController {
   constructor(private readonly criarCliente: CriarClienteUseCase) { }
 
   @Post()
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cadastrar um novo cliente' })
   @ApiResponse({

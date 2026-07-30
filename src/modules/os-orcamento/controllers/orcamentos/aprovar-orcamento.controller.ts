@@ -18,17 +18,20 @@ import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '../../../../infra/auth/current-user.decorator.js'
 import { AprovarOrcamentoUseCase } from '../../application/use-cases/orcamento/aprovar-orcamento.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Orçamentos')
 @ApiBearerAuth()
 @Controller('orcamentos')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AprovarOrcamentoController {
   constructor(
     private readonly aprovarOrcamento: AprovarOrcamentoUseCase,
   ) { }
 
   @Patch(':orcamentoId/aprovar-orcamento')
+  @Roles('CLIENTE')
   @ApiOperation({
     summary: 'Aprovar orçamento',
     description:

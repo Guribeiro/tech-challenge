@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { CriarServicoUseCase } from '../../application/use-cases/servicos/criar-servico.js'
 import { ServicoPresenter } from '../../presenters/servico-presenter.js'
 import { CriarServicoBodyDto } from '../../dto/servico/criar-servico-body.dto.js'
@@ -10,14 +10,19 @@ import {
   ApiResponse,
   ApiTags
 } from '@nestjs/swagger'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Serviços')
 @ApiBearerAuth()
 @Controller('servicos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CriarServicoController {
   constructor(private readonly criarServico: CriarServicoUseCase) { }
 
   @Post()
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Cadastrar um novo servico' })
   @ApiResponse({

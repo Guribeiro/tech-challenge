@@ -4,6 +4,8 @@ import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 // Controllers
 import { CriarMecanicoController } from './controllers/mecanicos/criar-mecanico.controller.js'
 
+import { CriarRecepcionistaController } from './controllers/recepcionistas/criar-recepcionista.controller.js'
+
 import { CriarClienteController } from './controllers/clientes/criar-cliente.controller.js'
 import { ListarClientesController } from './controllers/clientes/listar-clientes.controller.js'
 import { EditarClienteController } from './controllers/clientes/editar-cliente.controller.js'
@@ -13,7 +15,6 @@ import { CriarVeiculoController } from './controllers/veiculos/criar-veiculo.con
 import { DeletarVeiculoController } from './controllers/veiculos/deletar-veiculo.controller.js'
 import { ListarVeiculosController } from './controllers/veiculos/listar-veiculos.controller.js'
 import { EditarVeiculoController } from './controllers/veiculos/editar-veiculo.controller.js'
-
 
 import { CriarServicoController } from './controllers/servicos/criar-servico.controller.js'
 import { ListarServicosController } from './controllers/servicos/listar-servicos.controller.js'
@@ -34,6 +35,8 @@ import { RenegociarOrcamentoController } from './controllers/orcamentos/renegoci
 
 // Use Cases
 import { CriarMecanicoUseCase } from '@/modules/os-orcamento/application/use-cases/mecanicos/criar-mecanico.js'
+
+import { CriarRecepcionistaUseCase } from '@/modules/os-orcamento/application/use-cases/recepcionistas/criar-recepcionista.js'
 
 import { CriarClienteUseCase } from '@/modules/os-orcamento/application/use-cases/clientes/criar-cliente.js'
 import { ListarClientesUseCase } from './application/use-cases/clientes/listar-clientes.js'
@@ -97,6 +100,8 @@ import { OnOrcamentoRenegociadoRecusadoEncerrarOS } from './application/subscrib
 import { FaturamentoModule } from '../faturamento/faturamento.module.js'
 import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
 import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
+import { RecepcionistaRepository } from './domain/repositories/recepcionista-repository.js'
+import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositories/prisma-recepcionista.repository.js'
 
 
 
@@ -106,6 +111,7 @@ import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/pr
   ],
   controllers: [
     CriarMecanicoController,
+    CriarRecepcionistaController,
     CriarClienteController,
     ListarClientesController,
     EditarClienteController,
@@ -135,6 +141,7 @@ import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/pr
 
     // Use Cases
     CriarMecanicoUseCase,
+    CriarRecepcionistaUseCase,
     CriarClienteUseCase,
     ListarClientesUseCase,
     EditarClienteUseCase,
@@ -173,6 +180,10 @@ import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/pr
     {
       provide: MecanicoRepository,
       useClass: PrismaMecanicoRepository,
+    },
+    {
+      provide: RecepcionistaRepository,
+      useClass: PrismaRecepcionistaRepository,
     },
     {
       provide: ClienteRepository,
