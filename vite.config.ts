@@ -10,7 +10,7 @@ export default defineConfig({
     // 🚀 Garante que o Vitest compila os testes usando o SWC e respeitando o .swcrc
     swc.vite({
       module: { type: 'es6' },
-      sourceMaps: true, // 👈 OBRIGATÓRIO para o coverage v8
+      sourceMaps: 'inline', // 👈 1. 'inline' garante que os sourcemaps sejam embutidos diretamente no bundle para a UI ler
     }),
   ],
   test: {
@@ -22,6 +22,8 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       reportsDirectory: './coverage',
+      clean: true, // 👈 2. Limpa relatórios obsoletos para não travar a UI com cache velho
+      cleanOnRerun: true, // 👈 3. Recalcula a cobertura a cada alteração em tempo real na UI
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'src/**/*.spec.ts',
