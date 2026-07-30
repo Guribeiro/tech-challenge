@@ -40,7 +40,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
       ...props,
       status: props.status ?? 'CRIADO',
       versao: props.versao ?? 1,
-      componentes: props.componentes ?? new OrcamentoServicoList(),
+      componentes: props.componentes ?? new OrcamentoComponenteList(),
       servicos: props.servicos ?? new OrcamentoServicoList(),
       descontoPorcentagem: props.descontoPorcentagem ?? 0,
       criadoEm: props.criadoEm ?? new Date()

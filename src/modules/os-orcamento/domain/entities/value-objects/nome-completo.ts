@@ -9,7 +9,7 @@ export class NomeCompleto {
 
   public static criar(nome: string): NomeCompleto {
     if (!nome) {
-      throw new ArgumentoInvalidoError('O nome do cliente não pode estar vazio.')
+      throw new ArgumentoInvalidoError('O nome não pode estar vazio.')
     }
 
     const nomeLimpo = nome.trim()
@@ -27,7 +27,7 @@ export class NomeCompleto {
     const partesDoNome = nome.split(/\s+/)
     if (partesDoNome.length < 2) {
       throw new ArgumentoInvalidoError(
-        'O cliente deve ser cadastrado com o nome completo (nome e sobrenome).',
+        'O usuario deve ser cadastrado com o nome completo (nome e sobrenome).',
       )
     }
 

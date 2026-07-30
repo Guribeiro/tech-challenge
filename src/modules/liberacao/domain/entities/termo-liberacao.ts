@@ -23,7 +23,7 @@ export class TermoLiberacao extends AggregateRoot<TermoLiberacaoProps> {
 
     const conteudo = `
       ======================================================
-      TERMO DE LIBERAÇÃO DE VEÍCULO - OS #${props.ordemServicoId}
+      TERMO DE LIBERAÇÃO DE VEÍCULO - OS #${props.ordemServicoId.toValue()}
       Emitido em: ${emitidoEm.toLocaleDateString()}
       Veículo Placa: ${props.placaVeiculo}
       Motivo da Liberação: ${termoLiberacaoVariations[props.motivo] ?? 'Serviço Finalizado'}

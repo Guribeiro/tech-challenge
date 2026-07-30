@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js"
+
 export class Placa {
   private readonly valor: string
 
@@ -28,7 +30,7 @@ export class Placa {
 
   public static criar(placa: string): Placa {
     if (!Placa.validar(placa)) {
-      throw new Error('Placa com formato inválido para o cadastro do veículo.')
+      throw new ArgumentoInvalidoError('Placa com formato inválido para o cadastro do veículo.')
     }
 
     // Armazena sempre a versão limpa e padronizada no banco (Ex: "ABC1234" ou "ABC1D23")

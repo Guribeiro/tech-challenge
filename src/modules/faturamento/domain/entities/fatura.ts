@@ -1,6 +1,6 @@
-// src/modules/faturamento/domain/entities/fatura.ts
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/regra-de-negocio-violada-error.js'
 import { Optional } from '@/core/types/optional.js'
 import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
 import { FaturaPagaEvent } from '@/modules/faturamento/domain/events/fatura-paga-event.js'
@@ -41,7 +41,7 @@ export class Fatura extends AggregateRoot<FaturaProps> {
    */
   public pagar(): void {
     if (this.props.status !== 'PENDENTE') {
-      throw new Error(`Não é possível pagar uma fatura com status: ${this.props.status}`)
+      throw new RegraDeNegocioVioladaError(`Não é possível pagar uma fatura com status: ${this.props.status}`)
     }
 
     this.props.status = 'PAGA'

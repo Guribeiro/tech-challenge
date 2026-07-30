@@ -10,6 +10,7 @@ export default defineConfig({
     // 🚀 Garante que o Vitest compila os testes usando o SWC e respeitando o .swcrc
     swc.vite({
       module: { type: 'es6' },
+      sourceMaps: true, // 👈 OBRIGATÓRIO para o coverage v8
     }),
   ],
   test: {

@@ -1,4 +1,3 @@
-import { Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { Optional } from '@/core/types/optional.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
@@ -43,7 +42,10 @@ export type OrdemServicoProps = {
 
 export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public static criar(
-    props: Optional<OrdemServicoProps, 'status' | 'mecanicoId' | 'criadoEm'>,
+    props: Optional<
+      OrdemServicoProps,
+      'status' | 'mecanicoId' | 'criadoEm' | 'componentes' | 'servicos'
+    >,
     id?: UniqueEntityID,
   ): OrdemServico {
     const propriedadesCompletas: OrdemServicoProps = {
