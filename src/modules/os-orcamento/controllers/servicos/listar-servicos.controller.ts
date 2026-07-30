@@ -1,5 +1,6 @@
 import {
-  Controller, Get, HttpCode, HttpStatus, Query
+  Controller, Get, HttpCode, HttpStatus, Query,
+  UseGuards
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ListarServicosUseCase } from '../../application/use-cases/servicos/listar-servicos.js'
@@ -7,14 +8,19 @@ import { ServicoPresenter } from '../../presenters/servico-presenter.js'
 import { ListarServicosQueryDto } from '../../dto/servico/listar-servicos-query.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { ListarServicosResponseDto } from '../../dto/servico/listar-servicos-response.dto.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Serviços')
 @ApiBearerAuth()
 @Controller('servicos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ListarServicosController {
   constructor(private readonly listarServicos: ListarServicosUseCase) { }
 
   @Get()
+  @Roles('ADMIN', 'RECEPCAO', 'MECANICO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Listar serviços com paginação e filtros' })
   @ApiResponse({

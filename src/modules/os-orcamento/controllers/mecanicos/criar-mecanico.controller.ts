@@ -6,20 +6,32 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger'
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards
+} from '@nestjs/common'
 import { CriarMecanicoUseCase } from '../../application/use-cases/mecanicos/criar-mecanico.js'
 import { CriarMecanicoBodyDto } from '../../dto/mecanico/criar-mecanico.dto.js'
 import { CriarMecanicoResponseDto } from '../../dto/mecanico/mecanico-response.dto.js'
 import { MecanicoPresenter } from '../../presenters/mecanico-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Mecânicos')
 @ApiBearerAuth()
 @Controller('mecanicos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CriarMecanicoController {
   constructor(private readonly criarMecanico: CriarMecanicoUseCase) { }
 
   @Post()
+  @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Cadastrar novo mecânico',

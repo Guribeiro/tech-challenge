@@ -18,15 +18,18 @@ import { OrdemServicoPresenter } from '../../presenters/ordem-servico-presenter.
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { OrdemServicoResponseDto } from '../../dto/ordem-servico/ordem-servico-response.dto.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ordens-servicos')
 export class CriarOrdemServicoController {
   constructor(private readonly criarOrdemServico: CriarOrdemServicoUseCase) { }
 
   @Post()
+  @Roles('RECEPCAO')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Abrir nova Ordem de Serviço',

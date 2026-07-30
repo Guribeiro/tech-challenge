@@ -4,7 +4,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Put
+  Put,
+  UseGuards
 } from '@nestjs/common'
 import { EditarClienteUseCase } from '../../application/use-cases/clientes/editar-cliente.js'
 import { EditarClienteBodyDto } from '../../dto/cliente/editar-cliente.dto.js'
@@ -21,14 +22,19 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger'
 import { ClienteResponseDto } from '../../dto/cliente/cliente-response.dto.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Clientes')
 @ApiBearerAuth()
 @Controller('clientes')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EditarClienteController {
   constructor(private readonly editarCliente: EditarClienteUseCase) { }
 
   @Put(':id')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Atualizar um cliente' })
   @ApiParam({

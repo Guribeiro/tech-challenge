@@ -18,15 +18,18 @@ import { OrdemServicoPresenter } from '../../presenters/ordem-servico-presenter.
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { ObterFilaTrabalhoResponseDto } from '../../dto/ordem-servico/obter-fila-trabalho-response.dto.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ordens-servicos')
 export class ObterFilaTrabalhoController {
   constructor(private readonly obterFilaTrabalho: ObterFilaTrabalhoUseCase) { }
 
   @Get('fila-trabalho')
+  @Roles('ADMIN', 'MECANICO', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Listar fila de trabalho com paginação e filtros' })
   @ApiResponse({

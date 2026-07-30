@@ -4,7 +4,7 @@ import {
   HttpStatus,
   Param,
   Patch,
-  UnauthorizedException
+  UseGuards
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -15,14 +15,19 @@ import {
 } from '@nestjs/swagger'
 import { ReativarServicoUseCase } from '../../application/use-cases/servicos/reativar-servico.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Serviços')
 @ApiBearerAuth()
 @Controller('servicos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ReativarServicoController {
   constructor(private readonly reativarServico: ReativarServicoUseCase) { }
 
   @Patch(':id/reativar')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Reativar serviço',

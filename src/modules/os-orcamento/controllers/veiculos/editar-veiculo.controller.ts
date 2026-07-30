@@ -1,8 +1,9 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, Put, UnauthorizedException } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Param, Post, Put, UnauthorizedException, UseGuards } from '@nestjs/common'
 import { EditarVeiculoUseCase } from '../../application/use-cases/veiculos/editar-veiculo.js'
 import { EditarVeiculoBodyDto } from '../../dto/veiculo/editar-veiculo.dto.js'
 import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { VeiculoResponseDto } from '../../dto/veiculo/veiculo-response.dto.js'
 import {
   ApiTags,
   ApiResponse,
@@ -13,15 +14,19 @@ import {
   ApiOperation,
   ApiBearerAuth,
 } from '@nestjs/swagger'
-import { VeiculoResponseDto } from '../../dto/veiculo/veiculo-response.dto.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Veículos')
 @ApiBearerAuth()
 @Controller('veiculos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EditarVeiculoController {
   constructor(private readonly editarVeiculo: EditarVeiculoUseCase) { }
 
   @Put(':id')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Atualizar um veículo' })
   @ApiParam({

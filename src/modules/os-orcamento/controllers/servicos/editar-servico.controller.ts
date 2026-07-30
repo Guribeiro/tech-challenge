@@ -5,6 +5,7 @@ import {
   HttpStatus,
   Param,
   Put,
+  UseGuards,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -18,14 +19,19 @@ import { ServicoPresenter } from '../../presenters/servico-presenter.js'
 import { EditarServicoBodyDto } from '../../dto/servico/editar-servico-body.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { ServicoResponseDto } from '../../dto/servico/servico-response.dto.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Serviços')
 @ApiBearerAuth()
 @Controller('servicos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class EditarServicoController {
   constructor(private readonly editarServico: EditarServicoUseCase) { }
 
   @Put(':id')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Editar serviço',

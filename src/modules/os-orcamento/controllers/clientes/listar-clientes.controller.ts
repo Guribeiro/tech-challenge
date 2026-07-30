@@ -1,18 +1,24 @@
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
-import { Controller, Get, HttpCode, HttpStatus, Query } from '@nestjs/common'
+import { Controller, Get, HttpCode, HttpStatus, Query, UseGuards } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { ListarClientesUseCase } from '../../application/use-cases/clientes/listar-clientes.js'
 import { ListarClientesQueryDto } from '../../dto/cliente/listar-clientes-query.dto.js'
 import { ListarClientesResponseDto } from '../../dto/cliente/listar-clientes-response.dto.js'
 import { ClientePresenter } from '../../presenters/cliente-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
+
 
 @ApiTags('Clientes')
 @ApiBearerAuth()
 @Controller('clientes')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ListarClientesController {
   constructor(private readonly listarClientes: ListarClientesUseCase) { }
 
   @Get()
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Listar clientes com paginação e filtros' })
   @ApiResponse({

@@ -19,10 +19,12 @@ import type { UserPayload } from '@/infra/auth/jwt.strategy.js'
 import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '@/infra/auth/current-user.decorator.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ordens-servicos')
 export class IniciarDiagnosticoController {
   constructor(
@@ -30,6 +32,7 @@ export class IniciarDiagnosticoController {
   ) { }
 
   @Patch(':ordemServicoId/iniciar-diagnostico')
+  @Roles('MECANICO')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Iniciar diagnóstico de Ordem de Serviço',

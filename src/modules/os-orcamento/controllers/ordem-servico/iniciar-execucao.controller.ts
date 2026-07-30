@@ -19,10 +19,12 @@ import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '../../../../infra/auth/current-user.decorator.js'
 import { IniciarExecucaoUseCase } from '../../application/use-cases/ordens-servicos/iniciar-execucao.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('ordens-servicos')
 export class IniciarExecucaoController {
   constructor(
@@ -30,6 +32,7 @@ export class IniciarExecucaoController {
   ) { }
 
   @Patch(':ordemServicoId/iniciar-execucao')
+  @Roles('MECANICO')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Iniciar execução da Ordem de Serviço',

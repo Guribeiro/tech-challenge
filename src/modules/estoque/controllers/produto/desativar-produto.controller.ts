@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  UseGuards,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -15,14 +16,19 @@ import {
 } from '@nestjs/swagger'
 import { DesativarProdutoUseCase } from '../../application/use-cases/desativar-produto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Produtos')
 @ApiBearerAuth()
 @Controller('produtos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class DesativarProdutoController {
   constructor(private readonly desativarProduto: DesativarProdutoUseCase) { }
 
   @Delete(':id')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Desativar produto',

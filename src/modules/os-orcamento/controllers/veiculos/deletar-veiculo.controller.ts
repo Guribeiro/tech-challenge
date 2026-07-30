@@ -3,7 +3,8 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
-  Param
+  Param,
+  UseGuards
 } from '@nestjs/common'
 import { DeletarVeiculoUseCase } from '../../application/use-cases/veiculos/deletar-veiculo.js'
 import {
@@ -16,14 +17,19 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Veículos')
 @ApiBearerAuth()
 @Controller('veiculos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class DeletarVeiculoController {
   constructor(private readonly deletarVeiculo: DeletarVeiculoUseCase) { }
 
   @Delete(':id')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Deletar um veículo',

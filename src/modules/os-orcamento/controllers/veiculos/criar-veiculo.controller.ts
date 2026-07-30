@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  UseGuards,
 } from '@nestjs/common'
 import {
   ApiTags,
@@ -20,14 +21,19 @@ import { CriarVeiculoBodyDto } from '../../dto/veiculo/criar-veiculo.dto.js'
 import { VeiculoResponseDto } from '../../dto/veiculo/veiculo-response.dto.js'
 import { VeiculoPresenter } from '../../presenters/veiculo-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Veículos')
 @ApiBearerAuth()
 @Controller('veiculos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CriarVeiculoController {
   constructor(private readonly criarVeiculo: CriarVeiculoUseCase) { }
 
   @Post()
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Cadastrar novo veículo',

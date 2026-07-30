@@ -6,20 +6,32 @@ import {
   ApiBadRequestResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger'
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  UseGuards
+} from '@nestjs/common'
 import { CriarRecepcionistaUseCase } from '../../application/use-cases/recepcionistas/criar-recepcionista.js'
 import { CriarRecepcionistaBodyDto } from '../../dto/recepcionista/criar-recepcionista.dto.js'
 import { CriarRecepcionistaResponseDto } from '../../dto/recepcionista/recepcionista-response.dto.js'
 import { RecepcionistaPresenter } from '../../presenters/recepcionista-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Recepcionistas')
 @ApiBearerAuth()
 @Controller('recepcionistas')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class CriarRecepcionistaController {
   constructor(private readonly criarRecepcionista: CriarRecepcionistaUseCase) { }
 
   @Post()
+  @Roles('ADMIN')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Cadastrar novo recepcionista',

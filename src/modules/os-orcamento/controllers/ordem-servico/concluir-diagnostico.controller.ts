@@ -21,18 +21,20 @@ import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { CurrentUser } from '@/infra/auth/current-user.decorator.js'
 import { ConcluirDiagnosticoBodyDto } from '../../dto/ordem-servico/concluir-diagnostico-body.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
 @Controller('ordens-servicos')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ConcluirDiagnosticoController {
   constructor(
     private readonly concluirDiagnostico: ConcluirDiagnosticoUseCase,
   ) { }
 
   @Patch(':ordemServicoId/concluir-diagnostico')
+  @Roles('MECANICO', 'ADMIN')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Concluir diagnóstico de Ordem de Serviço',

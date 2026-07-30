@@ -4,6 +4,7 @@ import {
   HttpStatus,
   Param,
   Patch,
+  UseGuards,
 } from '@nestjs/common'
 import {
   ApiBearerAuth,
@@ -14,15 +15,19 @@ import {
 } from '@nestjs/swagger'
 import { ReativarProdutoUseCase } from '../../application/use-cases/reativar-produto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
-
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
 
 @ApiTags('Produtos')
 @ApiBearerAuth()
 @Controller('produtos')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ReativarProdutoController {
   constructor(private readonly reativar: ReativarProdutoUseCase) { }
 
   @Patch(':id/reativar')
+  @Roles('ADMIN', 'RECEPCAO')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Reativar produto',
