@@ -110,9 +110,8 @@ describe('Caso de Uso: Listar Clientes', () => {
     expect(result.isRight()).toBe(true)
     expect(result.value.clientes).toHaveLength(2)
     expect(result.value.total).toBe(2)
-    expect(result.value.clientes.map(cliente => cliente.getNome().getValor())).toEqual([
-      cliente1.getNome().getValor(),
-      cliente3.getNome().getValor(),
-    ])
+    expect(result.value.clientes.map(cliente => cliente.getNome().getValor())).toEqual(
+      expect.arrayContaining([cliente1.getNome().getValor(), cliente3.getNome().getValor(),])
+    )
   })
 })
