@@ -18,6 +18,6 @@ export class InMemoryUsuariosRepository implements UsuariosRepository {
   async create(usuario: Usuario): Promise<void> {
     this.items.push(usuario)
 
-    usuario.domainEvents.forEach(event => DomainEvents.dispatch(event))
+    DomainEvents.dispatchEventsForAggregate(usuario)
   }
 }

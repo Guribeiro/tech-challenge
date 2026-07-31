@@ -1,5 +1,6 @@
 import {
   Controller,
+  HttpCode,
   HttpStatus,
   Param,
   ParseUUIDPipe,
@@ -32,6 +33,7 @@ export class AprovarOrcamentoController {
 
   @Patch(':orcamentoId/aprovar-orcamento')
   @Roles('CLIENTE')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Aprovar orçamento',
     description:

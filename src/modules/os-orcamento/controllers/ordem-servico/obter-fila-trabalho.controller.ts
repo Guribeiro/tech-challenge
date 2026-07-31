@@ -43,8 +43,8 @@ export class ObterFilaTrabalhoController {
   })
   async handle(@Query() query: ObterFilaTrabalhoQueryDto) {
     const result = await this.obterFilaTrabalho.execute({
-      pagina: query.pagina,
-      limite: query.limite,
+      pagina: query.pagina ? Number(query.pagina) : 1,
+      limite: query.limite ? Number(query.limite) : 10,
       status: query.status,
     })
 

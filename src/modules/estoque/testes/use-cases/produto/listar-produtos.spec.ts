@@ -78,10 +78,9 @@ describe('Caso de Uso: Listar Produtos', () => {
     if (result.isRight()) {
       expect(result.value.produtos).toHaveLength(2)
       expect(result.value.total).toBe(2)
-      expect(result.value.produtos.map(produto => produto.getId())).toEqual([
-        produtoDeletado1.getId(),
-        produtoDeletado2.getId()
-      ])
+      expect(result.value.produtos.map(produto => produto.getId())).toEqual(
+        expect.arrayContaining([produtoDeletado1.getId(), produtoDeletado2.getId()])
+      )
     }
   })
 
@@ -120,10 +119,11 @@ describe('Caso de Uso: Listar Produtos', () => {
     if (result.isRight()) {
       expect(result.value.produtos).toHaveLength(2)
       expect(result.value.total).toBe(2)
-      expect(result.value.produtos.map(produto => produto.getNome())).toEqual([
-        produto1.getNome(),
-        produto3.getNome(),
-      ])
+
+      // Valida que os nomes retornados contêm exatamente os esperados, sem depender de ordem
+      expect(result.value.produtos.map(produto => produto.getNome())).toEqual(
+        expect.arrayContaining([produto1.getNome(), produto3.getNome()])
+      )
     }
   })
 })

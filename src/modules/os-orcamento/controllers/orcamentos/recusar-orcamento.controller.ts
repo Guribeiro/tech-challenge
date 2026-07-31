@@ -1,5 +1,6 @@
 import {
   Controller,
+  HttpCode,
   HttpStatus,
   Param,
   ParseUUIDPipe,
@@ -19,6 +20,7 @@ import { CurrentUser } from '../../../../infra/auth/current-user.decorator.js'
 import { RecusarOrcamentoUseCase } from '../../application/use-cases/orcamento/recusar-orcamento.js'
 import { RolesGuard } from '@/infra/auth/roles.guard.js'
 import { Roles } from '@/infra/auth/roles.decorator.js'
+import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 
 @ApiTags('Orçamentos')
 @ApiBearerAuth()
@@ -31,6 +33,7 @@ export class RecusarOrcamentoController {
 
   @Patch(':orcamentoId/recusar-orcamento')
   @Roles('CLIENTE')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Recusar orçamento',
     description:
@@ -75,10 +78,10 @@ export class RecusarOrcamentoController {
     @Param('orcamentoId', ParseUUIDPipe) orcamentoId: string,
     @CurrentUser() user: UserPayload,
   ) {
-
-    await this.recusarOrcamento.execute({
+    const result = await this.recusarOrcamento.execute({
       orcamentoId,
       clienteId: user.sub,
     })
+    unwrapEither(result)
   }
 }

@@ -2,15 +2,13 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { DiagnosticoConcluidoEvent } from '../../domain/events/diagnostico-concluido-event.js'
 import { GerarOrcamentoUseCase } from '../use-cases/orcamento/gerar-orcamento.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
-export class OnDiagnosticoConcluido implements EventHandler, OnModuleInit {
+export class OnDiagnosticoConcluido implements EventHandler {
   constructor(
     private readonly gerarOrcamento: GerarOrcamentoUseCase
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 
@@ -34,7 +32,7 @@ export class OnDiagnosticoConcluido implements EventHandler, OnModuleInit {
         componentes: ordemServico.getComponentes().getItems()
       })
 
-      console.log(`[Subscriber Success]: Orçamento gerado automaticamente para a OS ${ordemServico.getId()}`)
+      console.log(`[Subscriber Success]: Orçamento gerado automaticamente para a OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
       // Como eventos de domínio rodam em segundo plano, é vital ter um log de erro aqui
       console.error(

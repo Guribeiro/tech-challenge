@@ -64,6 +64,8 @@ export class EditarVeiculoController {
       ...body
     })
     const { veiculo } = unwrapEither(result)
-    return VeiculoPresenter.toHTTP(veiculo)
+    return {
+      veiculo: VeiculoPresenter.toHTTP(veiculo)
+    }
   }
 }

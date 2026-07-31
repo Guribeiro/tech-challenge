@@ -39,8 +39,8 @@ export class ListarProdutosController {
   async handle(@Query() query: ListarProdutosQueryDto) {
     const result = await this.listarProdutos.execute({
       tipo: query.tipo,
-      pagina: query.pagina,
-      limite: query.limite,
+      pagina: query.pagina ? Number(query.pagina) : 1,
+      limite: query.limite ? Number(query.limite) : 10,
       status: query.status,
       nome: query.nome,
     })

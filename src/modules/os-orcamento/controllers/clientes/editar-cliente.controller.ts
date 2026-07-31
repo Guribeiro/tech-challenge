@@ -72,6 +72,8 @@ export class EditarClienteController {
       ...body
     })
     const { cliente } = unwrapEither(result)
-    return ClientePresenter.toHTTP(cliente)
+    return {
+      cliente: ClientePresenter.toHTTP(cliente)
+    }
   }
 }

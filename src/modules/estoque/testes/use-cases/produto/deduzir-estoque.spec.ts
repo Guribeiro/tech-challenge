@@ -49,7 +49,7 @@ describe('DeduzirEstoqueUseCase', () => {
 
   it('deve retornar RecursoNaoEncontradoError se um dos produtos não existir', async () => {
     // Arrange: Cria apenas 1 produto
-    const produtoValido = makeProduto()
+    const produtoValido = makeProduto({ quantidadeEstoque: 20 })
     await produtoRepository.create(produtoValido)
 
     // Act: Tenta deduzir um produto válido e um inexistente
@@ -57,7 +57,7 @@ describe('DeduzirEstoqueUseCase', () => {
       ordemServicoId: 'os-1',
       itens: [
         { produtoId: produtoValido.getId().toValue(), quantidade: 1 },
-        { produtoId: 'id-inexistente', quantidade: 2 },
+        { produtoId: '00000000-0000-0000-0000-000000000000', quantidade: 2 },
       ],
     })
 

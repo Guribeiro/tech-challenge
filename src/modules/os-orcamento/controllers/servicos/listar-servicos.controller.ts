@@ -1,5 +1,9 @@
 import {
-  Controller, Get, HttpCode, HttpStatus, Query,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Query,
   UseGuards
 } from '@nestjs/common'
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger'
@@ -34,8 +38,8 @@ export class ListarServicosController {
   })
   async handle(@Query() query: ListarServicosQueryDto) {
     const result = await this.listarServicos.execute({
-      pagina: query.pagina,
-      limite: query.limite,
+      pagina: query.pagina ? Number(query.pagina) : 1,
+      limite: query.limite ? Number(query.limite) : 10,
       status: query.status,
       nome: query.nome,
     })
