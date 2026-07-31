@@ -24,8 +24,7 @@ export class InMemoryOrcamentoRepository implements OrcamentoRepository {
     this.items.push(orcamento)
 
     // Despacha os eventos caso o orçamento já nasça disparando algo (opcional)
-    orcamento.domainEvents.forEach(event => DomainEvents.dispatch(event))
-    orcamento.clearEvents()
+    DomainEvents.dispatchEventsForAggregate(orcamento)
   }
 
   async save(orcamento: Orcamento): Promise<void> {
@@ -36,8 +35,6 @@ export class InMemoryOrcamentoRepository implements OrcamentoRepository {
     } else {
       this.items.push(orcamento)
     }
-
-    orcamento.domainEvents.forEach(event => DomainEvents.dispatch(event))
-    orcamento.clearEvents()
+    DomainEvents.dispatchEventsForAggregate(orcamento)
   }
 }

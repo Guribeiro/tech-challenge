@@ -10,8 +10,8 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    include: ['src/**/*.e2e-spec.ts'], // 🎯 Busca apenas E2E
-    exclude: ['src/**/*.spec.ts', '**/node_modules/**', '**/dist/**'], // ❌ NÃO inclui **/*.e2e-spec.ts aqui!
+    include: ['src/**/*.e2e-spec.ts'],
+    exclude: ['src/**/*.spec.ts', '**/node_modules/**', '**/dist/**'],
     fileParallelism: false,
     env: {
       DATABASE_URL:

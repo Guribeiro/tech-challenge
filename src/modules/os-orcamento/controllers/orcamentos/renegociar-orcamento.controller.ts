@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  HttpCode,
   HttpStatus,
   Param,
   ParseUUIDPipe,
@@ -34,6 +35,7 @@ export class RenegociarOrcamentoController {
 
   @Patch(':orcamentoId/renegociar-orcamento')
   @Roles('RECEPCAO')
+  @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Renegociar orçamento',
     description:
@@ -79,7 +81,6 @@ export class RenegociarOrcamentoController {
     @CurrentUser() user: UserPayload,
     @Body() body: RenegocicarOrcamentoBodyDto
   ) {
-
     const result = await this.renegociarOrcamento.execute({
       orcamentoId,
       componentes: body.componentes,

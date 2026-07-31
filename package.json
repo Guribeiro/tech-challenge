@@ -12,7 +12,7 @@
     "test": "vitest",
     "test:cov": "vitest run --coverage",
     "test:cov:ui": "vitest --coverage --ui",
-   "test:e2e": "dotenv -e .env.test -- prisma migrate deploy && vitest run --config ./vitest.config.e2e.ts",
+    "test:e2e": "dotenv -e .env.test -- prisma migrate deploy && vitest run --config ./vitest.config.e2e.ts",
     "test:e2e:watch": "dotenv -e .env.test -- prisma migrate deploy && vitest --config ./vitest.config.e2e.ts"
   },
   "keywords": [],

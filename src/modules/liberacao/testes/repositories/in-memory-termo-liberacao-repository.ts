@@ -18,8 +18,7 @@ export class InMemoryTermoLiberacaoRepository implements TermoLiberacaoRepositor
 
   public async create(termo: TermoLiberacao): Promise<void> {
     this.items.push(termo)
-    termo.domainEvents.forEach(event => DomainEvents.dispatch(event))
-    termo.clearEvents()
+    DomainEvents.dispatchEventsForAggregate(termo)
   }
 
 
@@ -30,8 +29,7 @@ export class InMemoryTermoLiberacaoRepository implements TermoLiberacaoRepositor
       this.items[index] = termo
     }
 
-    termo.domainEvents.forEach(event => DomainEvents.dispatch(event))
-    termo.clearEvents()
+    DomainEvents.dispatchEventsForAggregate(termo)
 
   }
 }

@@ -24,8 +24,28 @@ describe('Listar Servicos (E2E)', () => {
   })
 
   beforeEach(async () => {
-    await prisma.servico.deleteMany()
-    await prisma.usuario.deleteMany()
+    await prisma.$transaction([
+      // 1. Tabelas pivot / filhas mais profundas
+      prisma.ordemServicoServico.deleteMany(),
+      prisma.ordemServicoComponente.deleteMany(),
+      prisma.orcamentoServico.deleteMany(),
+      prisma.orcamentoComponente.deleteMany(),
+      prisma.fatura.deleteMany(),
+      prisma.termoLiberacao.deleteMany(),
+
+      // 2. Entidades intermediárias
+      prisma.orcamento.deleteMany(),
+      prisma.ordemServico.deleteMany(),
+      prisma.veiculo.deleteMany(),
+
+      // 3. Entidades raiz / sem dependências filhas
+      prisma.cliente.deleteMany(),
+      prisma.mecanico.deleteMany(),
+      prisma.recepcionista.deleteMany(),
+      prisma.servico.deleteMany(),
+      prisma.produto.deleteMany(),
+      prisma.usuario.deleteMany(),
+    ])
   })
 
   afterAll(async () => {
