@@ -11,7 +11,9 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest",
     "test:cov": "vitest run --coverage",
-    "test:cov:ui": "vitest --coverage --ui"
+    "test:cov:ui": "vitest --coverage --ui",
+   "test:e2e": "dotenv -e .env.test -- prisma migrate deploy && vitest run --config ./vitest.config.e2e.ts",
+    "test:e2e:watch": "dotenv -e .env.test -- prisma migrate deploy && vitest --config ./vitest.config.e2e.ts"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +33,7 @@
     "@types/pg": "^8.20.0",
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "^4.1.10",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "prisma": "^7.9.0",
@@ -38,6 +41,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.63.0",
     "unplugin-swc": "^1.5.9",
+    "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.10"
   },
   "dependencies": {

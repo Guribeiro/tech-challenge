@@ -19,6 +19,24 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  postgres-test:
+    image: postgres:16-alpine
+    container_name: fiap_tech_challenge_db_test
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_TEST_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_TEST_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_TEST_DB:-oficina_test_db}
+    ports:
+      - "${POSTGRES_TEST_PORT:-5433}:5432"
+    # Dica: tmpfs guarda os dados dos testes na RAM, acelerando a execução e descartando sujeira no restart
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_TEST_USER:-postgres} -d ${POSTGRES_TEST_DB:-oficina_test_db}"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
 
   # Serviço da Aplicação NestJS
   app:
