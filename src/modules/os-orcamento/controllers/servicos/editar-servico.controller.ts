@@ -83,6 +83,8 @@ export class EditarServicoController {
     })
 
     const { servico } = unwrapEither(result)
-    return ServicoPresenter.toHTTP(servico)
+    return {
+      servico: ServicoPresenter.toHTTP(servico)
+    }
   }
 }

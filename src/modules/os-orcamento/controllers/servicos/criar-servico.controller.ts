@@ -45,6 +45,8 @@ export class CriarServicoController {
     const result = await this.criarServico.execute(body)
 
     const { servico } = unwrapEither(result)
-    return ServicoPresenter.toHTTP(servico)
+    return {
+      servico: ServicoPresenter.toHTTP(servico)
+    }
   }
 }

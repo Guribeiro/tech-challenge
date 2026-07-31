@@ -1,6 +1,7 @@
 import { Either, left, right } from "@/core/either.js";
 import { DomainError } from "@/core/errors/domain-errors/domain-error.js";
 import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
+import { ServicoJaCadastradoError } from "@/core/errors/servico-ja-cadastrado-error.js";
 import { type CategoriaServico, Servico } from "@/modules/os-orcamento/domain/entities/servico.js";
 import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js";
 import { Injectable } from "@nestjs/common";
@@ -13,7 +14,7 @@ export type EditarServicoInput = {
   valorReferencia?: number
 }
 
-type Errors = RecursoNaoEncontradoError | DomainError
+type Errors = RecursoNaoEncontradoError | ServicoJaCadastradoError | DomainError
 
 type EditarServicoOutput = Either<
   Errors,
@@ -39,6 +40,14 @@ export class EditarServicoUseCase {
 
     if (!servico) {
       return left(new RecursoNaoEncontradoError('Serviço'))
+    }
+
+    if (nome) {
+      const servicoComMesmoNome = await this.servicoRepository.findByNome(nome)
+
+      if (servicoComMesmoNome && servicoComMesmoNome.getId().toValue() !== id) {
+        return left(new ServicoJaCadastradoError(nome))
+      }
     }
 
     try {
