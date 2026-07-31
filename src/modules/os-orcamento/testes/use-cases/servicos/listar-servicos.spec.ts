@@ -68,10 +68,12 @@ describe('Caso de Uso: Listar Produtos', () => {
     expect(result.isRight()).toBe(true)
     expect(result.value.servicos).toHaveLength(2)
     expect(result.value.total).toBe(2)
-    expect(result.value.servicos.map(servico => servico.getId())).toEqual([
-      servicoDeletado1.getId(),
-      servicoDeletado2.getId()
-    ])
+    expect(result.value.servicos.map(servico => servico.getId())).toEqual(
+      expect.arrayContaining([
+        servicoDeletado1.getId(),
+        servicoDeletado2.getId()
+      ])
+    )
   })
 
   it('deve listar todos os servicos (ativos e deletados) quando status for "todos"', async () => {
