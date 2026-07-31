@@ -74,6 +74,8 @@ export class CriarVeiculoController {
     const result = await this.criarVeiculo.execute(body)
     const { veiculo } = unwrapEither(result)
 
-    return VeiculoPresenter.toHTTP(veiculo)
+    return {
+      veiculo: VeiculoPresenter.toHTTP(veiculo)
+    }
   }
 }

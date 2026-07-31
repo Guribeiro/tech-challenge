@@ -31,8 +31,8 @@ export class ListarVeiculosController {
   })
   async handle(@Query() query: ListarClientesQueryDto) {
     const result = await this.listarVeiculos.execute({
-      pagina: query.pagina,
-      limite: query.limite,
+      pagina: query.pagina ? Number(query.pagina) : 1,
+      limite: query.limite ? Number(query.limite) : 10,
       status: query.status,
     })
 
