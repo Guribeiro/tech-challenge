@@ -52,6 +52,8 @@ export class CriarProdutoController {
     const result = await this.criarProduto.execute(body)
     const { produto } = unwrapEither(result)
 
-    return ProdutoPresenter.toHTTP(produto)
+    return {
+      produto: ProdutoPresenter.toHTTP(produto)
+    }
   }
 }
