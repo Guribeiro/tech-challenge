@@ -56,7 +56,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     await app.close()
   })
 
-  test('[GET] /ordens-servico/metricas/tempo-medio', async () => {
+  it('[GET] /ordens-servico/metricas/tempo-medio', async () => {
     // 1. Gerar token de autenticação com uma role permitida ('ADMIN' ou 'RECEPCAO')
     const { accessToken, usuario } = await makeUsuarioAutenticado(app, {
       role: 'ADMIN',
@@ -200,7 +200,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     });
   });
 
-  test('[GET] /ordens-servico/metricas/tempo-medio - deve retornar 403 se o usuário não tiver permissão', async () => {
+  it('[GET] /ordens-servico/metricas/tempo-medio - deve retornar 403 se o usuário não tiver permissão', async () => {
     // Token com role não autorizada
     const { accessToken } = await makeUsuarioAutenticado(app, {
       role: 'MECANICO',
@@ -217,5 +217,29 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     );
 
     expect(response.status).toBe(403);
+  });
+
+  it('[GET] /ordens-servico/metricas/tempo-medio - deve retornar 400 se a data de início for maior que a data de fim', async () => {
+    const { accessToken } = await makeUsuarioAutenticado(app, {
+      role: 'ADMIN',
+    })
+
+
+    const queryParams = new URLSearchParams({
+      dataInicio: '2026-06-30T00:00:00.000Z',
+      dataFim: '2026-06-01T00:00:00.000Z',
+    });
+
+    const response = await fetch(
+      `${baseUrl}/ordens-servico/metricas/tempo-medio?${queryParams.toString()}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    expect(response.status).toBe(400);
   });
 });

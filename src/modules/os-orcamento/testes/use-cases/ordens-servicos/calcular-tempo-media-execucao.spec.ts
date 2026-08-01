@@ -3,6 +3,7 @@ import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ord
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js';
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js';
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js';
+import { DataInicioMaiorQueDataFimError } from '@/core/errors/data-inicio-maior-data-fim-error.js';
 
 let inMemoryOrdemServicoRepository: InMemoryOrdemServicoRepository;
 let sut: CalcularTempoMediaExecucaoServicosUseCase;
@@ -116,5 +117,18 @@ describe('Calcular Tempo Médio de Execução de Serviços', () => {
       tempoMedioMinutos: 180,
       totalServicosConcluidos: 1,
     });
+  });
+
+  it('deve retornar um erro quando a data de início for maior que a data de fim', async () => {
+    const dataInicio = new Date('2026-06-30T00:00:00.000Z');
+    const dataFim = new Date('2026-06-01T00:00:00.000Z');
+
+    const result = await sut.execute({
+      dataInicio,
+      dataFim,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(DataInicioMaiorQueDataFimError);
   });
 });
