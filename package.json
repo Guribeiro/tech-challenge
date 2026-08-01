@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "vitest",
+    "db:seed": "prisma db seed",
     "test:cov": "vitest run --coverage",
     "test:cov:ui": "vitest --coverage --ui",
     "db:test:up": "node check-db.js",
