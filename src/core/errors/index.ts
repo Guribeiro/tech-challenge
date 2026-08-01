@@ -8,6 +8,7 @@ export { CodigoSKUJaCadastradoError } from '@/core/errors/codigo-sku-ja-cadastra
 export { ProdutoJaCadastradoError } from '@/core/errors/produto-ja-cadastrado-error.js'
 export { AcessoNegadoError } from '@/core/errors/acesso-negado-error.js'
 export { EstoqueInsuficienteError } from '@/core/errors/estoque-insuficiente-error.js'
+export { DataInicioMaiorQueDataFimError } from '@/core/errors/data-inicio-maior-data-fim-error.js'
 
 
 

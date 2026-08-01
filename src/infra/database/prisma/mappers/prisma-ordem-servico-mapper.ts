@@ -39,6 +39,8 @@ export class PrismaOrdemServicoMapper {
       servicos: new OrdemServicoServicoList(servicos),
       atualizadoEm: raw.atualizadoEm ?? undefined,
       criadoEm: raw.criadoEm,
+      finalizadoEm: raw.finalizadoEm ?? undefined,
+      iniciadoEm: raw.iniciadoEm ?? undefined
     }, new UniqueEntityID(raw.id))
   }
   static toPrisma(os: OrdemServico): Prisma.OrdemServicoCreateInput {
@@ -65,7 +67,9 @@ export class PrismaOrdemServicoMapper {
         }
       },
       atualizadoEm: os.getAtualizadoEm() ?? null,
-      criadoEm: os.getCriadoEm()
+      criadoEm: os.getCriadoEm(),
+      iniciadoEm: os.getIniciadoEm() ?? null,
+      finalizadoEm: os.getFinalizadoEm() ?? null
     }
   }
 }

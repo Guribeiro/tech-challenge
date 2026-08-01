@@ -9,7 +9,8 @@ import {
   CodigoSKUJaCadastradoError,
   ProdutoJaCadastradoError,
   AcessoNegadoError,
-  EstoqueInsuficienteError
+  EstoqueInsuficienteError,
+  DataInicioMaiorQueDataFimError
 } from '@/core/errors/index.js'
 import { HttpStatus, Type } from '@nestjs/common'
 
@@ -24,4 +25,5 @@ export const DOMAIN_ERROR_MAP = new Map<Type<Error>, HttpStatus>([
   [ProdutoJaCadastradoError, HttpStatus.CONFLICT],
   [EstoqueInsuficienteError, HttpStatus.BAD_REQUEST],
   [RecursoNaoEncontradoError, HttpStatus.NOT_FOUND],
+  [DataInicioMaiorQueDataFimError, HttpStatus.BAD_REQUEST]
 ])

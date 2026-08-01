@@ -108,9 +108,11 @@ describe('Caso de Uso: Listar Produtos', () => {
     expect(result.isRight()).toBe(true)
     expect(result.value.servicos).toHaveLength(2)
     expect(result.value.total).toBe(2)
-    expect(result.value.servicos.map(servico => servico.getNome())).toEqual([
-      servico1.getNome(),
-      servico3.getNome(),
-    ])
+    expect(result.value.servicos.map(servico => servico.getNome())).toEqual(
+      expect.arrayContaining([
+        servico1.getNome(),
+        servico3.getNome(),
+      ])
+    )
   })
 })

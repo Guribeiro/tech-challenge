@@ -221,6 +221,8 @@ model OrdemServico {
   status          StatusOS
   criadoEm        DateTime                 @default(now()) @map("criado_em")
   atualizadoEm    DateTime?                @updatedAt @map("atualizado_em")
+  iniciadoEm      DateTime?                @map("iniciado_em")
+  finalizadoEm    DateTime?                @map("finalizado_em")
   servicos        OrdemServicoServico[]
   componentes     OrdemServicoComponente[]
   orcamentos      Orcamento[]
