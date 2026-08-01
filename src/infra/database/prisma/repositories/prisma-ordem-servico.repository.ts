@@ -1,5 +1,5 @@
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
-import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
+import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, CalcularTempoMedioParams, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service.js";
 import { PrismaOrdemServicoMapper } from "../mappers/prisma-ordem-servico-mapper.js";
@@ -156,6 +156,32 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
     });
 
     return raw.map(PrismaOrdemServicoMapper.toDomain);
+  }
+
+  async calcularTempoMedio(params?: CalcularTempoMedioParams) {
+    const dataInicio = params?.dataInicio ?? null;
+    const dataFim = params?.dataFim ?? null;
+
+    const resultado = await this.prisma.$queryRaw<
+      Array<{ tempo_medio_minutos: number | null; total_servicos_concluidos: number }>
+    >`
+    SELECT 
+      AVG(EXTRACT(EPOCH FROM (finalizado_em - iniciado_em)) / 60) as tempo_medio_minutos,
+      COUNT(id)::int as total_servicos_concluidos
+    FROM ordem_servicos
+    WHERE status = 'FINALIZADA'
+      AND iniciado_em IS NOT NULL
+      AND finalizado_em IS NOT NULL
+      AND (${dataInicio}::timestamp IS NULL OR finalizado_em >= ${dataInicio})
+      AND (${dataFim}::timestamp IS NULL OR finalizado_em <= ${dataFim})
+  `;
+
+    const dados = resultado[0] || { tempo_medio_minutos: 0, total_servicos_concluidos: 0 };
+
+    return {
+      tempoMedioMinutos: Number(dados.tempo_medio_minutos || 0),
+      totalServicosConcluidos: Number(dados.total_servicos_concluidos || 0),
+    };
   }
 
 

@@ -21,6 +21,7 @@ import { ListarServicosController } from './controllers/servicos/listar-servicos
 import { DesativarServicoController } from './controllers/servicos/desativar-servico.controller.js'
 import { ReativarServicoController } from './controllers/servicos/reativar-servico.controller.js'
 import { EditarServicoController } from './controllers/servicos/editar-servico.controller.js'
+import { CalcularTempoMedioExecucaoServicosController } from './controllers/ordem-servico/calcular-tempo-media-execucao.controller.js'
 
 import { CriarOrdemServicoController } from './controllers/ordem-servico/criar-ordem-servico.controller.js'
 import { ObterFilaTrabalhoController } from './controllers/ordem-servico/obter-fila-trabalho.controller.js'
@@ -59,7 +60,7 @@ import { ObterFilaTrabalhoUseCase } from './application/use-cases/ordens-servico
 import { IniciarDiagnosticoUseCase } from './application/use-cases/ordens-servicos/iniciar-diagnostico.js'
 import { ConcluirDiagnosticoUseCase } from './application/use-cases/ordens-servicos/concluir-diagnostico.js'
 import { EncerrarOrdemServicoUseCase } from './application/use-cases/ordens-servicos/encerrar-os-por-rejeicao.js'
-
+import { CalcularTempoMediaExecucaoServicosUseCase } from './application/use-cases/ordens-servicos/calcular-tempo-media-execucao.js'
 
 import { GerarOrcamentoUseCase } from './application/use-cases/orcamento/gerar-orcamento.js'
 import { AprovarOrcamentoUseCase } from './application/use-cases/orcamento/aprovar-orcamento.js'
@@ -134,6 +135,7 @@ import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositor
     FinalizarExecucaoController,
     RecusarOrcamentoController,
     RenegociarOrcamentoController,
+    CalcularTempoMedioExecucaoServicosController,
   ],
   providers: [
     // Database Service
@@ -168,6 +170,7 @@ import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositor
     EncerrarOrdemServicoUseCase,
     RecusarOrcamentoUseCase,
     RenegociarOrcamentoUseCase,
+    CalcularTempoMediaExecucaoServicosUseCase,
 
     //Subscribers
     OnDiagnosticoConcluido,

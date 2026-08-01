@@ -1,4 +1,4 @@
-import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
+import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, CalcularTempoMedioParams, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { OrdemServico } from "../../domain/entities/ordem-servico.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
 
@@ -80,5 +80,50 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
 
       return pesoB - pesoA
     })
+  }
+
+  async calcularTempoMedio(params?: CalcularTempoMedioParams): Promise<{
+    tempoMedioMinutos: number;
+    totalServicosConcluidos: number;
+  }> {
+    const ordensConcluidas = this.items.filter(item => {
+      const isFinalizada =
+        item.getStatus() === 'FINALIZADA' &&
+        item.getIniciadoEm() !== null &&
+        item.getIniciadoEm() !== undefined &&
+        item.getFinalizadoEm() !== null &&
+        item.getFinalizadoEm() !== undefined;
+
+      if (!isFinalizada) return false;
+
+      const dataFinalizacao = new Date(item.getFinalizadoEm()!).getTime();
+
+      if (params?.dataInicio && dataFinalizacao < params.dataInicio.getTime()) {
+        return false;
+      }
+
+      if (params?.dataFim && dataFinalizacao > params.dataFim.getTime()) {
+        return false;
+      }
+
+      return true;
+    });
+
+    const totalServicosConcluidos = ordensConcluidas.length;
+
+    if (totalServicosConcluidos === 0) {
+      return { tempoMedioMinutos: 0, totalServicosConcluidos: 0 };
+    }
+
+    const somaTemposMinutos = ordensConcluidas.reduce((acc, item) => {
+      const inicio = new Date(item.getIniciadoEm()!).getTime();
+      const fim = new Date(item.getFinalizadoEm()!).getTime();
+      return acc + (fim - inicio) / (1000 * 60);
+    }, 0);
+
+    return {
+      tempoMedioMinutos: Number((somaTemposMinutos / totalServicosConcluidos).toFixed(2)),
+      totalServicosConcluidos,
+    };
   }
 }

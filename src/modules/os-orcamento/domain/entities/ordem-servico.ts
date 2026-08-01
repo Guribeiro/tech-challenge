@@ -38,6 +38,8 @@ export type OrdemServicoProps = {
   status: StatusOS
   criadoEm: Date
   atualizadoEm?: Date
+  iniciadoEm?: Date
+  finalizadoEm?: Date
 }
 
 export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
@@ -121,11 +123,20 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
     return this.props.mecanicoId
   }
 
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
+  }
+
   public getAtualizadoEm(): Date | undefined {
     return this.props.atualizadoEm
   }
-  public getCriadoEm(): Date {
-    return this.props.criadoEm
+
+  public getIniciadoEm(): Date | undefined {
+    return this.props.iniciadoEm
+  }
+
+  public getFinalizadoEm(): Date | undefined {
+    return this.props.finalizadoEm
   }
 
   public iniciarDiagnostico(mecanicoId: UniqueEntityID): void {
@@ -198,6 +209,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
     this.props.status = 'EM_EXECUCAO'
     this.props.atualizadoEm = new Date()
+    this.props.iniciadoEm = new Date()
 
     this.addDomainEvent(new OSExecucaoIniciadaEvent(this))
   }
@@ -212,6 +224,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
     this.props.status = 'FINALIZADA'
     this.props.atualizadoEm = new Date()
+    this.props.finalizadoEm = new Date()
 
     this.addDomainEvent(new OSExecucaoFinalizadaEvent(this))
   }
