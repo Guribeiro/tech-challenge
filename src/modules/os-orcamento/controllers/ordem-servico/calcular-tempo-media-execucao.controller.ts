@@ -8,7 +8,7 @@ import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('Ordens de Serviço - Métricas')
-@Controller('ordens-servico/metricas/tempo-medio')
+@Controller('ordens-servicos/metricas/tempo-medio')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class CalcularTempoMedioExecucaoServicosController {
   constructor(
