@@ -20,7 +20,7 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/*.e2e-spec.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       clean: true, // 👈 2. Limpa relatórios obsoletos para não travar a UI com cache velho
       cleanOnRerun: true, // 👈 3. Recalcula a cobertura a cada alteração em tempo real na UI

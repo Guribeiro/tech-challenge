@@ -16,7 +16,9 @@
     "db:test:up": "node check-db.js",
     "test:e2e": "dotenv -e .env.test -- prisma migrate deploy && vitest run --config ./vitest.config.e2e.ts",
     "test:e2e:watch": "dotenv -e .env.test -- prisma migrate deploy && vitest --config ./vitest.config.e2e.ts",
-    "test:all:ui": "npm run db:test:up && dotenv -e .env.test -- prisma migrate deploy && vitest --config ./vitest.config.all.ts --coverage --ui"
+    "test:all:ui": "npm run db:test:up && dotenv -e .env.test -- prisma migrate deploy && vitest --config ./vitest.config.all.ts --coverage --ui",
+    "test:cov:all": "npm run db:test:up && dotenv -e .env.test -- prisma migrate deploy && vitest run --config ./vitest.config.all.ts --coverage",
+    "sonar": "npm run test:cov:all && node --env-file=.env sonar-runner.mjs"
   },
   "keywords": [],
   "author": "",
@@ -67,6 +69,7 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "sonarqube-scanner": "^5.0.0"
   }
 }

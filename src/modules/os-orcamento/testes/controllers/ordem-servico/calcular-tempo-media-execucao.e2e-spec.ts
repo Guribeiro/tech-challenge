@@ -56,7 +56,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     await app.close()
   })
 
-  it('[GET] /ordens-servico/metricas/tempo-medio', async () => {
+  it('[GET] /ordens-servicos/metricas/tempo-medio', async () => {
     // 1. Gerar token de autenticação com uma role permitida ('ADMIN' ou 'RECEPCAO')
     const { accessToken, usuario } = await makeUsuarioAutenticado(app, {
       role: 'ADMIN',
@@ -178,7 +178,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     });
 
     const response = await fetch(
-      `${baseUrl}/ordens-servico/metricas/tempo-medio?${queryParams.toString()}`,
+      `${baseUrl}/ordens-servicos/metricas/tempo-medio?${queryParams.toString()}`,
       {
         method: 'GET',
         headers: {
@@ -200,14 +200,14 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     });
   });
 
-  it('[GET] /ordens-servico/metricas/tempo-medio - deve retornar 403 se o usuário não tiver permissão', async () => {
+  it('[GET] /ordens-servicos/metricas/tempo-medio - deve retornar 403 se o usuário não tiver permissão', async () => {
     // Token com role não autorizada
     const { accessToken } = await makeUsuarioAutenticado(app, {
       role: 'MECANICO',
     })
 
     const response = await fetch(
-      `${baseUrl}/ordens-servico/metricas/tempo-medio`,
+      `${baseUrl}/ordens-servicos/metricas/tempo-medio`,
       {
         method: 'GET',
         headers: {
@@ -219,7 +219,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     expect(response.status).toBe(403);
   });
 
-  it('[GET] /ordens-servico/metricas/tempo-medio - deve retornar 400 se a data de início for maior que a data de fim', async () => {
+  it('[GET] /ordens-servicos/metricas/tempo-medio - deve retornar 400 se a data de início for maior que a data de fim', async () => {
     const { accessToken } = await makeUsuarioAutenticado(app, {
       role: 'ADMIN',
     })
@@ -231,7 +231,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
     });
 
     const response = await fetch(
-      `${baseUrl}/ordens-servico/metricas/tempo-medio?${queryParams.toString()}`,
+      `${baseUrl}/ordens-servicos/metricas/tempo-medio?${queryParams.toString()}`,
       {
         method: 'GET',
         headers: {

@@ -22,7 +22,7 @@ export default defineConfig({
     coverage: {
       enabled: true, // 👈 Força a coleta ativa compatível com a UI
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       clean: true,
       cleanOnRerun: true,
@@ -33,7 +33,10 @@ export default defineConfig({
         'src/**/*.e2e-spec.ts',
         'src/**/tests/**',
         'src/**/factories/**',
-        'src/**/infra/**',
+        'src/generated/**',
+        'src/main.ts',
+        'src/**/*.module.ts',
+        'src/**/*.dto.ts',
         'src/generated/**'
       ],
     },
