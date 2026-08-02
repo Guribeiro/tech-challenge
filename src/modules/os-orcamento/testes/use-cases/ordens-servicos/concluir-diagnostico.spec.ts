@@ -15,6 +15,7 @@ import { makeUsuario } from "@/modules/autenticacao/testes/factories/make-usuari
 import { makeProduto } from "@/modules/estoque/testes/factories/make-produto.js"
 import { makeOrdemServico } from "../../factories/make-ordem-servico.js"
 import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
+import { ConcluirDiagnosticoService } from "@/modules/os-orcamento/domain/services/concluir-diagnostico.service.js"
 
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let orcamentoRepository: InMemoryOrcamentoRepository
@@ -24,6 +25,7 @@ let produtoRepository: InMemoryProdutoRepository
 let servicoRepository: InMemoryServicoRepository
 let mecanicoRepository: InMemoryMecanicosRepository
 let usuarioRepository: InMemoryUsuariosRepository
+let concluirDiagnosticoService: ConcluirDiagnosticoService
 
 let sut: ConcluirDiagnosticoUseCase
 
@@ -38,11 +40,15 @@ describe('Concluir Diagnóstico Use Case', () => {
     mecanicoRepository = new InMemoryMecanicosRepository()
     usuarioRepository = new InMemoryUsuariosRepository()
 
+    concluirDiagnosticoService = new ConcluirDiagnosticoService(
+      servicoRepository,
+      produtoRepository,
+    )
+
     sut = new ConcluirDiagnosticoUseCase(
       ordemServicoRepository,
-      produtoRepository,
-      servicoRepository,
       usuarioRepository,
+      concluirDiagnosticoService
     )
   })
 

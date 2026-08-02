@@ -1,14 +1,10 @@
 import { Either, left, right } from "@/core/either.js"
 import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
+import { Usuario } from "@/modules/autenticacao/domain/entities/usuario.js"
 import { UsuariosRepository } from "@/modules/autenticacao/domain/repositories/usuarios-repository.js"
-import { Produto } from "@/modules/estoque/domain/entities/produto.js"
-import { ProdutoRepository } from "@/modules/estoque/domain/repositories/produtos-repository.js"
-import { OrdemServicoComponente } from "@/modules/os-orcamento/domain/entities/ordem-servico-componente.js"
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
-import { Servico } from "@/modules/os-orcamento/domain/entities/servico.js"
 import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
-import { ServicoRepository } from "@/modules/os-orcamento/domain/repositories/servicos-repository.js"
+import { ConcluirDiagnosticoService } from "@/modules/os-orcamento/domain/services/concluir-diagnostico.service.js"
 import { Injectable } from "@nestjs/common"
 import { ComponenteItemInput, ServicoItemInput } from "./criar-ordem-servico.js"
 
@@ -32,28 +28,24 @@ type ConcluirDiagnosticoOutput = Either<
 export class ConcluirDiagnosticoUseCase {
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository,
-    private readonly produtoRepository: ProdutoRepository,
-    private readonly servicoRepository: ServicoRepository,
     private readonly usuarioRepository: UsuariosRepository,
+    private readonly concluirDiagnosticoService: ConcluirDiagnosticoService,
   ) { }
 
-  public async execute(input: ConcluirDiagnosticoInput): Promise<ConcluirDiagnosticoOutput> {
+  public async execute(
+    input: ConcluirDiagnosticoInput,
+  ): Promise<ConcluirDiagnosticoOutput> {
     const usuario = await this.usuarioRepository.findById(input.usuarioId)
-
     if (!usuario) {
       return left(new AcessoNegadoError())
     }
 
     const ordemServico = await this.ordemServicoRepository.findById(input.ordemServicoId)
-
     if (!ordemServico) {
       return left(new RecursoNaoEncontradoError('Ordem de Serviço'))
     }
 
-    const isOwner = ordemServico.getMecanicoId()?.toValue() === input.usuarioId
-    const isAdminOrReception = ['ADMIN', 'RECEPCAO'].includes(usuario.getRole())
-
-    if (!isOwner && !isAdminOrReception) {
+    if (!this.canConclude(usuario, ordemServico, input.usuarioId)) {
       return left(
         new AcessoNegadoError(
           'Apenas o mecânico responsável que iniciou o diagnóstico (ou um gestor) pode concluí-lo.',
@@ -61,108 +53,34 @@ export class ConcluirDiagnosticoUseCase {
       )
     }
 
-    const ordemServicoId = ordemServico.getId()
+    const servicosOrError = await this.concluirDiagnosticoService.processarServicos(
+      ordemServico,
+      input.servicos,
+    )
+    if (servicosOrError.isLeft()) return left(servicosOrError.value)
 
-    // --- PROCESSAMENTO DE SERVIÇOS ---
-    let servicosFinais: OrdemServicoServico[] = ordemServico.getServicos().getItems()
+    const componentesOrError = await this.concluirDiagnosticoService.processarComponentes(
+      ordemServico,
+      input.componentes,
+    )
+    if (componentesOrError.isLeft()) return left(componentesOrError.value)
 
-    if (input.servicos) {
-      servicosFinais = []
-      const servicosExistentesMap = new Map(
-        ordemServico.getServicos().getItems().map((s) => [s.getId().toValue(), s]),
-      )
-
-      const novosServicosInput = input.servicos.filter((s) => !s.id)
-      const servicoIdsNovos = [...new Set(novosServicosInput.map((s) => s.servicoId))]
-
-      let servicosCatalogoMap = new Map<string, Servico>()
-      if (servicoIdsNovos.length > 0) {
-        const servicosExistentes = await this.servicoRepository.findManyByIds(servicoIdsNovos)
-        servicosCatalogoMap = new Map(servicosExistentes.map((s) => [s.getId().toValue(), s]))
-      }
-
-      for (const item of input.servicos) {
-        const servicoExistente = item.id ? servicosExistentesMap.get(item.id) : null
-
-        if (servicoExistente) {
-          servicosFinais.push(servicoExistente)
-        } else {
-          const servicoDoCatalogo = servicosCatalogoMap.get(item.servicoId)
-
-          if (!servicoDoCatalogo) {
-            return left(new RecursoNaoEncontradoError(`Serviço com ID ${item.servicoId}`))
-          }
-
-          servicosFinais.push(
-            OrdemServicoServico.criar({
-              ordemServicoId,
-              servicoId: servicoDoCatalogo.getId(),
-              precoUnitario: servicoDoCatalogo.getValorReferencia(),
-              categoria: servicoDoCatalogo.getCategoria(),
-              nome: servicoDoCatalogo.getNome(),
-            }),
-          )
-        }
-      }
-    }
-
-    // --- PROCESSAMENTO DE COMPONENTES/PRODUTOS ---
-    let componentesFinais: OrdemServicoComponente[] = ordemServico.getComponentes().getItems()
-
-    if (input.componentes) {
-      componentesFinais = []
-      const componentesExistentesMap = new Map(
-        ordemServico.getComponentes().getItems().map((c) => [c.getId().toValue(), c]),
-      )
-
-      const novosItensInput = input.componentes.filter((c) => !c.id)
-      const produtoIdsNovos = [...new Set(novosItensInput.map((c) => c.produtoId))]
-
-      let produtosCatalogoMap = new Map<string, Produto>()
-      if (produtoIdsNovos.length > 0) {
-        const produtosExistentes = await this.produtoRepository.findManyByIds(produtoIdsNovos)
-        produtosCatalogoMap = new Map(produtosExistentes.map((p) => [p.getId().toValue(), p]))
-      }
-
-      for (const item of input.componentes) {
-        const componenteExistente = item.id ? componentesExistentesMap.get(item.id) : null
-
-        if (componenteExistente) {
-          componenteExistente.setQuantidade(item.quantidade)
-          componentesFinais.push(componenteExistente)
-        } else {
-          const produtoDoCatalogo = produtosCatalogoMap.get(item.produtoId)
-
-          if (!produtoDoCatalogo) {
-            return left(new RecursoNaoEncontradoError(`Produto com ID ${item.produtoId}`))
-          }
-
-          componentesFinais.push(
-            OrdemServicoComponente.criar({
-              ordemServicoId,
-              produtoId: produtoDoCatalogo.getId(),
-              nome: produtoDoCatalogo.getNome(),
-              tipo: produtoDoCatalogo.getTipo(),
-              marca: produtoDoCatalogo.getMarca(),
-              descricao: produtoDoCatalogo.getNome(),
-              codigoSKU: produtoDoCatalogo.getCodigoSKU(),
-              codigoFabricante: produtoDoCatalogo.getCodigoFabricante(),
-              unidadeMedida: produtoDoCatalogo.getUnidadeMedida(),
-              quantidade: item.quantidade,
-              precoUnitario: produtoDoCatalogo.getPrecoUnitario(),
-              precoCusto: produtoDoCatalogo.getPrecoCusto(),
-            }),
-          )
-        }
-      }
-    }
-
-    ordemServico.concluirDiagnostico(servicosFinais, componentesFinais)
+    ordemServico.concluirDiagnostico(servicosOrError.value, componentesOrError.value)
 
     await this.ordemServicoRepository.save(ordemServico)
 
-    return right({
-      ordemServico,
-    })
+    return right({ ordemServico })
+  }
+
+  private canConclude(
+    usuario: Usuario,
+    ordemServico: OrdemServico,
+    usuarioId: string,
+  ): boolean {
+    const isOwner = ordemServico.getMecanicoId()?.toValue() === usuarioId
+    const rolesPermitidas = new Set(['ADMIN', 'RECEPCAO'])
+    const isAdminOrReception = rolesPermitidas.has(usuario.getRole())
+
+    return isOwner || isAdminOrReception
   }
 }

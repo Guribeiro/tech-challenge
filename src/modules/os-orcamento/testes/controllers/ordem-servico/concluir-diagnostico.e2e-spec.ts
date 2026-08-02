@@ -6,6 +6,7 @@ import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/
 import { randomUUID } from 'node:crypto'
 import { generate as gerarCpf } from 'gerador-validador-cpf'
 import { DomainEvents } from '@/core/events/domain-events.js'
+import { makeVeiculo } from '../../factories/make-veiculo.js'
 
 describe('Concluir Diagnóstico de Ordem de Serviço (E2E)', () => {
   let app: INestApplication
@@ -87,7 +88,7 @@ describe('Concluir Diagnóstico de Ordem de Serviço (E2E)', () => {
       await prisma.veiculo.create({
         data: {
           id: veiculoId,
-          placa: `ABC${Math.floor(1000 + Math.random() * 9000)}`,
+          placa: makeVeiculo().getPlaca().getValor(),
           modelo: 'Golf',
           marca: 'Volkswagen',
           ano: 2021,

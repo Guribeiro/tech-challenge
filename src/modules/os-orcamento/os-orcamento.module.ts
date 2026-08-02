@@ -69,6 +69,9 @@ import { FinalizarExecucaoUseCase } from './application/use-cases/ordens-servico
 import { RecusarOrcamentoUseCase } from './application/use-cases/orcamento/recusar-orcamento.js'
 import { RenegociarOrcamentoUseCase } from './application/use-cases/orcamento/renegociar-orcamento.js'
 
+import { ReservarProdutosEstoqueUseCase } from '../estoque/application/use-cases/reservar-produtos-estoque.js'
+import { EncerrarOrdemServicoFaturaPagaUseCase } from './application/use-cases/ordens-servicos/encerrar-os-fatura-paga.js'
+
 // Repositories (Domain Contracts)
 import { MecanicoRepository } from '@/modules/os-orcamento/domain/repositories/mecanicos-repository.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
@@ -76,6 +79,10 @@ import { VeiculoRepository } from '@/modules/os-orcamento/domain/repositories/ve
 import { ServicoRepository } from '@/modules/os-orcamento/domain/repositories/servicos-repository.js'
 import { ProdutoRepository } from '../estoque/domain/repositories/produtos-repository.js'
 import { OrdemServicoRepository } from './domain/repositories/ordem-servico-repository.js'
+import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
+import { RecepcionistaRepository } from './domain/repositories/recepcionista-repository.js'
+import { OrcamentoRepository } from './domain/repositories/orcamento-repository.js'
+
 
 // Prisma Repositories (Infra Implementations)
 import { PrismaMecanicoRepository } from '@/infra/database/prisma/repositories/prisma-mecanico.repository.js'
@@ -85,24 +92,22 @@ import { PrismaServicoRepository } from '@/infra/database/prisma/repositories/pr
 import { PrismaProdutoRepository } from '@/infra/database/prisma/repositories/prisma-produto.repository.js'
 import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositories/prisma-ordem-servico.repository.js'
 import { PrismaOrcamentoRepository } from '@/infra/database/prisma/repositories/prisma-orcamento.repository.js'
-import { OrcamentoRepository } from './domain/repositories/orcamento-repository.js'
+import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
+import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositories/prisma-recepcionista.repository.js'
 
 //Subscribers
 import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico-concluido.js'
 import { OnClienteAprovouOrcamento } from './application/subscribers/on-orcamento-aprovado.js'
 import { OnExecucaoAutorizada } from './application/subscribers/on-os-execucao-autorizada.js'
-import { ReservarProdutosEstoqueUseCase } from '../estoque/application/use-cases/reservar-produtos-estoque.js'
 import { OnProdutosReservados } from './application/subscribers/on-produtos-reservados.js'
-import { EncerrarOrdemServicoFaturaPagaUseCase } from './application/use-cases/ordens-servicos/encerrar-os-fatura-paga.js'
 import { OnFaturaPagaEncerrarOrdemServico } from './application/subscribers/on-fatura-paga.js'
 import { OnOrcamentoRenegociadoRecusadoEncerrarOS } from './application/subscribers/on-orcamento-renegociado-recusado-encerrar-os.js'
 
 
 import { FaturamentoModule } from '../faturamento/faturamento.module.js'
-import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
-import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
-import { RecepcionistaRepository } from './domain/repositories/recepcionista-repository.js'
-import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositories/prisma-recepcionista.repository.js'
+import { RenegociarOrcamentoService } from './domain/services/renegociar-orcamento.service.js'
+import { ConcluirDiagnosticoService } from './domain/services/concluir-diagnostico.service.js'
+
 
 
 
@@ -161,6 +166,7 @@ import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositor
     ObterFilaTrabalhoUseCase,
     IniciarDiagnosticoUseCase,
     ConcluirDiagnosticoUseCase,
+    ConcluirDiagnosticoService,
     GerarOrcamentoUseCase,
     AprovarOrcamentoUseCase,
     ReservarProdutosEstoqueUseCase,
@@ -170,6 +176,7 @@ import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositor
     EncerrarOrdemServicoUseCase,
     RecusarOrcamentoUseCase,
     RenegociarOrcamentoUseCase,
+    RenegociarOrcamentoService,
     CalcularTempoMediaExecucaoServicosUseCase,
 
     //Subscribers
