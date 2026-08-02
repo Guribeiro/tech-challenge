@@ -6,7 +6,7 @@ type DomainEventCallback = (event: any) => Promise<void> | void
 
 export class DomainEvents {
   // Guarda todos os inscritos. Chave: Nome do Evento, Valor: Lista de Funções
-  private static handlersMap: Map<string, DomainEventCallback[]> = new Map()
+  private static readonly handlersMap: Map<string, DomainEventCallback[]> = new Map()
 
   /**
    * Quem quiser ouvir um evento (ex: a política de notificação) chama esse método

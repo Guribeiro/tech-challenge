@@ -7,7 +7,7 @@ export type ListarClienteOutput = Either<never, BuscarClientesResultado>
 
 @Injectable()
 export class ListarClientesUseCase {
-  constructor(private clienteRepository: ClienteRepository) { }
+  constructor(private readonly clienteRepository: ClienteRepository) { }
   public async execute(input: ListarClienteInput): Promise<ListarClienteOutput> {
     const pagina = input.pagina ?? 1
     const limite = input.limite ?? 10

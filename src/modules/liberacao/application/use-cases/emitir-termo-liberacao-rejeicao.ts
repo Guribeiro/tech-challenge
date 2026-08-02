@@ -29,7 +29,7 @@ export class EmitirTermoRejeicaoUseCase {
     const veiculo = await this.veiculoRepository.findById(os.getVeiculoId().toValue())
 
     if (!veiculo) {
-      throw new Error(`Veículo ${os.getVeiculoId()} não encontrado`)
+      throw new Error(`Veículo ${os.getVeiculoId().toValue()} não encontrado`)
     }
 
     const termo = TermoLiberacao.criar({

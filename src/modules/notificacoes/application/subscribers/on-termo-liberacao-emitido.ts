@@ -1,9 +1,8 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { ClienteOrcamentoGateway } from '@/modules/faturamento/application/gateways/cliente-orcamento-gateway.js'
 import { ClienteOrdemServicoGateway } from '@/modules/liberacao/application/gateways/cliente-ordem-servico-gateway.js'
 import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-emitido-event.js'
-import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js' // ◄ Importa o segundo evento
+import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { Injectable } from '@nestjs/common'
 

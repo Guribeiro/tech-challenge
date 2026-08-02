@@ -29,7 +29,7 @@ export type CriarClienteOutput = Either<
 
 @Injectable()
 export class CriarClienteUseCase {
-  constructor(private clienteRepository: ClienteRepository) { }
+  constructor(private readonly clienteRepository: ClienteRepository) { }
   public async execute(input: CriarClienteInput): Promise<CriarClienteOutput> {
 
     const clienteComMesmoEmail = await this.clienteRepository.findByEmail(input.email)

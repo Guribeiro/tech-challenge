@@ -27,7 +27,7 @@ export class OnOrdemServicoEncerrada implements EventHandler {
         ordemServicoId: ordemServico.getId().toValue()
       })
     } catch (error) {
-      console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId()}`, error)
+      console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId().toValue()}`, error)
     }
   }
 }

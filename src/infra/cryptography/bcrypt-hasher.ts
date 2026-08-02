@@ -4,7 +4,7 @@ import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-g
 
 @Injectable()
 export class BcryptHasher implements HashGenerator {
-  private HASH_SALT_LENGTH = 8
+  private readonly HASH_SALT_LENGTH = 8
 
   async generateHash(payload: string): Promise<string> {
     return hash(payload, this.HASH_SALT_LENGTH)

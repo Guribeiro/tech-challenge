@@ -34,12 +34,12 @@ export class OnExecucaoIniciada implements EventHandler, OnModuleInit {
       // ⚡ Chama o seu caso de uso de notificação de forma limpa e desacoplada!
       await this.enviarNotificacao.execute({
         destinatario: cliente?.getTelefone().getValor(),
-        mensagem: `Olá! O mecânico já iniciou a execução dos serviços no seu veículo (OS: ${ordemServico.getId()}).`
+        mensagem: `Olá! O mecânico já iniciou a execução dos serviços no seu veículo (OS: ${ordemServico.getId().toValue()}).`
       })
 
-      console.log(`[Notification Success]: Notificação de início de OS enviada para o cliente da OS ${ordemServico.getId()}`)
+      console.log(`[Notification Success]: Notificação de início de OS enviada para o cliente da OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
-      console.error(`[Notification Error]: Falha ao disparar notificação para o cliente da OS ${ordemServico.getId()}`, error)
+      console.error(`[Notification Error]: Falha ao disparar notificação para o cliente da OS ${ordemServico.getId().toValue()}`, error)
     }
   }
 }

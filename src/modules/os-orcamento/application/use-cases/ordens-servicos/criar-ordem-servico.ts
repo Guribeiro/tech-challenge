@@ -49,7 +49,7 @@ export class CriarOrdemServicoUseCase {
     private readonly veiculoRepository: VeiculoRepository,
     private readonly produtoRepository: ProdutoRepository,
     private readonly servicoRepository: ServicoRepository,
-    private ordemServicoRepository: OrdemServicoRepository,
+    private readonly ordemServicoRepository: OrdemServicoRepository,
   ) { }
   public async execute(input: CriarOrdemServicoInput): Promise<CriarOrdemServicoOutput> {
 
@@ -77,8 +77,8 @@ export class CriarOrdemServicoUseCase {
       const servicosExistentes = await this.servicoRepository.findManyByIds(idsUnicos)
 
       if (servicosExistentes.length !== idsUnicos.length) {
-        const idsExistentes = servicosExistentes.map((s) => s.getId().toValue())
-        const idsInvalidos = idsUnicos.filter((id) => !idsExistentes.includes(id))
+        const idsExistentes = new Set(servicosExistentes.map((s) => s.getId().toValue()))
+        const idsInvalidos = idsUnicos.filter((id) => !idsExistentes.has(id))
         return left(new RecursoNaoEncontradoError(`Seguintes serviços : ${idsInvalidos.join(', ')}`))
       }
 
@@ -112,8 +112,8 @@ export class CriarOrdemServicoUseCase {
       const produtosExistentes = await this.produtoRepository.findManyByIds(idsUnicos)
 
       if (produtosExistentes.length !== idsUnicos.length) {
-        const idsExistentes = produtosExistentes.map((p) => p.getId().toValue())
-        const idsInvalidos = idsUnicos.filter((id) => !idsExistentes.includes(id))
+        const idsExistentes = new Set(produtosExistentes.map((p) => p.getId().toValue()))
+        const idsInvalidos = idsUnicos.filter((id) => !idsExistentes.has(id))
         return left(new RecursoNaoEncontradoError(`Seguintes componentes : ${idsInvalidos.join(', ')}`))
       }
 

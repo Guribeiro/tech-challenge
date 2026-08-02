@@ -51,7 +51,7 @@ export class InMemoryVeiculoRepository implements VeiculoRepository {
     })
 
     // 2. Ordena pelos mais recentes (simulando o orderBy do Prisma)
-    const sortedClientes = filteredClientes.sort(
+    const sortedClientes = filteredClientes.toSorted(
       (a, b) => b.getCriadoEm().getTime() - a.getCriadoEm().getTime()
     )
 

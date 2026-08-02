@@ -3,7 +3,7 @@ import { EventHandler } from '@/core/events/event-handler.js'
 import { ClienteOrcamentoGateway } from '@/modules/faturamento/application/gateways/cliente-orcamento-gateway.js'
 import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 
 @Injectable()
 export class OnFaturaEmitida implements EventHandler {
@@ -41,7 +41,7 @@ export class OnFaturaEmitida implements EventHandler {
       })
 
     } catch (error) {
-      console.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId()}`, error)
+      console.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId().toValue()}`, error)
     }
   }
 }

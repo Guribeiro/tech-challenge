@@ -37,7 +37,7 @@ export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler, OnMod
 
     } catch (error) {
       console.error(
-        `[Subscriber Error]: Falha ao emitir fatura para a OS ${ordemServico.getId()}.`,
+        `[Subscriber Error]: Falha ao emitir fatura para a OS ${ordemServico.getId().toValue()}.`,
         error
       )
     }

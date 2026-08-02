@@ -3,7 +3,6 @@ import { Produto } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 import { RecursoNaoEncontradoError } from "@/core/errors/index.js";
 import { Either, left, right } from "@/core/either.js";
-import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js";
 import { RegraDeNegocioVioladaError } from "@/core/errors/domain-errors/regra-de-negocio-violada-error.js";
 
 interface DesativarProdutoInput {

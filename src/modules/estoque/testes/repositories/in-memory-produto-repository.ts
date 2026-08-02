@@ -68,7 +68,7 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
     })
 
     // 2. Ordena pelos mais recentes (simulando o orderBy do Prisma)
-    const sortedData = filteredData.sort(
+    const sortedData = filteredData.toSorted(
       (a, b) => b.getCriadoEm().getTime() - a.getCriadoEm().getTime()
     )
 

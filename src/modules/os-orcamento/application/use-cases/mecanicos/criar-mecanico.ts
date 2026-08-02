@@ -27,7 +27,7 @@ type CriarMecanicoUseCaseOutput = Either<
 @Injectable()
 export class CriarMecanicoUseCase {
   constructor(
-    private mecanicoRepository: MecanicoRepository
+    private readonly mecanicoRepository: MecanicoRepository
   ) { }
 
   async execute({

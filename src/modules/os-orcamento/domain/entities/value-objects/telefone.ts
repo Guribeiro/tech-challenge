@@ -42,7 +42,7 @@ export class Telefone {
     }
 
     // Regra 3: Validar os primeiros dígitos do DDD (Não existem DDDs começando com 0 ou menores que 11)
-    const ddd = parseInt(numeroLimpo.substring(0, 2), 10)
+    const ddd = Number.parseInt(numeroLimpo.substring(0, 2), 10)
     if (ddd < 11 || ddd > 99) {
       throw new ArgumentoInvalidoError('O código de área (DDD) informado é inválido.')
     }

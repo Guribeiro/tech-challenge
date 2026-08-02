@@ -26,7 +26,7 @@ type CriarRecepcionistaUseCaseOutput = Either<
 @Injectable()
 export class CriarRecepcionistaUseCase {
   constructor(
-    private recepcionistaRepository: RecepcionistaRepository
+    private readonly recepcionistaRepository: RecepcionistaRepository
   ) { }
 
   async execute({

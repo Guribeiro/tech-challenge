@@ -70,15 +70,14 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
       )
     }
 
-    if (props.servicos && props.servicos.getItems().some((item) => !item)) {
+    if (props.servicos?.getItems().some((item) => !item)) {
       throw new Error(
         'Cada serviço solicitado precisa apontar para uma entidade de serviço válida.',
       )
     }
 
     if (
-      props.componentes &&
-      props.componentes.getItems().some(
+      props.componentes?.getItems().some(
         (item) => !item.getDescricao()?.trim() || item.getQuantidade() <= 0,
       )
     ) {

@@ -9,6 +9,7 @@ import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js";
+import { InMemoryMecanicosRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-mecanicos-repository.js";
 
 
 describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () => {
@@ -16,13 +17,14 @@ describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () =
   let ordemServicoRepository: InMemoryOrdemServicoRepository
   let veiculoRepository: InMemoryVeiculoRepository
   let termoLiberacaoRepository: InMemoryTermoLiberacaoRepository
+  let mecanicoRepository: InMemoryMecanicosRepository
 
 
   beforeEach(() => {
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
     veiculoRepository = new InMemoryVeiculoRepository()
     termoLiberacaoRepository = new InMemoryTermoLiberacaoRepository()
-
+    mecanicoRepository = new InMemoryMecanicosRepository()
     sut = new EmitirTermoLiberacaoUseCase(
       ordemServicoRepository,
       veiculoRepository,
@@ -75,6 +77,8 @@ describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () =
 
     const mecanico = makeMecanico()
 
+    await mecanicoRepository.create(mecanico)
+
     const prioridade = Prioridade.calcular({
       anoVeiculo: veiculo.getAno(),
       categoriasDosServicos: [],
@@ -102,7 +106,7 @@ describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () =
 
 
 
-  it('não deve emitir o termo de liberação de um veiculo inexistente', async () => {
+  it('não deve emitir o termo de liberação de um mecanico inexistente', async () => {
     const cliente = makeCliente()
 
     const veiculo = makeVeiculo()

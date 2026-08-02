@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common'
 import { AutenticarUseCase } from '../application/use-cases/autenticar.js'
 import { AutenticarBodyDto } from '../dto/autenticar.dto.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'

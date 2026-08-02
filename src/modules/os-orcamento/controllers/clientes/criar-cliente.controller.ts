@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import { CriarClienteUseCase } from '../../application/use-cases/clientes/criar-cliente.js'
 import { CriarClienteBodyDto } from '../../dto/cliente/criar-cliente.dto.js'
 import { ClientePresenter } from '../../presenters/cliente-presenter.js'

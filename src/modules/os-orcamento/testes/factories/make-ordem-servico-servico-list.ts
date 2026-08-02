@@ -31,13 +31,14 @@ export function makeOrdemServicoServicoList(
     })
 
     // 2. Monta o Value Object da OS garantindo que até os campos exclusivos da OS tenham fallback do Faker
-    return new OrdemServicoServico({
-      servicoId: override.servicoId ? override.servicoId : servicoBase.getId(),
+    return OrdemServicoServico.criar({
+      servicoId: override.servicoId ?? servicoBase.getId(),
       nome: servicoBase.getNome(),
       categoria: servicoBase.getCategoria(),
       precoUnitario: servicoBase.getValorReferencia() ?? precoAleatorio, // Fallback duplo de segurança
       descricao: servicoBase.getDescricao(),
       observacao: override.observacao ?? faker.lorem.paragraph(0.5) ?? 'Nenhuma observação técnica.',
+      ordemServicoId: new UniqueEntityID(), // Gera um ID aleatório para a OS, pois não temos uma OS real aqui
     })
   })
 

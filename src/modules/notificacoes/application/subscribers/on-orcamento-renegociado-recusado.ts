@@ -29,7 +29,7 @@ export class OnOrcamentoRenegociadoRecusado implements EventHandler, OnModuleIni
         mensagem: `O orçamento da OS #${ordemServico.getId().toValue()} foi REJEITADO DEFINITIVAMENTE pelo cliente após tentativas de renegociação. O processo foi encerrado.`
       })
     } catch (error) {
-      console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId()}`, error)
+      console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId().toValue()}`, error)
     }
   }
 }

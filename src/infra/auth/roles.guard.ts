@@ -14,7 +14,7 @@ import { UserPayload } from './jwt.strategy.js'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
-  constructor(private reflector: Reflector) { }
+  constructor(private readonly reflector: Reflector) { }
 
   canActivate(context: ExecutionContext): boolean {
     // Busca os papéis definidos no método da rota ou na classe do controller
@@ -31,7 +31,7 @@ export class RolesGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
     const user = request.user as UserPayload
 
-    if (!user || !user.role) {
+    if (!user?.role) {
       throw new ForbiddenException('Usuário não possui perfis de acesso atribuídos.')
     }
 

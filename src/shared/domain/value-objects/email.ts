@@ -15,7 +15,7 @@ export class Email {
   }
 
   public static validar(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
     return emailRegex.test(email)
   }
 

@@ -35,7 +35,7 @@ export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler, OnM
 
       // Se nenhum produto foi utilizado na OS, não precisamos deduzir nada
       if (itensUtilizados.length === 0) {
-        console.log(`[Subscriber Info]: OS ${ordemServico.getId()} finalizada sem produtos a deduzir.`)
+        console.log(`[Subscriber Info]: OS ${ordemServico.getId().toValue()} finalizada sem produtos a deduzir.`)
         return
       }
       // 2. ⚡ A REAÇÃO: Delegamos para o Caso de Uso processar a baixa
@@ -45,11 +45,11 @@ export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler, OnM
       })
 
 
-      console.log(`[Subscriber Success]: Orçamento gerado automaticamente para a OS ${ordemServico.getId()}`)
+      console.log(`[Subscriber Success]: Orçamento gerado automaticamente para a OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
       // Como eventos de domínio rodam em segundo plano, é vital ter um log de erro aqui
       console.error(
-        `[Subscriber Error]: Falha ao gerar orçamento automático para a OS ${ordemServico.getId()}.`,
+        `[Subscriber Error]: Falha ao gerar orçamento automático para a OS ${ordemServico.getId().toValue()}.`,
         error
       )
     }

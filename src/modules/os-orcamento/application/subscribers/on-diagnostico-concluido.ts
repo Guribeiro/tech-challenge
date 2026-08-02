@@ -36,7 +36,7 @@ export class OnDiagnosticoConcluido implements EventHandler {
     } catch (error) {
       // Como eventos de domínio rodam em segundo plano, é vital ter um log de erro aqui
       console.error(
-        `[Subscriber Error]: Falha ao gerar orçamento automático para a OS ${ordemServico.getId()}.`,
+        `[Subscriber Error]: Falha ao gerar orçamento automático para a OS ${ordemServico.getId().toValue()}.`,
         error
       )
     }

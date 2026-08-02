@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, UnauthorizedException, UseGuards } from '@nestjs/common'
+import { Body, Controller, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common'
 import { CriarServicoUseCase } from '../../application/use-cases/servicos/criar-servico.js'
 import { ServicoPresenter } from '../../presenters/servico-presenter.js'
 import { CriarServicoBodyDto } from '../../dto/servico/criar-servico-body.dto.js'

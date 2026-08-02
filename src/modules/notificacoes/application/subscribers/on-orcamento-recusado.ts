@@ -32,7 +32,7 @@ export class OnOrcamentoRecusado implements EventHandler, OnModuleInit {
         mensagem: `Atenção! O cliente recusou o orçamento original da OS #${orcamento.getOrdemServicoId().toValue()}. Inicie o processo de renegociação.`
       })
     } catch (error) {
-      console.error(`Falha ao notificar recepção sobre a recusa do orçamento ${orcamento.getId()}`, error)
+      console.error(`Falha ao notificar recepção sobre a recusa do orçamento ${orcamento.getId().toValue()}`, error)
     }
   }
 }

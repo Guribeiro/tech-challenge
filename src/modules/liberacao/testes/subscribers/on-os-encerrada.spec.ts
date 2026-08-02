@@ -97,7 +97,7 @@ describe('Subscriber: On OS Encerrada', () => {
 
     await vi.waitFor(() => {
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Falha no processo automático pós-encerramento da OS #${os.getId()}`),
+        expect.stringContaining(`Falha no processo automático pós-encerramento da OS #${os.getId().toValue()}`),
         expect.any(Error)
       )
     })

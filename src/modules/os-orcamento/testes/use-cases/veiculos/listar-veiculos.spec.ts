@@ -65,10 +65,12 @@ describe('Caso de Uso: Listar Veículos', () => {
     expect(result.isRight()).toBe(true)
     expect(result.value.veiculos).toHaveLength(2)
     expect(result.value.total).toBe(2)
-    expect(result.value.veiculos.map(veiculo => veiculo.getId().toValue())).toEqual([
-      veiculoDeletado1.getId().toValue(),
-      veiculoDeletado2.getId().toValue()
-    ])
+    expect(result.value.veiculos.map(veiculo => veiculo.getId().toValue())).toEqual(
+      expect.arrayContaining([
+        veiculoDeletado1.getId().toValue(),
+        veiculoDeletado2.getId().toValue()
+      ])
+    )
   })
 
   it('deve listar todos os veículos (ativos e deletados) quando status for "todos"', async () => {

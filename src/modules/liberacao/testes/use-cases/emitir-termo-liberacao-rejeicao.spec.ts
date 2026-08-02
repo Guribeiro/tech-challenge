@@ -102,7 +102,7 @@ describe('Caso de Uso: Emitir Termo de Liberação por Rejeição - (ORÇAMENTO 
 
 
 
-  it('não deve emitir o termo de liberação de um veiculo inexistente', async () => {
+  it('não deve emitir o termo de liberação de um mecanico inexistente', async () => {
     const cliente = makeCliente()
 
     const veiculo = makeVeiculo()

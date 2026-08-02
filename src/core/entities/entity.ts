@@ -1,7 +1,7 @@
 import { UniqueEntityID } from './unique-entity-id.js'
 
 export class Entity<TProps> {
-  private _id: UniqueEntityID
+  private readonly _id: UniqueEntityID
   protected props: TProps
 
   constructor(props: TProps, id?: UniqueEntityID) {

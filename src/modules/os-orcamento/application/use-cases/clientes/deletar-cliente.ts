@@ -24,7 +24,7 @@ export type DeletarClienteOutput = Either<
 
 @Injectable()
 export class DeletarClienteUseCase {
-  constructor(private clienteRepository: ClienteRepository) { }
+  constructor(private readonly clienteRepository: ClienteRepository) { }
   public async execute({ id }: DeletarClienteInput): Promise<DeletarClienteOutput> {
     const cliente = await this.clienteRepository.findById(id)
 

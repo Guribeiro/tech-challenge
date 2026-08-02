@@ -24,7 +24,7 @@ export class ReservarProdutosEstoqueUseCase {
     // 2. Busca todos em lote para performance (usando o findManyByIds que implementamos antes)
     const produtos = await this.produtoRepository.findManyByIds(produtoIds)
 
-    if (produtos.length !== [...new Set(produtoIds)].length) {
+    if (produtos.length !== new Set(produtoIds).size) {
       throw new Error("Alguns produtos solicitados para a reserva não foram encontrados no estoque.")
     }
 

@@ -54,7 +54,7 @@ export class InMemoryServicoRepository implements ServicoRepository {
       return true
     })
 
-    const sortedData = filteredData.sort(
+    const sortedData = filteredData.toSorted(
       (a, b) => b.getCriadoEm().getTime() - a.getCriadoEm().getTime()
     )
 

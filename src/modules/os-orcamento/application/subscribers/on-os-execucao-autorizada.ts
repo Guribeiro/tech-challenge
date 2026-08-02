@@ -27,7 +27,7 @@ export class OnExecucaoAutorizada implements EventHandler, OnModuleInit {
     // ⚡ Filtra se a OS de fato possui componentes/peças para serem reservados
     const componentes = ordemServico.getComponentes().getItems()
     if (componentes.length === 0) {
-      console.log(`[Subscriber Info]: OS ${ordemServico.getId()} autorizada sem peças para reservar.`)
+      console.log(`[Subscriber Info]: OS ${ordemServico.getId().toValue()} autorizada sem peças para reservar.`)
       return
     }
 
@@ -40,9 +40,9 @@ export class OnExecucaoAutorizada implements EventHandler, OnModuleInit {
         }))
       })
 
-      console.log(`[Subscriber Success]: Comando de reserva enviado ao Inventário para a OS ${ordemServico.getId()}`)
+      console.log(`[Subscriber Success]: Comando de reserva enviado ao Inventário para a OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
-      console.error(`[Subscriber Error]: Erro ao solicitar reserva de peças para a OS ${ordemServico.getId()}`, error)
+      console.error(`[Subscriber Error]: Erro ao solicitar reserva de peças para a OS ${ordemServico.getId().toValue()}`, error)
     }
   }
 }

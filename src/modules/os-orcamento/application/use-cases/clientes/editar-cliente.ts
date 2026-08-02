@@ -19,7 +19,6 @@ export type EditarClienteInput = {
   tipo?: 'PF' | 'PJ'
 }
 
-// 1. Incluímos DomainError para cobrir ArgumentoInvalidoError lançados pelos Value Objects
 type Errors =
   | RecursoNaoEncontradoError
   | EmailJaCadastradoError
@@ -34,7 +33,7 @@ export type EditarClienteOutput = Either<
 
 @Injectable()
 export class EditarClienteUseCase {
-  constructor(private clienteRepository: ClienteRepository) { }
+  constructor(private readonly clienteRepository: ClienteRepository) { }
 
   public async execute(input: EditarClienteInput): Promise<EditarClienteOutput> {
     const cliente = await this.clienteRepository.findById(input.id)

@@ -32,7 +32,7 @@ export class OnOrcamentoRenegociado implements EventHandler, OnModuleInit {
 
       await this.enviarNotificacao.execute({
         destinatario: cliente.getTelefone().getValor(),
-        mensagem: `Olá! Preparamos uma proposta especial revisada para o seu veículo. Acesse o link para conferir as novas condições: [Link do Orçamento #${orcamento.getId()}]`
+        mensagem: `Olá! Preparamos uma proposta especial revisada para o seu veículo. Acesse o link para conferir as novas condições: [Link do Orçamento #${orcamento.getId().toValue()}]`
       })
     } catch (error) {
       console.error(`Falha ao disparar nova proposta para o cliente`, error)
