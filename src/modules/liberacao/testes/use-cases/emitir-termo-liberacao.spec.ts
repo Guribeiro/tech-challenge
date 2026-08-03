@@ -10,6 +10,7 @@ import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servi
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js";
 import { InMemoryMecanicosRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-mecanicos-repository.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 
 
 describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () => {
@@ -61,12 +62,16 @@ describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () =
 
     await ordemServicoRepository.create(os)
 
-    const { termo } = await sut.execute({
+    const result = await sut.execute({
       ordemServicoId: os.getId().toValue()
     })
 
-    expect(termo.getPlacaVeiculo()).toBe(veiculo.getPlaca().getFormatada())
-    expect(termo.getMotivo()).toBe('PAGAMENTO_APROVADO')
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const termo = result.value.termo
+      expect(termo.getPlacaVeiculo()).toBe(veiculo.getPlaca().getFormatada())
+      expect(termo.getMotivo()).toBe('PAGAMENTO_APROVADO')
+    }
   })
 
 
@@ -99,9 +104,12 @@ describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () =
 
     await ordemServicoRepository.create(os)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       ordemServicoId: os.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 
 
@@ -133,10 +141,11 @@ describe('Caso de Uso: Emitir Termo de Liberação - (PAGAMENTO APROVADO)', () =
       mecanicoId: mecanico.getId()
     })
 
-
-    await expect(sut.execute({
+    const result = await sut.execute({
       ordemServicoId: os.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
 
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 })

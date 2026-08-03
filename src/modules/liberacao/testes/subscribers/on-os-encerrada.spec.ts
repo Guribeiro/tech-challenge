@@ -1,107 +1,142 @@
-import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
-import { DomainEvents } from "@/core/events/domain-events.js"
-import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-cases/enviar-notificacao.js"
-import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
-import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js"
-import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js"
-import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js"
-import { OSEncerradaEvent } from "@/modules/os-orcamento/domain/events/os-encerrada-event.js"
-import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js"
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
-import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veiculo.js"
-import { InMemoryClienteRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js"
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js"
-import { OnOrdemServicoEncerrada } from "../../application/subscribers/on-os-encerrada.js"
-import { EmitirTermoLiberacaoUseCase } from "../../application/use-cases/emitir-termo-liberacao.js"
+import { Logger } from '@nestjs/common'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { DomainEvents } from '@/core/events/domain-events.js'
+import { OSEncerradaEvent } from '@/modules/os-orcamento/domain/events/os-encerrada-event.js'
+import { EmitirTermoLiberacaoUseCase } from '../../application/use-cases/emitir-termo-liberacao.js'
+import { OnOrdemServicoEncerrada } from '../../application/subscribers/on-os-encerrada.js'
 
-describe('Subscriber: On OS Encerrada', () => {
-  let emitirTermoLiberacaoMock: EmitirTermoLiberacaoUseCase
-  let ordemServicoRepository: OrdemServicoRepository
-  let clienteRepository: ClienteRepository
-  let enviarNotificacao: EnviarNotificacaoUseCase
+describe('OnOrdemServicoEncerrada (Subscriber)', () => {
+  let emitirTermoLiberacao: EmitirTermoLiberacaoUseCase
+  let subscriber: OnOrdemServicoEncerrada
 
   beforeEach(() => {
-    emitirTermoLiberacaoMock = {
-      execute: vi.fn()
+    vi.clearAllMocks()
+
+    // 1. Mock do Use Case
+    emitirTermoLiberacao = {
+      execute: vi.fn(),
     } as unknown as EmitirTermoLiberacaoUseCase
 
-    ordemServicoRepository = new InMemoryOrdemServicoRepository()
-    clienteRepository = new InMemoryClienteRepository()
-    enviarNotificacao = {
-      execute: vi.fn()
-    } as unknown as EnviarNotificacaoUseCase
+    // 2. Espia o registro do evento ANTES da instanciação no beforeEach
+    vi.spyOn(DomainEvents, 'register')
 
+    // 3. Instancia a classe que registra a assinatura no construtor
+    subscriber = new OnOrdemServicoEncerrada(emitirTermoLiberacao)
+  })
 
-    new OnOrdemServicoEncerrada(
-      emitirTermoLiberacaoMock,
+  it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+
+    new OnOrdemServicoEncerrada(emitirTermoLiberacao)
+
+    expect(registerSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      OSEncerradaEvent.name,
     )
   })
 
-  it('deve chamar o caso de uso Emitir Liberacao', async () => {
+  it('deve emitir o termo de liberação com sucesso ao encerrar a OS', async () => {
+    // Espia o log de sucesso do NestJS
+    const loggerLogSpy = vi
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => { })
 
-    const veiculo = makeVeiculo()
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    const handler = registerSpy.mock.calls[0][0]
 
-    const prioridade = Prioridade.calcular({
-      anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: [],
-      eClienteCorporativo: false,
-      eGarantia: false,
+    // Mock do objeto Termo retornado no caso de uso
+    const mockTermo = {
+      getId: () => ({ toValue: () => 'termo-uuid-456' }),
+    }
+
+    // Simula resposta Right (sucesso) do Use Case
+    vi.mocked(emitirTermoLiberacao.execute).mockResolvedValueOnce({
+      isLeft: () => false,
+      isRight: () => true,
+      value: { termo: mockTermo },
+    } as any)
+
+    const mockEvent = {
+      ordemServico: {
+        getId: () => ({ toValue: () => 'os-uuid-100' }),
+      },
+    } as unknown as OSEncerradaEvent
+
+    await handler(mockEvent)
+
+    // Valida a chamada do Use Case com o parâmetro correto
+    expect(emitirTermoLiberacao.execute).toHaveBeenCalledWith({
+      ordemServicoId: 'os-uuid-100',
     })
 
-    const os = OrdemServico.criar({
-      clienteId: new UniqueEntityID(),
-      veiculoId: new UniqueEntityID(),
-      mecanicoId: new UniqueEntityID(),
-      componentes: new OrdemServicoComponenteList([]),
-      servicos: new OrdemServicoServicoList([]),
-      descricao: 'descricao',
-      eGarantia: false,
-      prioridade,
-    })
+    // Valida a mensagem exata gravada no log
+    expect(loggerLogSpy).toHaveBeenCalledWith(
+      'Termo de liberação emitido com sucesso para a OS #os-uuid-100. Termo ID: termo-uuid-456',
+    )
 
-    const evento = new OSEncerradaEvent(os)
-
-    DomainEvents.dispatch(evento)
-
-    expect(emitirTermoLiberacaoMock.execute).toHaveBeenCalledWith({
-      ordemServicoId: os.getId().toValue()
-    })
+    loggerLogSpy.mockRestore()
   })
 
-  it('deve capturar e logar o erro se o caso de uso falhar', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
+  it('deve capturar e logar aviso (warn) caso o UseCase retorne Left (falha de negócio)', async () => {
+    const loggerWarnSpy = vi
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => { })
 
-    emitirTermoLiberacaoMock.execute = vi.fn().mockRejectedValue(new Error('Erro interno do banco'))
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    const handler = registerSpy.mock.calls[0][0]
 
-    const veiculo = makeVeiculo()
-    const prioridade = Prioridade.calcular({
-      anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: [],
-      eClienteCorporativo: false,
-      eGarantia: false,
-    })
-    const os = OrdemServico.criar({
-      clienteId: new UniqueEntityID(),
-      veiculoId: new UniqueEntityID(),
-      mecanicoId: new UniqueEntityID(),
-      componentes: new OrdemServicoComponenteList([]),
-      servicos: new OrdemServicoServicoList([]),
-      descricao: 'descricao',
-      eGarantia: false,
-      prioridade,
-    })
+    const erroNegocio = new Error('OS não está em estado válido para liberação')
 
-    const evento = new OSEncerradaEvent(os)
+    // Simula resposta Left (erro de negócio)
+    vi.mocked(emitirTermoLiberacao.execute).mockResolvedValueOnce({
+      isLeft: () => true,
+      isRight: () => false,
+      value: erroNegocio,
+    } as any)
 
-    DomainEvents.dispatch(evento)
+    const mockEvent = {
+      ordemServico: {
+        getId: () => ({ toValue: () => 'os-uuid-100' }),
+      },
+    } as unknown as OSEncerradaEvent
 
-    await vi.waitFor(() => {
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`Falha no processo automático pós-encerramento da OS #${os.getId().toValue()}`),
-        expect.any(Error)
-      )
-    })
+    await handler(mockEvent)
 
-    consoleSpy.mockRestore()
+    // Valida a mensagem de aviso (warn) com a mensagem de erro formatada
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      'Falha ao emitir termo de liberação para a OS #os-uuid-100. Erro: OS não está em estado válido para liberação',
+    )
+
+    loggerWarnSpy.mockRestore()
+  })
+
+  it('deve capturar exceções não tratadas (catch) e logar no console sem lançar exceção', async () => {
+    // Espia o console.error utilizado no bloco catch desta classe
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => { })
+
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    const handler = registerSpy.mock.calls[0][0]
+
+    const erroInesperado = new Error('Erro ao conectar com o serviço de PDF')
+    vi.mocked(emitirTermoLiberacao.execute).mockRejectedValueOnce(erroInesperado)
+
+    const mockEvent = {
+      ordemServico: {
+        getId: () => ({ toValue: () => 'os-uuid-100' }),
+      },
+    } as unknown as OSEncerradaEvent
+
+    // Garante que o handler resolve sem estourar a exceção
+    await expect(handler(mockEvent)).resolves.not.toThrow()
+
+    // Valida a chamada do console.error no bloco catch
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Falha no processo automático pós-encerramento da OS #os-uuid-100',
+      erroInesperado,
+    )
+
+    consoleErrorSpy.mockRestore()
   })
 })
