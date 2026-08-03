@@ -3,7 +3,7 @@ import { EventHandler } from "@/core/events/event-handler.js"
 import { OSExecucaoFinalizadaEvent } from "@/modules/os-orcamento/domain/events/os-execucao-finalizada-event.js"
 import { EmitirFaturaUseCase } from "../use-cases/emitir-fatura.js"
 import { OrcamentoGateway } from "../gateways/orcamento-gateway.js"
-import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger } from "@nestjs/common"
 
 @Injectable()
 export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler {
