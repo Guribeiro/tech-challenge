@@ -2,17 +2,16 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
 import { OrcamentoEnviadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-enviado-event.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
-import { ClienteRepository } from '../../../os-orcamento/domain/repositories/clientes-repository.js'
+import { Injectable, Logger } from '@nestjs/common'
+import { ClienteOrcamentoGateway } from '../gateways/cliente-orcamento-gateway.js'
 
 @Injectable()
-export class OnOrcamentoEnviado implements EventHandler, OnModuleInit {
+export class OnOrcamentoEnviado implements EventHandler {
+  private readonly logger = new Logger(OnOrcamentoEnviado.name)
   constructor(
-    private readonly clienteRepository: ClienteRepository,
+    private readonly clienteOrcamentoGateway: ClienteOrcamentoGateway,
     private readonly enviarNotificacao: EnviarNotificacaoUseCase,
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
   // 1. Registra o ouvinte no ecossistema global de eventos da aplicação
@@ -23,23 +22,26 @@ export class OnOrcamentoEnviado implements EventHandler, OnModuleInit {
     )
   }
 
-  // 2. Ação que será executada automaticamente quando o orçamento for enviado
   private async executar({ orcamento }: OrcamentoEnviadoEvent): Promise<void> {
-    const clienteId = orcamento.getClienteId().toValue()
+    const orcamentoId = orcamento.getId().toValue()
+    try {
+      const dadosCliente = await this.clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId(orcamentoId)
 
-    const cliente = await this.clienteRepository.findById(clienteId)
+      if (!dadosCliente) {
+        this.logger.warn(`[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: ${orcamentoId}).`)
+        return
+      }
+      const { nome, telefone } = dadosCliente
 
-    if (!cliente) return
+      const valorTotal = orcamento.getValorTotalGeral()
 
-    const telefone = cliente.getTelefone().getValor()
-    const nome = cliente.getNome().getValor()
-    const valorTotal = orcamento.getValorTotalGeral()
-
-    // Aqui você chama o seu serviço/use-case de notificação (E-mail, WhatsApp, SMS)
-
-    await this.enviarNotificacao.execute({
-      destinatario: telefone,
-      mensagem: `Olá ${nome}! O orçamento ficou em R$ ${valorTotal}.`
-    })
+      await this.enviarNotificacao.execute({
+        destinatario: telefone,
+        mensagem: `Olá ${nome}! O orçamento ficou em R$ ${valorTotal}.`
+      })
+      this.logger.log(`Notificação enviada com sucesso para o cliente ${nome} (Orçamento #${orcamento.getId().toValue()}) após envio do orçamento.`)
+    } catch (error) {
+      this.logger.error(`[Subscriber Error]: Falha no processo automático pós-envio do orçamento (Orçamento ID: ${orcamento.getId().toValue()})`, error)
+    }
   }
 }

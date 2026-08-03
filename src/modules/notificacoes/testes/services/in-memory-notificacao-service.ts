@@ -6,7 +6,6 @@ export interface EnviarNotificacaoInput {
 }
 
 export class InMemoryNotificacaoService implements NotificacaoService {
-  // Uma lista em memória que armazena todas as notificações disparadas
   public envios: EnviarNotificacaoInput[] = []
 
   async enviar(dados: EnviarNotificacaoInput): Promise<void> {

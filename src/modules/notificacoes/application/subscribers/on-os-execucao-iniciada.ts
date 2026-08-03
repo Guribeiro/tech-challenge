@@ -2,16 +2,16 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSExecucaoIniciadaEvent } from '../../../os-orcamento/domain/events/os-execucao-iniciada-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { ClienteRepository } from '../../../os-orcamento/domain/repositories/clientes-repository.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
+import { ClienteOrdemServicoGateway } from '../gateways/cliente-ordem-servico-gateway.js'
 
 @Injectable()
-export class OnExecucaoIniciada implements EventHandler, OnModuleInit {
+export class OnExecucaoIniciada implements EventHandler {
+  private readonly logger = new Logger(OnExecucaoIniciada.name)
   constructor(
+    private readonly clienteOrdemServicoGateway: ClienteOrdemServicoGateway,
     private readonly enviarNotificacao: EnviarNotificacaoUseCase,
-    private readonly clienteRepository: ClienteRepository
-  ) { }
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 
@@ -22,24 +22,27 @@ export class OnExecucaoIniciada implements EventHandler, OnModuleInit {
     )
   }
 
-  private async executar(event: OSExecucaoIniciadaEvent): Promise<void> {
-    const { ordemServico } = event
-
+  private async executar({ ordemServico }: OSExecucaoIniciadaEvent): Promise<void> {
+    const ordemServicoId = ordemServico.getId().toValue()
     try {
 
-      const cliente = await this.clienteRepository.findById(ordemServico.getClienteId().toValue())
+      const dadosCliente = await this.clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId(ordemServicoId)
 
-      if (!cliente) return
+      if (!dadosCliente) {
+        this.logger.warn(`[Subscriber Warning]: Dados do cliente não encontrados para a liberação da OS/Orçamento #${ordemServico.getId().toValue()}.`)
+        return
+      }
 
-      // ⚡ Chama o seu caso de uso de notificação de forma limpa e desacoplada!
+      const { clienteNome, clienteTelefone } = dadosCliente
+
       await this.enviarNotificacao.execute({
-        destinatario: cliente?.getTelefone().getValor(),
-        mensagem: `Olá! O mecânico já iniciou a execução dos serviços no seu veículo (OS: ${ordemServico.getId().toValue()}).`
+        destinatario: clienteTelefone,
+        mensagem: `Olá ${clienteNome}! O mecânico já iniciou a execução dos serviços no seu veículo (OS: ${ordemServico.getId().toValue()}).`
       })
 
-      console.log(`[Notification Success]: Notificação de início de OS enviada para o cliente da OS ${ordemServico.getId().toValue()}`)
+      this.logger.log(`[Notification Success]: Notificação de início de OS enviada para o cliente da OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
-      console.error(`[Notification Error]: Falha ao disparar notificação para o cliente da OS ${ordemServico.getId().toValue()}`, error)
+      this.logger.error(`[Notification Error]: Falha ao disparar notificação para o cliente da OS ${ordemServico.getId().toValue()}`, error)
     }
   }
 }

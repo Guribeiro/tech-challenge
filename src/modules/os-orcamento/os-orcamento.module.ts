@@ -100,15 +100,15 @@ import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico
 import { OnClienteAprovouOrcamento } from './application/subscribers/on-orcamento-aprovado.js'
 import { OnExecucaoAutorizada } from './application/subscribers/on-os-execucao-autorizada.js'
 import { OnProdutosReservados } from './application/subscribers/on-produtos-reservados.js'
-import { OnFaturaPagaEncerrarOrdemServico } from './application/subscribers/on-fatura-paga.js'
+import { OnFaturaPagaEncerrarOrdemServico } from './application/subscribers/on-fatura-paga-encerrar-os.js'
 import { OnOrcamentoRenegociadoRecusadoEncerrarOS } from './application/subscribers/on-orcamento-renegociado-recusado-encerrar-os.js'
-
 
 import { FaturamentoModule } from '../faturamento/faturamento.module.js'
 import { RenegociarOrcamentoService } from './domain/services/renegociar-orcamento.service.js'
 import { ConcluirDiagnosticoService } from './domain/services/concluir-diagnostico.service.js'
 
-
+import { ClienteOrcamentoGateway } from './application/gateways/cliente-orcamento-gateway.js'
+import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento-gateway.js'
 
 
 @Module({
@@ -222,7 +222,12 @@ import { ConcluirDiagnosticoService } from './domain/services/concluir-diagnosti
     {
       provide: UsuariosRepository,
       useClass: PrismaUsuarioRepository
+    },
+    {
+      provide: ClienteOrcamentoGateway,
+      useClass: DbClienteOrcamentoGateway
     }
+
   ],
   exports: [
     ClienteRepository,

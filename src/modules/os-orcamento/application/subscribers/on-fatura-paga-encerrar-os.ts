@@ -3,16 +3,16 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { FaturaPagaEvent } from '@/modules/faturamento/domain/events/fatura-paga-event.js'
 import { EncerrarOrdemServicoFaturaPagaUseCase } from '../use-cases/ordens-servicos/encerrar-os-fatura-paga.js'  // Seu caso de uso de encerramento
-import { ClienteOrcamentoGateway } from '@/modules/faturamento/application/gateways/cliente-orcamento-gateway.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { ClienteOrcamentoGateway } from '@/modules/os-orcamento/application/gateways/cliente-orcamento-gateway.js'
+import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
-export class OnFaturaPagaEncerrarOrdemServico implements EventHandler, OnModuleInit {
+export class OnFaturaPagaEncerrarOrdemServico implements EventHandler {
+  private readonly logger = new Logger(OnFaturaPagaEncerrarOrdemServico.name)
   constructor(
     private readonly clienteOrcamentoGateway: ClienteOrcamentoGateway,
     private readonly encerrarOrdemServicoFaturaPaga: EncerrarOrdemServicoFaturaPagaUseCase
-  ) { }
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 
@@ -37,9 +37,9 @@ export class OnFaturaPagaEncerrarOrdemServico implements EventHandler, OnModuleI
         ordemServicoId
       })
 
-      console.log(`[OS-Core]: Ordem de Serviço #${ordemServicoId} foi ENCERRADA automaticamente após a confirmação do pagamento.`)
+      this.logger.log(`[OS-Core]: Ordem de Serviço #${ordemServicoId} foi ENCERRADA automaticamente após a confirmação do pagamento.`)
     } catch (error) {
-      console.error(
+      this.logger.error(
         `[Subscriber Error]: Falha ao encerrar a OS após o pagamento da fatura.`,
         error
       )

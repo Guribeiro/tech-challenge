@@ -3,15 +3,14 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoRecusadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-recusado-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
-export class OnOrcamentoRecusado implements EventHandler, OnModuleInit {
+export class OnOrcamentoRecusado implements EventHandler {
+  private readonly logger = new Logger(OnOrcamentoRecusado.name)
   constructor(
     private readonly enviarNotificacao: EnviarNotificacaoUseCase
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 
@@ -31,8 +30,9 @@ export class OnOrcamentoRecusado implements EventHandler, OnModuleInit {
         destinatario: 'recepcao@oficina.com', // Ou buscar dinamicamente a recepcionista responsável
         mensagem: `Atenção! O cliente recusou o orçamento original da OS #${orcamento.getOrdemServicoId().toValue()}. Inicie o processo de renegociação.`
       })
+      this.logger.log(`Notificação enviada para a recepção sobre a recusa do orçamento ${orcamento.getId().toValue()}.`)
     } catch (error) {
-      console.error(`Falha ao notificar recepção sobre a recusa do orçamento ${orcamento.getId().toValue()}`, error)
+      this.logger.error(`Falha ao notificar recepção sobre a recusa do orçamento ${orcamento.getId().toValue()}`, error)
     }
   }
 }

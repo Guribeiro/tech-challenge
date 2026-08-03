@@ -2,15 +2,14 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OSExecucaoAutorizadaEvent } from '../../domain/events/os-execucao-autorizada-event.js'
 import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js' // Caminho fictício do seu outro módulo
-import { Injectable, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
-export class OnExecucaoAutorizada implements EventHandler, OnModuleInit {
+export class OnExecucaoAutorizada implements EventHandler {
+  private readonly logger = new Logger(OnExecucaoAutorizada.name)
   constructor(
     private readonly reservarPecas: ReservarProdutosEstoqueUseCase
-  ) { }
-
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 
@@ -27,7 +26,7 @@ export class OnExecucaoAutorizada implements EventHandler, OnModuleInit {
     // ⚡ Filtra se a OS de fato possui componentes/peças para serem reservados
     const componentes = ordemServico.getComponentes().getItems()
     if (componentes.length === 0) {
-      console.log(`[Subscriber Info]: OS ${ordemServico.getId().toValue()} autorizada sem peças para reservar.`)
+      this.logger.log(`[Subscriber Info]: OS ${ordemServico.getId().toValue()} autorizada sem peças para reservar.`)
       return
     }
 
@@ -40,9 +39,9 @@ export class OnExecucaoAutorizada implements EventHandler, OnModuleInit {
         }))
       })
 
-      console.log(`[Subscriber Success]: Comando de reserva enviado ao Inventário para a OS ${ordemServico.getId().toValue()}`)
+      this.logger.log(`[Subscriber Success]: Comando de reserva enviado ao Inventário para a OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
-      console.error(`[Subscriber Error]: Erro ao solicitar reserva de peças para a OS ${ordemServico.getId().toValue()}`, error)
+      this.logger.error(`[Subscriber Error]: Erro ao solicitar reserva de peças para a OS ${ordemServico.getId().toValue()}`, error)
     }
   }
 }

@@ -1,14 +1,14 @@
 import { Logger } from '@nestjs/common'
 import { DomainEvents } from '@/core/events/domain-events.js'
-import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
-import { ClienteOrcamentoGateway } from '@/modules/notificacoes/application/gateways/cliente-orcamento-gateway.js'
+import { OrcamentoEnviadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-enviado-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { OnFaturaEmitida } from '../../application/subscribers/on-fatura-emitida.js'
+import { ClienteOrcamentoGateway } from '../../application/gateways/cliente-orcamento-gateway.js'
+import { OnOrcamentoEnviado } from '../../application/subscribers/on-orcamento-enviado.js'
 
-describe('OnFaturaEmitida (Subscriber)', () => {
+describe('OnOrcamentoEnviado (Subscriber)', () => {
   let clienteOrcamentoGateway: ClienteOrcamentoGateway
   let enviarNotificacao: EnviarNotificacaoUseCase
-  let subscriber: OnFaturaEmitida
+  let subscriber: OnOrcamentoEnviado
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -22,11 +22,11 @@ describe('OnFaturaEmitida (Subscriber)', () => {
       execute: vi.fn(),
     } as unknown as EnviarNotificacaoUseCase
 
-    // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
+    // 2. Espia o registro do evento ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
-    // 3. Instancia a classe que registra a assinatura no construtor
-    subscriber = new OnFaturaEmitida(
+    // 3. Instancia a classe que assina o evento no construtor
+    subscriber = new OnOrcamentoEnviado(
       clienteOrcamentoGateway,
       enviarNotificacao,
     )
@@ -35,11 +35,11 @@ describe('OnFaturaEmitida (Subscriber)', () => {
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnFaturaEmitida(clienteOrcamentoGateway, enviarNotificacao)
+    new OnOrcamentoEnviado(clienteOrcamentoGateway, enviarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
-      FaturaEmitidaEvent.name,
+      OrcamentoEnviadoEvent.name,
     )
   })
 
@@ -51,38 +51,37 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    // Gateway retorna null para indicar que não encontrou o cliente
+    // Gateway retorna null indicando cliente não encontrado
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockResolvedValueOnce(null)
 
     const mockEvent = {
-      fatura: {
-        getId: () => ({ toValue: () => 'fatura-uuid-123' }),
-        getOrcamentoId: () => ({ toValue: () => 'orcamento-uuid-456' }),
-        getValorTotal: () => 250.0,
+      orcamento: {
+        getId: () => ({ toValue: () => 'orcamento-uuid-123' }),
+        getValorTotalGeral: () => 1500.0,
       },
-    } as unknown as FaturaEmitidaEvent
+    } as unknown as OrcamentoEnviadoEvent
 
     await handler(mockEvent)
 
     // Valida se o gateway foi consultado com o ID do orçamento
     expect(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
-    ).toHaveBeenCalledWith('orcamento-uuid-456')
+    ).toHaveBeenCalledWith('orcamento-uuid-123')
 
-    // Valida se a mensagem de aviso (warn) foi gerada
+    // Valida se o aviso (warn) foi disparado
     expect(loggerWarnSpy).toHaveBeenCalledWith(
-      '[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: orcamento-uuid-456).',
+      '[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: orcamento-uuid-123).',
     )
 
-    // Garante que o caso de uso de envio de notificação NÃO foi chamado
+    // Garante que a notificação NÃO foi enviada
     expect(enviarNotificacao.execute).not.toHaveBeenCalled()
 
     loggerWarnSpy.mockRestore()
   })
 
-  it('deve buscar os dados do cliente e disparar a notificação formatada com sucesso', async () => {
+  it('deve buscar os dados do cliente e disparar a notificação com sucesso ao enviar o orçamento', async () => {
     const loggerLogSpy = vi
       .spyOn(Logger.prototype, 'log')
       .mockImplementation(() => { })
@@ -90,41 +89,39 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    // Simula retorno de dados do cliente pelo gateway
+    // Simula retorno dos dados do cliente pelo gateway
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockResolvedValueOnce({
-      nome: 'Carlos Eduardo',
-      telefone: '11988887777',
-      ordemServicoId: 'os-uuid-789',
+      nome: 'Mariana Costa',
+      telefone: '11977776666',
+      ordemServicoId: 'os-uuid-456',
     })
 
     const mockEvent = {
-      fatura: {
-        getId: () => ({ toValue: () => 'fatura-uuid-123' }),
-        getOrcamentoId: () => ({ toValue: () => 'orcamento-uuid-456' }),
-        getValorTotal: () => 350.5,
+      orcamento: {
+        getId: () => ({ toValue: () => 'orcamento-uuid-123' }),
+        getValorTotalGeral: () => 1250.75,
       },
-    } as unknown as FaturaEmitidaEvent
+    } as unknown as OrcamentoEnviadoEvent
 
     await handler(mockEvent)
 
-    // Valida se o Use Case de notificação foi executado com o texto e telefone formatados
+    // Valida se o Use Case de envio de notificação foi acionado com o template correto
     expect(enviarNotificacao.execute).toHaveBeenCalledWith({
-      destinatario: '11988887777',
-      mensagem:
-        'Olá, Carlos Eduardo! A sua fatura referente ao serviço (OS #os-uuid-789) foi emitida com sucesso no valor de R$ 350.50.',
+      destinatario: '11977776666',
+      mensagem: 'Olá Mariana Costa! O orçamento ficou em R$ 1250.75.',
     })
 
     // Valida o log de sucesso
     expect(loggerLogSpy).toHaveBeenCalledWith(
-      'Notificação enviada com sucesso para o cliente Carlos Eduardo (OS #os-uuid-789) após emissão da fatura.',
+      'Notificação enviada com sucesso para o cliente Mariana Costa (Orçamento #orcamento-uuid-123) após envio do orçamento.',
     )
 
     loggerLogSpy.mockRestore()
   })
 
-  it('deve capturar exceções não tratadas (catch) e logar erro no Logger sem interromper a aplicação', async () => {
+  it('deve capturar exceções não tratadas (catch) e logar erro no Logger sem lançar exceção', async () => {
     const loggerErrorSpy = vi
       .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => { })
@@ -132,25 +129,24 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    const erroInesperado = new Error('Falha de conexão com a API de WhatsApp/SMS')
+    const erroInesperado = new Error('Falha de timeout na conexão com o banco de dados')
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockRejectedValueOnce(erroInesperado)
 
     const mockEvent = {
-      fatura: {
-        getId: () => ({ toValue: () => 'fatura-uuid-123' }),
-        getOrcamentoId: () => ({ toValue: () => 'orcamento-uuid-456' }),
-        getValorTotal: () => 100.0,
+      orcamento: {
+        getId: () => ({ toValue: () => 'orcamento-uuid-123' }),
+        getValorTotalGeral: () => 500.0,
       },
-    } as unknown as FaturaEmitidaEvent
+    } as unknown as OrcamentoEnviadoEvent
 
-    // Garante que a exceção não estoura para fora do subscriber
+    // Garante resiliência: a exceção não é repassada adiante
     await expect(handler(mockEvent)).resolves.not.toThrow()
 
-    // Valida a chamada do log de erro no bloco catch
+    // Valida a mensagem gravada no log de erro
     expect(loggerErrorSpy).toHaveBeenCalledWith(
-      '[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #fatura-uuid-123',
+      '[Subscriber Error]: Falha no processo automático pós-envio do orçamento (Orçamento ID: orcamento-uuid-123)',
       erroInesperado,
     )
 

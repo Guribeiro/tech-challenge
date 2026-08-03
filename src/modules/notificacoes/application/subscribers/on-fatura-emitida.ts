@@ -1,12 +1,13 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { ClienteOrcamentoGateway } from '@/modules/faturamento/application/gateways/cliente-orcamento-gateway.js'
+import { ClienteOrcamentoGateway } from '@/modules/notificacoes/application/gateways/cliente-orcamento-gateway.js'
 import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
 import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
 export class OnFaturaEmitida implements EventHandler {
+  private readonly logger = new Logger(OnFaturaEmitida.name)
   constructor(
     private readonly clienteOrcamentoGateway: ClienteOrcamentoGateway,
     private readonly enviarNotificacao: EnviarNotificacaoUseCase
@@ -29,7 +30,8 @@ export class OnFaturaEmitida implements EventHandler {
       const dadosCliente = await this.clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId(orcamentoId)
 
       if (!dadosCliente) {
-        throw new Error(`Dados do cliente não encontrados para o Orçamento #${orcamentoId}.`)
+        this.logger.warn(`[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: ${orcamentoId}).`)
+        return
       }
       const { nome, telefone, ordemServicoId } = dadosCliente
       const valorTotal = fatura.getValorTotal()
@@ -39,9 +41,9 @@ export class OnFaturaEmitida implements EventHandler {
         destinatario: telefone,
         mensagem: `Olá, ${nome}! A sua fatura referente ao serviço (OS #${ordemServicoId}) foi emitida com sucesso no valor de R$ ${valorTotal.toFixed(2)}.`,
       })
-
+      this.logger.log(`Notificação enviada com sucesso para o cliente ${nome} (OS #${ordemServicoId}) após emissão da fatura.`)
     } catch (error) {
-      console.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId().toValue()}`, error)
+      this.logger.error(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId().toValue()}`, error)
     }
   }
 }
