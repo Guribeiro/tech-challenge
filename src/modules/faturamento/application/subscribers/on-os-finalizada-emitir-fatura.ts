@@ -3,15 +3,15 @@ import { EventHandler } from "@/core/events/event-handler.js"
 import { OSExecucaoFinalizadaEvent } from "@/modules/os-orcamento/domain/events/os-execucao-finalizada-event.js"
 import { EmitirFaturaUseCase } from "../use-cases/emitir-fatura.js"
 import { OrcamentoGateway } from "../gateways/orcamento-gateway.js"
-import { Injectable, OnModuleInit } from "@nestjs/common"
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common"
 
 @Injectable()
-export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler, OnModuleInit {
+export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler {
+  private readonly logger = new Logger(OnOrdemServicoFinalizadaEmitirFatura.name)
   constructor(
     private readonly emitirFatura: EmitirFaturaUseCase,
     private readonly orcamentoGateway: OrcamentoGateway
-  ) { }
-  onModuleInit(): void {
+  ) {
     this.setupSubscriptions()
   }
 
@@ -25,20 +25,28 @@ export class OnOrdemServicoFinalizadaEmitirFatura implements EventHandler, OnMod
   private async executar(event: OSExecucaoFinalizadaEvent): Promise<void> {
     const { ordemServico } = event
     const ordemServicoId = ordemServico.getId().toValue()
-
     try {
-
       const { valorTotal, orcamentoId } = await this.orcamentoGateway.obterValorAprovadoPorOrdemServicoId(ordemServicoId)
 
-      await this.emitirFatura.execute({
+      const result = await this.emitirFatura.execute({
         orcamentoId,
         valorTotal
       })
 
+      if (result.isLeft()) {
+        this.logger.warn(
+          `[Subscriber Left Error]: Não foi possível emitir a fatura para a OS ${ordemServicoId}.`
+        )
+        return
+      }
+
+      const fatura = result.value
+      this.logger.log(`Fatura emitida com sucesso para a OS ${ordemServicoId}. ID Fatura: ${fatura.getId().toValue()}`)
+
     } catch (error) {
-      console.error(
-        `[Subscriber Error]: Falha ao emitir fatura para a OS ${ordemServico.getId().toValue()}.`,
-        error
+      this.logger.error(
+        `[Subscriber Exception]: Erro inesperado ao processar evento de emissão de fatura para a OS ${ordemServicoId}`,
+        error instanceof Error ? error.stack : error
       )
     }
   }

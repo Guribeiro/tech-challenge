@@ -1,3 +1,4 @@
+import { Either, right } from '@/core/either.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-generator.js'
 import { Usuario } from '@/modules/autenticacao/domain/entities/usuario.js'
@@ -12,9 +13,12 @@ interface CriarCredenciaisInput {
   role: 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
 }
 
-interface CriarCredenciaisOutput {
-  usuario: Usuario
-}
+type CriarCredenciaisOutput = Either<
+  never,
+  {
+    usuario: Usuario
+  }
+>
 
 
 @Injectable()
@@ -28,9 +32,9 @@ export class CriarCredenciaisUseCase {
     const usuarioExistente = await this.usuariosRepository.findByEmail(email)
 
     if (usuarioExistente) {
-      return {
+      return right({
         usuario: usuarioExistente
-      }
+      })
     }
     const senhaPlanaProvisoria = `oficina-${randomBytes(3).toString('hex')}`
 
@@ -48,8 +52,8 @@ export class CriarCredenciaisUseCase {
 
     await this.usuariosRepository.create(usuario)
 
-    return {
+    return right({
       usuario
-    }
+    })
   }
 }

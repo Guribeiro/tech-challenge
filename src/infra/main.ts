@@ -1,9 +1,14 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './nest/app.module.js'
-import { ValidationPipe } from '@nestjs/common'
+import { ConsoleLogger, ValidationPipe } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 
-const app = await NestFactory.create(AppModule)
+const app = await NestFactory.create(AppModule, {
+  logger: new ConsoleLogger({
+    prefix: '[Oficina Mecanica NestJS API]',
+    logLevels: ['log', 'error', 'warn', 'verbose'],
+  }),
+})
 
 app.setGlobalPrefix('api')
 
