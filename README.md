@@ -158,5 +158,28 @@ npm run test:all:ui
 
 ---
 
-## 📄 Licença
+## ✅ SonarQube
+Este projeto inclui integração com SonarQube para análise de qualidade de código e cobertura.
+
+### Pré-requisitos
+- SonarQube rodando localmente em `http://localhost:9000` ou outro host acessível
+- `SONAR_TOKEN` configurado no arquivo `.env` ou variável de ambiente
+- Node.js instalado e dependências do projeto instaladas
+
+### Executando a análise
+```bash
+npm run sonar
+```
+
+### Variáveis de ambiente úteis
+```bash
+SONAR_HOST_URL=http://localhost:9000
+SONAR_TOKEN=<seu-token-sonarqube>
+```
+
+A análise usa a configuração de cobertura em `coverage/lcov.info` e as fontes de `src`.
+
+---
+
+## �📄 Licença
 Este projeto está licenciado sob a licença ISC, conforme informado no arquivo de configuração do pacote.
