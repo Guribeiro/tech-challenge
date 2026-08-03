@@ -2,7 +2,7 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { ProdutosReservadosNoEstoqueEvent } from '@/modules/estoque/domain/events/produtos-reservados-no-estoque-event.js'
 import { OrdemServicoRepository } from '../../domain/repositories/ordem-servico-repository.js'
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
 export class OnProdutosReservados implements EventHandler {
