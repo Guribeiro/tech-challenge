@@ -1,6 +1,6 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { OSExecucaoAutorizadaEvent } from '../../domain/events/os-execucao-autorizada-event.js'
+import { OSExecucaoAutorizadaEvent } from '../../../os-orcamento/domain/events/os-execucao-autorizada-event.js'
 import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js' // Caminho fictício do seu outro módulo
 import { Injectable, Logger } from '@nestjs/common'
 
