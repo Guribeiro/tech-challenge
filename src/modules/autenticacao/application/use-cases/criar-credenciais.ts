@@ -1,26 +1,41 @@
+import { Either, right } from '@/core/either.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-generator.js'
 import { Usuario } from '@/modules/autenticacao/domain/entities/usuario.js'
 import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { Email } from '@/shared/domain/value-objects/email.js'
+import { Injectable } from '@nestjs/common'
 import { randomBytes } from 'node:crypto';
 
 interface CriarCredenciaisInput {
   id: string
   email: string
-  role: 'MECANICO' | 'RECEPCAO' | 'ADMIN'
+  role: 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
 }
 
+type CriarCredenciaisOutput = Either<
+  never,
+  {
+    usuario: Usuario
+  }
+>
+
+
+@Injectable()
 export class CriarCredenciaisUseCase {
   constructor(
     private readonly usuariosRepository: UsuariosRepository,
     private readonly hashGenerator: HashGenerator,
   ) { }
 
-  async execute({ id, email, role }: CriarCredenciaisInput): Promise<void> {
+  async execute({ id, email, role }: CriarCredenciaisInput): Promise<CriarCredenciaisOutput> {
     const usuarioExistente = await this.usuariosRepository.findByEmail(email)
-    if (usuarioExistente) return
 
+    if (usuarioExistente) {
+      return right({
+        usuario: usuarioExistente
+      })
+    }
     const senhaPlanaProvisoria = `oficina-${randomBytes(3).toString('hex')}`
 
     const senhaHash = await this.hashGenerator.generateHash(senhaPlanaProvisoria)
@@ -36,5 +51,9 @@ export class CriarCredenciaisUseCase {
     )
 
     await this.usuariosRepository.create(usuario)
+
+    return right({
+      usuario
+    })
   }
 }

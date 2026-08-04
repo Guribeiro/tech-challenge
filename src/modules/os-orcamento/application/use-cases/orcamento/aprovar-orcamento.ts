@@ -1,16 +1,25 @@
+import { Either, left, right } from "@/core/either.js"
+import { AcessoNegadoError, RecursoNaoEncontradoError } from "@/core/errors/index.js"
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
 import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js"
 import { OrcamentoRepository } from "@/modules/os-orcamento/domain/repositories/orcamento-repository.js"
+import { Injectable } from "@nestjs/common"
 
 interface AprovarOrcamentoInput {
   orcamentoId: string
   clienteId: string
 }
 
-interface AprovarOrcamentoOutput {
-  orcamento: Orcamento
-}
+type Errors = RecursoNaoEncontradoError | AcessoNegadoError
 
+type AprovarOrcamentoOutput = Either<
+  Errors,
+  {
+    orcamento: Orcamento
+  }
+>
+
+@Injectable()
 export class AprovarOrcamentoUseCase {
   constructor(
     private readonly orcamentoRepository: OrcamentoRepository,
@@ -21,23 +30,25 @@ export class AprovarOrcamentoUseCase {
     const orcamento = await this.orcamentoRepository.findById(orcamentoId)
 
     if (!orcamento) {
-      throw new Error(`Orçamento com ID ${orcamentoId} não encontrado.`)
+      return left(new RecursoNaoEncontradoError('Orçamento'))
     }
 
     const cliente = await this.clienteRepository.findById(clienteId)
 
     if (!cliente) {
-      throw new Error('Cliente não encontrado')
+      return left(new RecursoNaoEncontradoError('Cliente'))
     }
 
-    // Altera o estado do orçamento e registra o evento na sacola
+    if (!orcamento.getClienteId().equals(cliente.getId())) {
+      return left(new AcessoNegadoError())
+    }
+
     orcamento.aprovar()
 
-    // O save vai persistir e despachar o 'ClienteAprovouOrcamentoEvent' automaticamente
     await this.orcamentoRepository.save(orcamento)
 
-    return {
+    return right({
       orcamento
-    }
+    })
   }
 }

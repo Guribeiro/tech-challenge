@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js"
+
 export class NomeCompleto {
   private readonly valor: string
 
@@ -7,7 +9,7 @@ export class NomeCompleto {
 
   public static criar(nome: string): NomeCompleto {
     if (!nome) {
-      throw new Error('O nome do cliente não pode estar vazio.')
+      throw new ArgumentoInvalidoError('O nome não pode estar vazio.')
     }
 
     const nomeLimpo = nome.trim()
@@ -24,13 +26,13 @@ export class NomeCompleto {
     // Regra 1: Deve conter pelo menos nome e um sobrenome (mínimo de 2 palavras)
     const partesDoNome = nome.split(/\s+/)
     if (partesDoNome.length < 2) {
-      throw new Error(
-        'O cliente deve ser cadastrado com o nome completo (nome e sobrenome).',
+      throw new ArgumentoInvalidoError(
+        'O usuario deve ser cadastrado com o nome completo (nome e sobrenome).',
       )
     }
 
     if (nome.length < 5) {
-      throw new Error('O nome completo deve conter pelo menos 5 caracteres.')
+      throw new ArgumentoInvalidoError('O nome completo deve conter pelo menos 5 caracteres.')
     }
 
   }

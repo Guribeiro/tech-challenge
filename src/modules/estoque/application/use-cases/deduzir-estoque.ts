@@ -1,4 +1,8 @@
+import { Injectable } from "@nestjs/common"
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js"
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js"
+import { DomainError } from "@/core/errors/domain-errors/domain-error.js"
+import { Either, left, right } from "@/core/either.js"
 
 interface ItemDeducao {
   produtoId: string
@@ -10,27 +14,34 @@ interface DeduzirEstoqueInput {
   itens: ItemDeducao[]
 }
 
+type Errors = RecursoNaoEncontradoError | DomainError
+
+export type DeduzirEstoqueOutput = Either<Errors, null>
+
+@Injectable()
 export class DeduzirEstoqueUseCase {
   constructor(
     private readonly produtoRepository: ProdutoRepository
   ) { }
 
-  public async execute(input: DeduzirEstoqueInput): Promise<void> {
-    // Para cada item utilizado na OS, fazemos a dedução no estoque
+  public async execute(input: DeduzirEstoqueInput): Promise<DeduzirEstoqueOutput> {
     for (const item of input.itens) {
       const produto = await this.produtoRepository.findById(item.produtoId)
 
       if (!produto) {
-        throw new Error(`Produto com ID ${item.produtoId} não encontrado no estoque para dedução.`)
+        return left(new RecursoNaoEncontradoError(`Produto ${item.produtoId}`))
       }
 
-      console.log({ item })
-      produto.confirmarReservaEDeduzir(item.quantidade)
-
-      // Salva a nova fotografia do produto atualizado
-      await this.produtoRepository.save(produto)
+      try {
+        produto.confirmarReservaEDeduzir(item.quantidade)
+        await this.produtoRepository.save(produto)
+      } catch (error) {
+        if (error instanceof DomainError) {
+          return left(error)
+        }
+        throw error
+      }
     }
-
-    console.log(`[Estoque]: Estoque deduzido com sucesso para os itens da OS #${input.ordemServicoId}`)
+    return right(null)
   }
 }

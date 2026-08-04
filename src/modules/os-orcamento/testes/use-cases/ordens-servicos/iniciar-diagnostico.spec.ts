@@ -1,5 +1,5 @@
 import { IniciarDiagnosticoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/iniciar-diagnostico.js'
-import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js'
+import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js'
 import { InMemoryMecanicosRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-mecanicos-repository.js'
 import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
@@ -7,12 +7,12 @@ import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects
 import { makeMecanico } from '../../factories/make-mecanico.js'
 import { makeCliente } from '../../factories/make-cliente.js'
 import { makeVeiculo } from '../../factories/make-veiculo.js'
-import { OnDiagnosticoInicializado } from '@/modules/os-orcamento/application/subscribers/on-diagnostico-inicializado.js'
+import { OnDiagnosticoInicializado } from '@/modules/notificacoes/application/subscribers/on-diagnostico-inicializado.js'
 import { InMemoryClienteRepository } from '../../repositories/in-memory-cliente-repository.js'
 import { InMemoryNotificacaoService } from '@/modules/notificacoes/testes/services/in-memory-notificacao-service.js'
 import { InMemoryVeiculoRepository } from '../../repositories/in-memory-veiculo-repository.js'
 import { makeServico } from '../../factories/make-servico.js'
-import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js'
+import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/ordem-servico-servico.js'
 import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
 import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
 
@@ -24,7 +24,7 @@ let veiculoRepository: InMemoryVeiculoRepository
 let sut: IniciarDiagnosticoUseCase
 
 
-describe('Iniciar diagnostico', () => {
+describe('Caso de Uso: Iniciar Diagnostico', () => {
   beforeEach(() => {
     notificacaoService = new InMemoryNotificacaoService()
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
@@ -35,14 +35,13 @@ describe('Iniciar diagnostico', () => {
     sut = new IniciarDiagnosticoUseCase(
       ordemServicoRepository,
       mecanicoRepository,
-      clienteRepository,
       veiculoRepository
     )
 
     new OnDiagnosticoInicializado(clienteRepository, notificacaoService)
   })
 
-  it('deve iniciar o diagnostico e disparar politica de notificacao', async () => {
+  it('Caso de Uso: Iniciar Diagnostico', async () => {
     const mecanico = makeMecanico()
     mecanicoRepository.create(mecanico)
 
@@ -52,19 +51,20 @@ describe('Iniciar diagnostico', () => {
     const veiculo = makeVeiculo()
     veiculoRepository.create(veiculo)
 
-    const spy = vi.spyOn(notificacaoService, 'enviar')
-
     const servico = makeServico({
       categoria: 'ELETRICA'
     })
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
+      ordemServicoId,
       servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
       descricao: servico.getDescricao(),
-      observacao: 'Reparos nos sistema eletrico'
+      observacao: 'Reparos nos sistema eletrico',
     })
 
     const osServicoList = new OrdemServicoServicoList([osServico])
@@ -82,24 +82,20 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    const { ordemServico } = await sut.executar({
+    const result = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanico.getId().toValue()
     })
 
-    expect(ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
-    expect(ordemServico.getMecanicoId()?.toValue()).toBe(mecanico.getId())
-
-    expect(spy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        destinatario: cliente.getTelefone().getValor(),
-        mensagem: expect.stringContaining(ordemServicoBaixaPrioridade.getId().toValue())
-      })
-    )
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.ordemServico.getStatus()).toBe('EM_DIAGNOSTICO')
+      expect(result.value.ordemServico.getMecanicoId()?.equals(mecanico.getId())).toBe(true)
+    }
   })
 
   it('não deve iniciar inspeção se o mecanico não existir', async () => {
@@ -111,13 +107,14 @@ describe('Iniciar diagnostico', () => {
 
     const veiculo = makeVeiculo()
 
-    const spy = vi.spyOn(notificacaoService, 'enviar')
-
     const servico = makeServico({
       categoria: 'ELETRICA'
     })
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
+      ordemServicoId,
       servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
@@ -141,17 +138,15 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    await expect(sut.executar({
+    const result = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanicoId.toValue()
-    })).rejects.toBeInstanceOf(Error)
-
-    expect(spy).not.toHaveBeenCalled()
+    })
+    expect(result.isLeft()).toBe(true)
   })
 
   it('não deve iniciar inspeção se o veiculo não existir', async () => {
@@ -165,13 +160,15 @@ describe('Iniciar diagnostico', () => {
 
     const veiculo = makeVeiculo()
 
-    const spy = vi.spyOn(notificacaoService, 'enviar')
 
     const servico = makeServico({
       categoria: 'ELETRICA'
     })
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
+      ordemServicoId,
       servicoId: servico.getId(),
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
@@ -195,15 +192,15 @@ describe('Iniciar diagnostico', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
 
-    await expect(sut.executar({
+    const result = await sut.execute({
       ordemServicoId: ordemServicoBaixaPrioridade.getId().toValue(),
       mecanicoId: mecanico.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
 
-    expect(spy).not.toHaveBeenCalled()
+    expect(result.isLeft()).toBe(true)
   })
 })

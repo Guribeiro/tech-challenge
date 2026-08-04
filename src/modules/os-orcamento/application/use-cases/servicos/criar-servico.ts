@@ -1,5 +1,8 @@
-import { Servico, CategoriaServico } from '@/modules/os-orcamento/domain/entities/servico.js'
+import { Either, left, right } from '@/core/either.js'
+import { ServicoJaCadastradoError } from '@/core/errors/index.js'
+import { CategoriaServico, Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { ServicoRepository } from '@/modules/os-orcamento/domain/repositories/servicos-repository.js'
+import { Injectable } from '@nestjs/common'
 
 export type CriarServicoInput = {
   nome: string
@@ -8,14 +11,28 @@ export type CriarServicoInput = {
   valorReferencia: number
 }
 
-export type CriarServicoOutput = {
-  servico: Servico
-}
+type Errors = ServicoJaCadastradoError
+
+export type CriarServicoOutput = Either<
+  Errors,
+  {
+    servico: Servico
+  }
+>
+
+@Injectable()
 export class CriarServicoUseCase {
   constructor(
     private readonly servicosRepository: ServicoRepository
   ) { }
-  public async executar(input: CriarServicoInput): Promise<CriarServicoOutput> {
+  public async execute(input: CriarServicoInput): Promise<CriarServicoOutput> {
+    const nomeNormalizado = input.nome.trim()
+
+    const servicoExistente = await this.servicosRepository.findByNome(nomeNormalizado)
+
+    if (servicoExistente) {
+      return left(new ServicoJaCadastradoError(nomeNormalizado))
+    }
     const servico = Servico.criar({
       nome: input.nome,
       descricao: input.descricao,
@@ -25,8 +42,8 @@ export class CriarServicoUseCase {
 
     await this.servicosRepository.create(servico)
 
-    return {
+    return right({
       servico
-    }
+    })
   }
 }

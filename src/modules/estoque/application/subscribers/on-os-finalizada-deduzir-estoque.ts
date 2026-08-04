@@ -1,14 +1,15 @@
 import { DomainEvents } from "@/core/events/domain-events.js";
 import { EventHandler } from "@/core/events/event-handler.js";
 import { OSExecucaoFinalizadaEvent } from "@/modules/os-orcamento/domain/events/os-execucao-finalizada-event.js";
-import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
 import { DeduzirEstoqueUseCase } from "../use-cases/deduzir-estoque.js";
+import { Injectable, Logger } from "@nestjs/common";
 
+@Injectable()
 export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler {
+  private readonly logger = new Logger(OnOrdemServicoFinalizadaDeduzirEstoque.name)
   constructor(
     private readonly deduzirEstoque: DeduzirEstoqueUseCase
   ) {
-    // Registra o ouvinte assim que a aplicação inicializa
     this.setupSubscriptions()
   }
 
@@ -24,31 +25,31 @@ export class OnOrdemServicoFinalizadaDeduzirEstoque implements EventHandler {
     const { ordemServico } = event
 
     try {
-      // 1. Extraímos os produtos/peças utilizados na OS
-      // Supondo que sua OS tenha uma lista de itens (peças) adicionados
       const itensUtilizados = ordemServico.getComponentes().getItems().map(item => ({
         produtoId: item.getProdutoId().toValue(),
         quantidade: item.getQuantidade()
       }))
 
-      // Se nenhum produto foi utilizado na OS, não precisamos deduzir nada
       if (itensUtilizados.length === 0) {
-        console.log(`[Subscriber Info]: OS ${ordemServico.getId()} finalizada sem produtos a deduzir.`)
+        this.logger.log(`[Subscriber Info]: OS ${ordemServico.getId().toValue()} finalizada sem produtos a deduzir.`)
         return
       }
-
       // 2. ⚡ A REAÇÃO: Delegamos para o Caso de Uso processar a baixa
-      await this.deduzirEstoque.execute({
+      const result = await this.deduzirEstoque.execute({
         ordemServicoId: ordemServico.getId().toValue(),
         itens: itensUtilizados
       })
 
+      if (result.isLeft()) {
+        this.logger.warn(`[Subscriber Left Error]: Falha ao deduzir estoque para a OS ${ordemServico.getId().toValue()}. Erro: ${result.value.message}`)
+        return
+      }
 
-      console.log(`[Subscriber Success]: Orçamento gerado automaticamente para a OS ${ordemServico.getId()}`)
+      this.logger.log(`[Subscriber Success]: Orçamento gerado automaticamente para a OS ${ordemServico.getId().toValue()}`)
     } catch (error) {
       // Como eventos de domínio rodam em segundo plano, é vital ter um log de erro aqui
-      console.error(
-        `[Subscriber Error]: Falha ao gerar orçamento automático para a OS ${ordemServico.getId()}.`,
+      this.logger.error(
+        `[Subscriber Error]: Falha ao gerar orçamento automático para a OS ${ordemServico.getId().toValue()}.`,
         error
       )
     }

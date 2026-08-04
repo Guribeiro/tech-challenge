@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/index.js"
+
 export class Cpf {
   private readonly valor: string
 
@@ -9,7 +11,7 @@ export class Cpf {
     const cpfLimpo = this.limpar(cpfBruto)
 
     if (!this.validar(cpfLimpo)) {
-      throw new Error('CPF informado é inválido.')
+      throw new ArgumentoInvalidoError('CPF informado é inválido.')
     }
 
     return new Cpf(cpfLimpo)
@@ -36,20 +38,20 @@ export class Cpf {
     // Validação do primeiro dígito verificador
     let soma = 0
     for (let i = 0; i < 9; i++) {
-      soma += parseInt(cpf.charAt(i)) * (10 - i)
+      soma += Number.parseInt(cpf.charAt(i)) * (10 - i)
     }
     let resto = 11 - (soma % 11)
     let digitoVerificador1 = resto > 9 ? 0 : resto
-    if (parseInt(cpf.charAt(9)) !== digitoVerificador1) return false
+    if (Number.parseInt(cpf.charAt(9)) !== digitoVerificador1) return false
 
     // Validação do segundo dígito verificador
     soma = 0
     for (let i = 0; i < 10; i++) {
-      soma += parseInt(cpf.charAt(i)) * (11 - i)
+      soma += Number.parseInt(cpf.charAt(i)) * (11 - i)
     }
     resto = 11 - (soma % 11)
     let digitoVerificador2 = resto > 9 ? 0 : resto
-    if (parseInt(cpf.charAt(10)) !== digitoVerificador2) return false
+    if (Number.parseInt(cpf.charAt(10)) !== digitoVerificador2) return false
 
     return true
   }

@@ -11,11 +11,13 @@ export type MecanicoProps = {
   email: Email
   cpf: Cpf
   especialidade?: string // Ex: Suspensão, Motores, Injeção Eletrônica
-  ativo: boolean
+  criadoEm: Date
+  atualizadoEm?: Date
+  desativadoEm?: Date | null
 }
 
 export class Mecanico extends AggregateRoot<MecanicoProps> {
-  public static criar(props: Optional<MecanicoProps, 'ativo'>, id?: UniqueEntityID): Mecanico {
+  public static criar(props: Optional<MecanicoProps, 'criadoEm'>, id?: UniqueEntityID): Mecanico {
     if (!props.nome?.getValor().trim()) {
       throw new Error('Nome do mecânico é obrigatório.')
     }
@@ -30,7 +32,8 @@ export class Mecanico extends AggregateRoot<MecanicoProps> {
       email: props.email,
       cpf: props.cpf,
       especialidade: props.especialidade,
-      ativo: props.ativo ?? true
+      criadoEm: new Date(),
+      desativadoEm: props.desativadoEm ?? null,
     }
 
     const mecanico = new Mecanico(propriedadesCompletas, id)
@@ -58,28 +61,38 @@ export class Mecanico extends AggregateRoot<MecanicoProps> {
     return this.props.especialidade
   }
 
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
+  }
+
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
+  }
+
+  public getDesativadoEm(): Date | undefined | null {
+    return this.props.desativadoEm
+  }
+
+
   public isAtivo(): boolean {
-    return this.props.ativo
+    return this.props.desativadoEm === null
   }
 
-  /**
-   * Métodos de comportamento (Regras de negócio)
-   */
+  private touch() {
+    this.props.atualizadoEm = new Date()
+  }
+
   public desativar(): void {
-    this.props.ativo = false
-  }
-
-  public ativar(): void {
-    this.props.ativo = true
-  }
-
-  public toJSON(): Record<string, unknown> {
-    return {
-      id: this.getId(),
-      nome: this.props.nome,
-      cpf: this.props.cpf,
-      especialidade: this.props.especialidade,
-      ativo: this.props.ativo,
+    if (this.props.desativadoEm) {
+      throw new Error('Este produto já está desativado.')
     }
+    this.props.desativadoEm = new Date() // Grava o timestamp atual
+    this.touch()
+  }
+
+  // Comportamento de reativação (se necessário no futuro)
+  public reativar(): void {
+    this.props.desativadoEm = null
+    this.touch()
   }
 }

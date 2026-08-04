@@ -1,8 +1,22 @@
+import { PaginationParams, PaginationResult, QueryStatus } from '@/core/repositories/pagination-params.js'
 import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
 
-export interface ClienteRepository {
-  create(cliente: Cliente): Promise<void>
-  save(cliente: Cliente): Promise<void>
-  findById(id: string): Promise<Cliente | null>
-  delete(id: string): Promise<void>
+export type BuscarClientesParams = PaginationParams & {
+  status?: QueryStatus
+  nome?: string
+}
+
+export type BuscarClientesResultado = PaginationResult & {
+  clientes: Cliente[]
+}
+
+export abstract class ClienteRepository {
+  abstract create(cliente: Cliente): Promise<void>
+  abstract save(cliente: Cliente): Promise<void>
+  abstract findById(id: string): Promise<Cliente | null>
+  abstract findByEmail(email: string): Promise<Cliente | null>
+  abstract findByCpf(cpf: string): Promise<Cliente | null>
+  abstract list(): Promise<Cliente[]>
+  abstract findMany(params: BuscarClientesParams): Promise<BuscarClientesResultado>
+  abstract delete(id: string): Promise<void>
 }

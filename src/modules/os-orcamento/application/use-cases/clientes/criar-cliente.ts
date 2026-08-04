@@ -3,33 +3,66 @@ import { Email } from '@/shared/domain/value-objects/email.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { ClienteRepository } from '@/modules/os-orcamento/domain/repositories/clientes-repository.js'
+import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js'
+import { Injectable } from '@nestjs/common'
+import { Either, left, right } from '@/core/either.js'
+import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js'
+import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js'
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js'
 
-export type CriarClientInput = {
-  id: string
+export type CriarClienteInput = {
   nome: string
   email: string
+  cpf: string
   telefone: string
   tipo: 'PF' | 'PJ'
 }
 
-export type CriarClientOutput = {
-  cliente: Cliente
-}
+type Errors = EmailJaCadastradoError | CpfJaCadastradoError
 
-export class CriarCliente {
-  constructor(private clienteRepository: ClienteRepository) { }
-  public async execute(input: CriarClientInput): Promise<CriarClientOutput> {
-    const cliente = Cliente.criar({
-      nome: NomeCompleto.criar(input.nome),
-      email: Email.criar(input.email),
-      tipo: input.tipo,
-      telefone: Telefone.criar(input.telefone),
-    })
+export type CriarClienteOutput = Either<
+  Errors,
+  {
+    cliente: Cliente
+  }
+>
 
-    await this.clienteRepository.create(cliente)
+@Injectable()
+export class CriarClienteUseCase {
+  constructor(private readonly clienteRepository: ClienteRepository) { }
+  public async execute(input: CriarClienteInput): Promise<CriarClienteOutput> {
 
-    return {
-      cliente
+    const clienteComMesmoEmail = await this.clienteRepository.findByEmail(input.email)
+
+    if (clienteComMesmoEmail) {
+      return left(new EmailJaCadastradoError())
+    }
+
+    const clienteComMesmoCpf = await this.clienteRepository.findByCpf(input.cpf)
+
+    if (clienteComMesmoCpf) {
+      return left(new CpfJaCadastradoError())
+    }
+
+    try {
+      const cliente = Cliente.criar({
+        nome: NomeCompleto.criar(input.nome),
+        email: Email.criar(input.email),
+        cpf: Cpf.criar(input.cpf),
+        tipo: input.tipo,
+        telefone: Telefone.criar(input.telefone),
+      })
+
+      await this.clienteRepository.create(cliente)
+
+      return right({
+        cliente
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
     }
   }
 }

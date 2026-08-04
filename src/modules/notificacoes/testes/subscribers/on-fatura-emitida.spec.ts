@@ -1,190 +1,159 @@
-import { FaturaEmitidaEvent } from "@/modules/faturamento/domain/events/fatura-emitida-event.js";
-import { OnFaturaEmitida } from "../../application/subscribers/on-fatura-emitida.js";
-import { EnviarNotificacaoUseCase } from "../../domain/use-cases/enviar-notificacao.js";
-import { OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js";
-import { ClienteRepository } from "@/modules/os-orcamento/domain/repositories/clientes-repository.js";
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js";
-import { InMemoryClienteRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js";
-import { Fatura } from "@/modules/faturamento/domain/entities/fatura.js";
-import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
-import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
-import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
-import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js";
-import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veiculo.js";
-import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js";
-import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js";
-import { makeCliente } from "@/modules/os-orcamento/testes/factories/make-cliente.js";
-import { DomainEvents } from "@/core/events/domain-events.js";
+import { Logger } from '@nestjs/common'
+import { DomainEvents } from '@/core/events/domain-events.js'
+import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
+import { ClienteOrcamentoGateway } from '@/modules/notificacoes/application/gateways/cliente-orcamento-gateway.js'
+import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
+import { OnFaturaEmitida } from '../../application/subscribers/on-fatura-emitida.js'
 
-
-describe('Subscriber: On Fatura Emitida', () => {
-  let ordemServicoRepository: OrdemServicoRepository
-  let clienteRepository: ClienteRepository
+describe('OnFaturaEmitida (Subscriber)', () => {
+  let clienteOrcamentoGateway: ClienteOrcamentoGateway
   let enviarNotificacao: EnviarNotificacaoUseCase
-
+  let subscriber: OnFaturaEmitida
 
   beforeEach(() => {
-    ordemServicoRepository = new InMemoryOrdemServicoRepository()
-    clienteRepository = new InMemoryClienteRepository()
+    vi.clearAllMocks()
+
+    // 1. Mocks das dependências
+    clienteOrcamentoGateway = {
+      obterDadosNotificacaoPorOrcamentoId: vi.fn(),
+    } as unknown as ClienteOrcamentoGateway
+
     enviarNotificacao = {
-      execute: vi.fn()
+      execute: vi.fn(),
     } as unknown as EnviarNotificacaoUseCase
 
-    new OnFaturaEmitida(
-      ordemServicoRepository,
-      clienteRepository,
-      enviarNotificacao
+    // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
+    vi.spyOn(DomainEvents, 'register')
+
+    // 3. Instancia a classe que registra a assinatura no construtor
+    subscriber = new OnFaturaEmitida(
+      clienteOrcamentoGateway,
+      enviarNotificacao,
     )
   })
 
-  it('deve chamar caso de uso Enviar Notificacao', async () => {
-    const cliente = makeCliente()
+  it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    await clienteRepository.create(cliente)
+    new OnFaturaEmitida(clienteOrcamentoGateway, enviarNotificacao)
 
-    const veiculo = makeVeiculo()
-
-    const prioridade = Prioridade.calcular({
-      anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: [],
-      eClienteCorporativo: false,
-      eGarantia: false,
-    })
-    const os = OrdemServico.criar({
-      clienteId: cliente.getId(),
-      veiculoId: new UniqueEntityID(),
-      mecanicoId: new UniqueEntityID(),
-      componentes: new OrdemServicoComponenteList([]),
-      servicos: new OrdemServicoServicoList([]),
-      descricao: 'descricao',
-      eGarantia: false,
-      prioridade,
-    })
-
-    await ordemServicoRepository.create(os)
-
-    const orcamento = Orcamento.criar({
-      clienteId: cliente.getId(),
-      ordemServicoId: os.getId(),
-      componentes: os.getComponentes().getItems(),
-      servicos: os.getServicos().getItems(),
-    })
-
-    const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
-      valorTotal: orcamento.getValorTotalGeral(),
-    })
-
-    const evento = new FaturaEmitidaEvent(fatura)
-
-    DomainEvents.dispatch(evento)
-
-    await vi.waitFor(() => {
-      expect(enviarNotificacao.execute).toHaveBeenCalled()
-    })
+    expect(registerSpy).toHaveBeenCalledWith(
+      expect.any(Function),
+      FaturaEmitidaEvent.name,
+    )
   })
 
-  it('não deve chamar caso de uso Enviar Notificacao quando OS não existir', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
-    const cliente = makeCliente()
+  it('deve logar aviso (warn) e encerrar a execução caso os dados do cliente não sejam encontrados no gateway', async () => {
+    const loggerWarnSpy = vi
+      .spyOn(Logger.prototype, 'warn')
+      .mockImplementation(() => { })
 
-    await clienteRepository.create(cliente)
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    const handler = registerSpy.mock.calls[0][0]
 
-    const veiculo = makeVeiculo()
+    // Gateway retorna null para indicar que não encontrou o cliente
+    vi.mocked(
+      clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
+    ).mockResolvedValueOnce(null)
 
-    const prioridade = Prioridade.calcular({
-      anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: [],
-      eClienteCorporativo: false,
-      eGarantia: false,
-    })
-    const os = OrdemServico.criar({
-      clienteId: cliente.getId(),
-      veiculoId: new UniqueEntityID(),
-      mecanicoId: new UniqueEntityID(),
-      componentes: new OrdemServicoComponenteList([]),
-      servicos: new OrdemServicoServicoList([]),
-      descricao: 'descricao',
-      eGarantia: false,
-      prioridade,
-    })
+    const mockEvent = {
+      fatura: {
+        getId: () => ({ toValue: () => 'fatura-uuid-123' }),
+        getOrcamentoId: () => ({ toValue: () => 'orcamento-uuid-456' }),
+        getValorTotal: () => 250.0,
+      },
+    } as unknown as FaturaEmitidaEvent
 
-    const orcamento = Orcamento.criar({
-      clienteId: cliente.getId(),
-      ordemServicoId: os.getId(),
-      componentes: os.getComponentes().getItems(),
-      servicos: os.getServicos().getItems(),
-    })
+    await handler(mockEvent)
 
-    const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
-      valorTotal: orcamento.getValorTotalGeral(),
-    })
+    // Valida se o gateway foi consultado com o ID do orçamento
+    expect(
+      clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
+    ).toHaveBeenCalledWith('orcamento-uuid-456')
 
-    const evento = new FaturaEmitidaEvent(fatura)
+    // Valida se a mensagem de aviso (warn) foi gerada
+    expect(loggerWarnSpy).toHaveBeenCalledWith(
+      '[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: orcamento-uuid-456).',
+    )
 
-    DomainEvents.dispatch(evento)
+    // Garante que o caso de uso de envio de notificação NÃO foi chamado
+    expect(enviarNotificacao.execute).not.toHaveBeenCalled()
 
-    await vi.waitFor(() => {
-      // Verifica se o warn exato foi emitido
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId()}`),
-        expect.any(Error)
-      )
-      // Garante que o caso de uso realmente NÃO foi chamado
-      expect(enviarNotificacao.execute).not.toHaveBeenCalled()
-    })
+    loggerWarnSpy.mockRestore()
   })
 
-  it('não deve chamar caso de uso Enviar Notificacao quando Cliente não existir', async () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { })
-    const cliente = makeCliente()
+  it('deve buscar os dados do cliente e disparar a notificação formatada com sucesso', async () => {
+    const loggerLogSpy = vi
+      .spyOn(Logger.prototype, 'log')
+      .mockImplementation(() => { })
 
-    const veiculo = makeVeiculo()
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    const handler = registerSpy.mock.calls[0][0]
 
-    const prioridade = Prioridade.calcular({
-      anoVeiculo: veiculo.getAno(),
-      categoriasDosServicos: [],
-      eClienteCorporativo: false,
-      eGarantia: false,
-    })
-    const os = OrdemServico.criar({
-      clienteId: cliente.getId(),
-      veiculoId: new UniqueEntityID(),
-      mecanicoId: new UniqueEntityID(),
-      componentes: new OrdemServicoComponenteList([]),
-      servicos: new OrdemServicoServicoList([]),
-      descricao: 'descricao',
-      eGarantia: false,
-      prioridade,
+    // Simula retorno de dados do cliente pelo gateway
+    vi.mocked(
+      clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
+    ).mockResolvedValueOnce({
+      nome: 'Carlos Eduardo',
+      telefone: '11988887777',
+      ordemServicoId: 'os-uuid-789',
     })
 
-    await ordemServicoRepository.create(os)
+    const mockEvent = {
+      fatura: {
+        getId: () => ({ toValue: () => 'fatura-uuid-123' }),
+        getOrcamentoId: () => ({ toValue: () => 'orcamento-uuid-456' }),
+        getValorTotal: () => 350.5,
+      },
+    } as unknown as FaturaEmitidaEvent
 
-    const orcamento = Orcamento.criar({
-      clienteId: cliente.getId(),
-      ordemServicoId: os.getId(),
-      componentes: os.getComponentes().getItems(),
-      servicos: os.getServicos().getItems(),
+    await handler(mockEvent)
+
+    // Valida se o Use Case de notificação foi executado com o texto e telefone formatados
+    expect(enviarNotificacao.execute).toHaveBeenCalledWith({
+      destinatario: '11988887777',
+      mensagem:
+        'Olá, Carlos Eduardo! A sua fatura referente ao serviço (OS #os-uuid-789) foi emitida com sucesso no valor de R$ 350.50.',
     })
 
-    const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
-      valorTotal: orcamento.getValorTotalGeral(),
-    })
+    // Valida o log de sucesso
+    expect(loggerLogSpy).toHaveBeenCalledWith(
+      'Notificação enviada com sucesso para o cliente Carlos Eduardo (OS #os-uuid-789) após emissão da fatura.',
+    )
 
-    const evento = new FaturaEmitidaEvent(fatura)
+    loggerLogSpy.mockRestore()
+  })
 
-    DomainEvents.dispatch(evento)
+  it('deve capturar exceções não tratadas (catch) e logar erro no Logger sem interromper a aplicação', async () => {
+    const loggerErrorSpy = vi
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => { })
 
-    await vi.waitFor(() => {
-      // Verifica se o warn exato foi emitido
-      expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining(`[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #${fatura.getId()}`),
-        expect.any(Error)
-      )
-      // Garante que o caso de uso realmente NÃO foi chamado
-      expect(enviarNotificacao.execute).not.toHaveBeenCalled()
-    })
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    const handler = registerSpy.mock.calls[0][0]
+
+    const erroInesperado = new Error('Falha de conexão com a API de WhatsApp/SMS')
+    vi.mocked(
+      clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
+    ).mockRejectedValueOnce(erroInesperado)
+
+    const mockEvent = {
+      fatura: {
+        getId: () => ({ toValue: () => 'fatura-uuid-123' }),
+        getOrcamentoId: () => ({ toValue: () => 'orcamento-uuid-456' }),
+        getValorTotal: () => 100.0,
+      },
+    } as unknown as FaturaEmitidaEvent
+
+    // Garante que a exceção não estoura para fora do subscriber
+    await expect(handler(mockEvent)).resolves.not.toThrow()
+
+    // Valida a chamada do log de erro no bloco catch
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
+      '[Subscriber Warning]: Falha no processo automático pós-faturamento da OS #fatura-uuid-123',
+      erroInesperado,
+    )
+
+    loggerErrorSpy.mockRestore()
   })
 })

@@ -1,4 +1,4 @@
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js"
+import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js"
 import { ConfirmarPagamentoUseCase } from "../../application/use-cases/confirmar-pagamento.js"
 import { Fatura } from "../../domain/entities/fatura.js"
 import { InMemoryFaturasRepository } from "../repositories/in-memory-fatura-repository.js"
@@ -11,6 +11,9 @@ import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veicul
 import { makeCliente } from "@/modules/os-orcamento/testes/factories/make-cliente.js"
 import { makeMecanico } from "@/modules/os-orcamento/testes/factories/make-mecanico.js"
 import { Orcamento } from "@/modules/os-orcamento/domain/entities/orcamento.js"
+import { OrcamentoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/orcamento-componente-list.js"
+import { OrcamentoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/orcamento-servico-list.js"
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js"
 
 
 describe('Caso de Uso: Confirmar Pagamento', () => {
@@ -53,22 +56,25 @@ describe('Caso de Uso: Confirmar Pagamento', () => {
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
-      componentes: os.getComponentes().getItems(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
       ordemServicoId: os.getId(),
-      servicos: os.getServicos().getItems(),
       status: 'APROVADO',
     })
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 
     await faturaRepository.create(fatura)
 
-    const output = await sut.execute({ faturaId: fatura.getId().toValue() })
+    const result = await sut.execute({ faturaId: fatura.getId().toValue() })
 
-    expect(output.fatura.getStatus()).toBe('PAGA')
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.fatura.getStatus()).toBe('PAGA')
+    }
   })
 
   it('não deve confirmar o pagamento de uma fatura inexistente', async () => {
@@ -98,18 +104,22 @@ describe('Caso de Uso: Confirmar Pagamento', () => {
 
     const orcamento = Orcamento.criar({
       clienteId: cliente.getId(),
-      componentes: os.getComponentes().getItems(),
+      componentes: new OrcamentoComponenteList(),
+      servicos: new OrcamentoServicoList(),
       ordemServicoId: os.getId(),
-      servicos: os.getServicos().getItems(),
       status: 'APROVADO',
     })
 
     const fatura = Fatura.criar({
-      ordemServicoId: os.getId(),
+      orcamentoId: orcamento.getId(),
       valorTotal: orcamento.getValorTotalGeral(),
     })
 
+    const result = await sut.execute({
+      faturaId: fatura.getId().toValue()
+    })
 
-    await expect(sut.execute({ faturaId: fatura.getId().toValue() })).rejects.toBeInstanceOf(Error)
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 })

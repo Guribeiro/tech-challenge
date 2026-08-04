@@ -1,6 +1,6 @@
 export abstract class WatchedList<T> {
   public currentItems: T[]
-  private initial: T[]
+  private readonly initial: T[]
   private new: T[]
   private removed: T[]
 
@@ -26,20 +26,15 @@ export abstract class WatchedList<T> {
   }
 
   private isCurrentItem(item: T): boolean {
-    return (
-      this.currentItems.filter((v: T) => this.compareItems(item, v)).length !==
-      0
-    )
+    return this.currentItems.some((v: T) => this.compareItems(item, v))
   }
 
   private isNewItem(item: T): boolean {
-    return this.new.filter((v: T) => this.compareItems(item, v)).length !== 0
+    return this.new.some((v: T) => this.compareItems(item, v))
   }
 
   private isRemovedItem(item: T): boolean {
-    return (
-      this.removed.filter((v: T) => this.compareItems(item, v)).length !== 0
-    )
+    return this.removed.some((v: T) => this.compareItems(item, v))
   }
 
   private removeFromNew(item: T): void {
@@ -57,9 +52,7 @@ export abstract class WatchedList<T> {
   }
 
   private wasAddedInitially(item: T): boolean {
-    return (
-      this.initial.filter((v: T) => this.compareItems(item, v)).length !== 0
-    )
+    return this.initial.some((v: T) => this.compareItems(item, v))
   }
 
   public exists(item: T): boolean {

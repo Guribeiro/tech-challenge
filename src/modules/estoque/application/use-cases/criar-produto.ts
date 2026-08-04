@@ -1,46 +1,103 @@
-import { Produto, TipoProduto } from "../../domain/entities/produto.js";
+import { Injectable } from "@nestjs/common";
+import { Produto, TipoProduto, UnidadeMedida } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
+import { CodigoSKUJaCadastradoError, ProdutoJaCadastradoError } from "@/core/errors/index.js";
+import { Either, left, right } from "@/core/either.js";
+import { DomainError } from "@/core/errors/domain-errors/domain-error.js";
 
 export interface CriarProdutoInput {
   nome: string
   tipo: TipoProduto
+  marca?: string
+  codigoSKU?: string
   descricao?: string
+  codigoFabricante?: string
+
   precoUnitario: number
+  precoCusto: number
+
   quantidadeEstoque: number
+
+  estoqueMinimo?: number
+  estoqueMaximo?: number
+  unidadeMedida?: UnidadeMedida
+  localizacao?: string
 }
 
-interface CriarProdutoOutput {
-  produto: Produto
-}
+type Errors =
+  ProdutoJaCadastradoError |
+  CodigoSKUJaCadastradoError |
+  DomainError
 
+type CriarProdutoOutput = Either<
+  Errors,
+  {
+    produto: Produto
+  }
+>
+
+@Injectable()
 export class CriarProdutoUseCase {
   constructor(private readonly produtoRepository: ProdutoRepository) { }
   public async execute({
     nome,
     tipo,
+    marca,
+    codigoSKU,
+    codigoFabricante,
     descricao,
     precoUnitario,
+    precoCusto,
     quantidadeEstoque,
+    unidadeMedida,
+    estoqueMaximo,
+    estoqueMinimo,
+    localizacao,
   }: CriarProdutoInput): Promise<CriarProdutoOutput> {
 
     const produtoFromNome = await this.produtoRepository.findByNome(nome)
 
     if (produtoFromNome) {
-      throw new Error(`Já existe um produto ativo cadastrado com o nome "${nome}".`);
+      return left(new ProdutoJaCadastradoError(nome))
     }
 
-    const produto = Produto.criar({
-      nome,
-      tipo,
-      descricao,
-      precoUnitario,
-      quantidadeEstoque,
-    })
+    if (codigoSKU) {
+      const produtoFromCodigoSku = await this.produtoRepository.findByCodigoSku(codigoSKU)
 
-    await this.produtoRepository.create(produto)
-
-    return {
-      produto
+      if (produtoFromCodigoSku) {
+        return left(new CodigoSKUJaCadastradoError())
+      }
     }
+
+    try {
+      const produto = Produto.criar({
+        nome,
+        tipo,
+        marca,
+        codigoSKU,
+        codigoFabricante,
+        descricao,
+        precoUnitario,
+        precoCusto,
+        quantidadeEstoque,
+        unidadeMedida,
+        estoqueMaximo,
+        estoqueMinimo,
+        localizacao,
+      })
+
+      await this.produtoRepository.create(produto)
+
+      return right({
+        produto
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+
+      throw error
+    }
+
   }
 }

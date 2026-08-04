@@ -1,12 +1,12 @@
 import { faker } from "@faker-js/faker";
 import { ServicoProps, CategoriaServico } from "@/modules/os-orcamento/domain/entities/servico.js";
 import { makeServico } from "./make-servico.js";
-import { OrdemServicoServico } from "../../domain/entities/value-objects/ordem-servico-servico.js";
+import { OrdemServicoServico } from "../../domain/entities/ordem-servico-servico.js";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
 import { OrdemServicoServicoList } from "../../domain/entities/value-objects/ordem-servico-servico-list.js";
 
 type MakeOSServicoOverride = Partial<ServicoProps> & {
-  servicoId?: string
+  servicoId?: UniqueEntityID
   observacao?: string
   precoUnitario?: number // ou valorCobrado, conforme seu construtor
 }
@@ -31,13 +31,14 @@ export function makeOrdemServicoServicoList(
     })
 
     // 2. Monta o Value Object da OS garantindo que até os campos exclusivos da OS tenham fallback do Faker
-    return new OrdemServicoServico({
-      servicoId: override.servicoId ? new UniqueEntityID(override.servicoId) : new UniqueEntityID(servicoBase.getId()),
+    return OrdemServicoServico.criar({
+      servicoId: override.servicoId ?? servicoBase.getId(),
       nome: servicoBase.getNome(),
       categoria: servicoBase.getCategoria(),
       precoUnitario: servicoBase.getValorReferencia() ?? precoAleatorio, // Fallback duplo de segurança
       descricao: servicoBase.getDescricao(),
       observacao: override.observacao ?? faker.lorem.paragraph(0.5) ?? 'Nenhuma observação técnica.',
+      ordemServicoId: new UniqueEntityID(), // Gera um ID aleatório para a OS, pois não temos uma OS real aqui
     })
   })
 

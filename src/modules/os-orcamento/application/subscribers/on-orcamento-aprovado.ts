@@ -1,9 +1,12 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoAprovadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-aprovado-event.js'
-import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordens-servico-repository.js'
+import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
+import { Injectable, Logger } from '@nestjs/common'
 
+@Injectable()
 export class OnClienteAprovouOrcamento implements EventHandler {
+  private readonly logger = new Logger(OnClienteAprovouOrcamento.name)
   constructor(
     private readonly ordemServicoRepository: OrdemServicoRepository
   ) {
@@ -25,16 +28,17 @@ export class OnClienteAprovouOrcamento implements EventHandler {
       const ordemServico = await this.ordemServicoRepository.findById(osId)
 
       if (!ordemServico) {
-        throw new Error(`Ordem de serviço associada ${osId} não foi encontrada.`)
+        this.logger.error(`[Subscriber Error]: Ordem de serviço associada ${osId} não foi encontrada.`)
+        return
       }
 
       ordemServico.autorizaExecucao()
 
       await this.ordemServicoRepository.save(ordemServico)
 
-      console.log(`[Subscriber Success]: Status da OS ${osId} atualizado para EM_EXECUCAO devido à aprovação do orçamento.`)
+      this.logger.log(`[Subscriber Success]: Status da OS ${osId} atualizado para EM_EXECUCAO devido à aprovação do orçamento.`)
     } catch (error) {
-      console.error(`[Subscriber Error]: Falha ao atualizar OS ${osId} após aprovação do orçamento.`, error)
+      this.logger.error(`[Subscriber Error]: Falha ao atualizar OS ${osId} após aprovação do orçamento.`, error)
     }
   }
 }

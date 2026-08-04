@@ -1,3 +1,4 @@
+import { Injectable } from "@nestjs/common"
 import { NotificacaoService } from "../services/notificacao-service.js"
 
 interface EnviarNotificacaoInput {
@@ -9,6 +10,7 @@ interface EnviarNotificacaoOutput {
   sucesso: boolean
 }
 
+@Injectable()
 export class EnviarNotificacaoUseCase {
   constructor(
     private readonly notificacaoService: NotificacaoService

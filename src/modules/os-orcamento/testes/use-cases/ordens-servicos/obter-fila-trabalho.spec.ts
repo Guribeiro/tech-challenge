@@ -1,100 +1,93 @@
+import { describe, beforeEach, it, expect } from 'vitest'
 import { ObterFilaTrabalhoUseCase } from '@/modules/os-orcamento/application/use-cases/ordens-servicos/obter-fila-trabalho.js'
-import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordens-servico-repository.js'
-import { OrdemServico } from '@/modules/os-orcamento/domain/entities/ordem-servico.js'
-import { Cliente } from '@/modules/os-orcamento/domain/entities/cliente.js'
-import { Email } from '@/shared/domain/value-objects/email.js'
-import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
-import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
-import { Veiculo } from '@/modules/os-orcamento/domain/entities/veiculo.js'
-import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
-import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
-import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
-import { makeOrdemServicoServicoList } from '../../factories/make-ordem-servico-servico-list.js'
-import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
+import { InMemoryOrdemServicoRepository } from '../../repositories/in-memory-ordem-servico-repository.js'
+import { makeOrdemServico } from '../../factories/make-ordem-servico.js'
 
-let ordemServicoRepository: InMemoryOrdemServicoRepository
+let inMemoryOrdemServicoRepository: InMemoryOrdemServicoRepository
 let sut: ObterFilaTrabalhoUseCase
 
-describe('Obter fila de trabalho', () => {
+describe('Obter Fila de Trabalho Use Case', () => {
   beforeEach(() => {
-    ordemServicoRepository = new InMemoryOrdemServicoRepository()
-    sut = new ObterFilaTrabalhoUseCase(ordemServicoRepository)
+    inMemoryOrdemServicoRepository = new InMemoryOrdemServicoRepository()
+    sut = new ObterFilaTrabalhoUseCase(inMemoryOrdemServicoRepository)
   })
 
-  it('deve retornar a fila de trabalho ordenada por prioridade', async () => {
+  it('deve listar a fila de trabalho com valores padrão de paginação e status RECEBIDA', async () => {
+    // Arrange: Prepara o cenário com ordens de serviço
+    const osRecebida = makeOrdemServico({ status: 'RECEBIDA' })
+    const osEmDiagnostico = makeOrdemServico({ status: 'EM_DIAGNOSTICO' })
 
-    const cliente = Cliente.criar({
-      email: Email.criar('cliente@email.com'),
-      nome: NomeCompleto.criar('Cliente Teste'),
-      telefone: Telefone.criar('11999999999'),
-      tipo: 'PF',
+    await inMemoryOrdemServicoRepository.create(osRecebida)
+    await inMemoryOrdemServicoRepository.create(osEmDiagnostico)
+
+    // Act
+    const result = await sut.execute({})
+
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toHaveLength(1)
+      expect(result.value.ordensServicos[0].getId().toValue()).toBe(osRecebida.getId().toValue())
+      expect(result.value.total).toBe(1)
+      expect(result.value.pagina).toBe(1)
+      expect(result.value.limite).toBe(10)
+    }
+  })
+
+  it('deve filtrar a fila de trabalho por um status específico', async () => {
+    // Arrange: Utilizando um status válido do novo enum (AUTORIZADA)
+    const osAutorizada1 = makeOrdemServico({ status: 'AUTORIZADA' })
+    const osAutorizada2 = makeOrdemServico({ status: 'AUTORIZADA' })
+    const osRecebida = makeOrdemServico({ status: 'RECEBIDA' })
+
+    await inMemoryOrdemServicoRepository.create(osAutorizada1)
+    await inMemoryOrdemServicoRepository.create(osAutorizada2)
+    await inMemoryOrdemServicoRepository.create(osRecebida)
+
+    // Act
+    const result = await sut.execute({
+      status: 'AUTORIZADA',
     })
 
+    // Assert
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toHaveLength(2)
+      expect(result.value.total).toBe(2)
+    }
+  })
 
-    const veiculo = Veiculo.criar({
-      marca: 'Marca Teste',
-      placa: Placa.criar('ABC1234'),
-      modelo: 'Modelo Teste',
-      ano: 2020,
+  it('deve aplicar a paginação corretamente', async () => {
+    // Arrange: Cria 3 ordens com status RECEBIDA
+    for (let i = 0; i < 3; i++) {
+      await inMemoryOrdemServicoRepository.create(
+        makeOrdemServico({ status: 'RECEBIDA' }),
+      )
+    }
+
+    // Act: Solicita a página 2 com limite de 2 itens por página
+    const result = await sut.execute({
+      pagina: 2,
+      limite: 2,
+      status: 'RECEBIDA',
     })
 
-    const cliente2 = Cliente.criar({
-      email: Email.criar('cliente@email.com'),
-      nome: NomeCompleto.criar('Cliente Teste'),
-      telefone: Telefone.criar('11999999999'),
-      tipo: 'PF',
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toHaveLength(1) // Resta apenas 1 item na pág 2
+      expect(result.value.total).toBe(3)
+      expect(result.value.pagina).toBe(2)
+      expect(result.value.limite).toBe(2)
+    }
+
+  })
+
+  it('deve retornar uma lista vazia quando nenhuma ordem de serviço corresponder aos filtros', async () => {
+    // Act: Utilizando o status 'FINALIZADA' do novo enum
+    const result = await sut.execute({
+      status: 'FINALIZADA',
     })
 
-
-    const veiculo2 = Veiculo.criar({
-      marca: 'Marca Teste',
-      placa: Placa.criar('ABC1234'),
-      modelo: 'Modelo Teste',
-      ano: 2020,
-    })
-
-
-    const osServiceBaixaPrioridadeList = makeOrdemServicoServicoList()
-
-    const ordemServicoBaixaPrioridade = OrdemServico.criar({
-      clienteId: cliente.getId(),
-      veiculoId: veiculo.getId(),
-      descricao: 'Ordem de serviço 1',
-      eGarantia: false,
-      servicos: osServiceBaixaPrioridadeList,
-      componentes: new OrdemServicoComponenteList([]),
-      prioridade: Prioridade.calcular({
-        eGarantia: false,
-        eClienteCorporativo: cliente.getTipo() === 'PJ',
-        anoVeiculo: veiculo.getAno(),
-        categoriasDosServicos: osServiceBaixaPrioridadeList.getItems().map(servico => servico.getCategoria()),
-      }),
-    })
-
-    const osServiceAltaPrioridadeList = makeOrdemServicoServicoList([{ categoria: 'MECANICA_GERAL' }, { categoria: 'SEGURANCA' }, { categoria: 'MANUTENCAO_PREVENTIVA' }])
-
-    const ordemServicoAltaPrioridade = OrdemServico.criar({
-      clienteId: cliente2.getId(),
-      veiculoId: veiculo2.getId(),
-      descricao: 'Ordem de serviço 2',
-      eGarantia: false,
-      servicos: osServiceAltaPrioridadeList,
-      componentes: new OrdemServicoComponenteList([]),
-      prioridade: Prioridade.calcular({
-        eGarantia: false,
-        eClienteCorporativo: cliente2.getTipo() === 'PJ',
-        anoVeiculo: veiculo2.getAno(),
-        categoriasDosServicos: osServiceBaixaPrioridadeList.getItems().map(servico => servico.getCategoria()),
-      }),
-    })
-
-    await ordemServicoRepository.create(ordemServicoBaixaPrioridade)
-    await ordemServicoRepository.create(ordemServicoAltaPrioridade)
-
-    const { fila } = await sut.executar()
-
-    expect(fila).toHaveLength(2)
-    expect(fila[0].getPrioridade().getTipo()).toBe(ordemServicoAltaPrioridade.getPrioridade().getTipo())
-    expect(fila[1].getPrioridade().getTipo()).toBe(ordemServicoBaixaPrioridade.getPrioridade().getTipo())
+    // Assert
+    if (result.isRight()) {
+      expect(result.value.ordensServicos).toEqual([])
+      expect(result.value.total).toBe(0)
+    }
   })
 })

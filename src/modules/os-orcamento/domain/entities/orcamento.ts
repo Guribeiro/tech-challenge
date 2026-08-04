@@ -1,13 +1,15 @@
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
-import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
-import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
 import { OrcamentoEnviadoEvent } from '../events/orcamento-enviado-event.js'
 import { OrcamentoAprovadoEvent } from '../events/orcamento-aprovado-event.js'
 import { OrcamentoRenegociadoEvent } from '../events/orcamento-renegociado-event.js'
 import { OrcamentoRecusadoEvent } from '../events/orcamento-recusado-event.js'
 import { OrcamentoRenegociadoRecusadoEvent } from '../events/orcamento-renegociado-recusado-event.js'
+import { OrcamentoServicoList } from './value-objects/orcamento-servico-list.js'
+import { OrcamentoComponenteList } from './value-objects/orcamento-componente-list.js'
+import { OrcamentoServico } from './orcamento-servico.js'
+import { OrcamentoComponente } from './orcamento-componente.js'
 
 export type StatusOrcamento =
   | 'CRIADO'
@@ -21,8 +23,8 @@ export interface OrcamentoProps {
   ordemServicoId: UniqueEntityID
   clienteId: UniqueEntityID
   versao: number
-  servicos: OrdemServicoServico[]
-  componentes: OrdemServicoComponente[]
+  servicos: OrcamentoServicoList
+  componentes: OrcamentoComponenteList
   descontoPorcentagem: number
   status: StatusOrcamento
   criadoEm: Date
@@ -31,13 +33,15 @@ export interface OrcamentoProps {
 
 export class Orcamento extends AggregateRoot<OrcamentoProps> {
   public static criar(
-    props: Optional<OrcamentoProps, 'status' | 'versao' | 'criadoEm' | 'descontoPorcentagem'>,
+    props: Optional<OrcamentoProps, 'status' | 'versao' | 'criadoEm' | 'descontoPorcentagem' | 'servicos' | 'componentes'>,
     id?: UniqueEntityID
   ): Orcamento {
     return new Orcamento({
       ...props,
       status: props.status ?? 'CRIADO',
       versao: props.versao ?? 1,
+      componentes: props.componentes ?? new OrcamentoComponenteList(),
+      servicos: props.servicos ?? new OrcamentoServicoList(),
       descontoPorcentagem: props.descontoPorcentagem ?? 0,
       criadoEm: props.criadoEm ?? new Date()
     }, id)
@@ -58,7 +62,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
   }
 
   public aprovar(): void {
-    if (this.props.status !== 'ENVIADO') {
+    if (!['ENVIADO', 'RENEGOCIADO'].includes(this.props.status)) {
       throw new Error('O orçamento precisa ser enviado ao cliente antes de ser aprovado.')
     }
     this.props.status = 'APROVADO'
@@ -68,8 +72,8 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
   }
 
   public recusar(): void {
-    if (this.props.status !== 'ENVIADO') {
-      throw new Error('Apenas orçamentos enviados podem ser recusados.')
+    if (!['ENVIADO', 'RENEGOCIADO'].includes(this.props.status)) {
+      throw new Error('Apenas orçamentos enviados ou renegociados podem ser recusados.')
     }
 
     // Se já estava no status de renegociado antes de ser enviado e o cliente recusou de novo...
@@ -84,10 +88,11 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
   }
 
   public renegociar(
-    novosServicos: OrdemServicoServico[],
-    novosComponentes: OrdemServicoComponente[],
+    servicos: OrcamentoServico[],
+    componentes: OrcamentoComponente[],
     descontoPorcentagem: number,
   ): void {
+
     if (this.props.status !== 'RECUSADO') {
       throw new Error('Só é possível renegociar um orçamento que foi recusado pelo cliente.')
     }
@@ -96,8 +101,14 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
       throw new Error('O desconto em porcentagem deve estar entre 0 e 100.')
     }
 
-    this.props.servicos = novosServicos
-    this.props.componentes = novosComponentes
+    if (servicos) {
+      this.props.servicos.update(servicos)
+    }
+
+    if (componentes) {
+      this.props.componentes.update(componentes)
+    }
+
     this.props.descontoPorcentagem = descontoPorcentagem
     this.props.versao += 1
     this.props.status = 'RENEGOCIADO'
@@ -116,7 +127,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
    * Calcula o valor total apenas dos serviços inclusos no orçamento.
    */
   public getValorTotalServicos(): number {
-    return this.props.servicos.reduce((acc, servico) => {
+    return this.props.servicos.getItems().reduce((acc, servico) => {
       return acc + servico.getPrecoUnitario()
     }, 0)
   }
@@ -126,7 +137,7 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
    * invocando a regra de subtotal de cada item.
    */
   public getValorTotalComponentes(): number {
-    return this.props.componentes.reduce((acc, componente) => {
+    return this.props.componentes.getItems().reduce((acc, componente) => {
       return acc + componente.getSubtotal()
     }, 0)
   }
@@ -172,11 +183,11 @@ export class Orcamento extends AggregateRoot<OrcamentoProps> {
     return this.props.versao
   }
 
-  public getServicos(): OrdemServicoServico[] {
+  public getServicos(): OrcamentoServicoList {
     return this.props.servicos
   }
 
-  public getComponentes(): OrdemServicoComponente[] {
+  public getComponentes(): OrcamentoComponenteList {
     return this.props.componentes
   }
 

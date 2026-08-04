@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js"
+
 export class Email {
   private readonly valor: string
 
@@ -7,13 +9,13 @@ export class Email {
 
   public static criar(email: string): Email {
     if (!Email.validar(email)) {
-      throw new Error('Email inválido')
+      throw new ArgumentoInvalidoError('Email inválido')
     }
     return new Email(email)
   }
 
   public static validar(email: string): boolean {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,}$/
     return emailRegex.test(email)
   }
 

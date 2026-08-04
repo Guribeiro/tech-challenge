@@ -1,3 +1,5 @@
+import { ArgumentoInvalidoError } from "@/core/errors/domain-errors/argumento-invalido-error.js"
+
 export class Placa {
   private readonly valor: string
 
@@ -21,14 +23,14 @@ export class Placa {
 
     // Regex 1: ^[A-Z]{3}[0-9]{4}$       -> Padrão Antigo (Ex: ABC1234)
     // Regex 2: ^[A-Z]{3}[0-9][A-Z][0-9]{2}$ -> Padrão Mercosul (Ex: ABC1D23)
-    const placaRegex = /^[A-Z]{3}[0-9]{4}$|^[A-Z]{3}[0-9][A-Z][0-9]{2}$/
+    const placaRegex = /^[A-Z]{3}\d{4}$|^[A-Z]{3}\d[A-Z]\d{2}$/
 
     return placaRegex.test(placaLimpa)
   }
 
   public static criar(placa: string): Placa {
     if (!Placa.validar(placa)) {
-      throw new Error('Placa com formato inválido para o cadastro do veículo.')
+      throw new ArgumentoInvalidoError('Placa com formato inválido para o cadastro do veículo.')
     }
 
     // Armazena sempre a versão limpa e padronizada no banco (Ex: "ABC1234" ou "ABC1D23")
@@ -45,7 +47,7 @@ export class Placa {
    */
   public getFormatada(): string {
     // Se tiver 4 números no final, coloca o hífen clássico (Padrão Antigo)
-    if (/^[A-Z]{3}[0-9]{4}$/.test(this.valor)) {
+    if (/^[A-Z]{3}\d{4}$/.test(this.valor)) {
       return `${this.valor.substring(0, 3)}-${this.valor.substring(3)}`
     }
     // Se for Mercosul, retorna ela junta conforme o padrão oficial

@@ -1,0 +1,63 @@
+import {
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Query,
+  UseGuards
+} from '@nestjs/common'
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags
+} from '@nestjs/swagger'
+import { ObterFilaTrabalhoUseCase } from '../../application/use-cases/ordens-servicos/obter-fila-trabalho.js'
+import { ObterFilaTrabalhoQueryDto } from '../../dto/ordem-servico/obter-fila-trabalho-query.dto.js'
+import { OrdemServicoPresenter } from '../../presenters/ordem-servico-presenter.js'
+import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
+import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
+import { ObterFilaTrabalhoResponseDto } from '../../dto/ordem-servico/obter-fila-trabalho-response.dto.js'
+import { RolesGuard } from '@/infra/auth/roles.guard.js'
+import { Roles } from '@/infra/auth/roles.decorator.js'
+
+@ApiTags('Ordens de Serviço')
+@ApiBearerAuth()
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Controller('ordens-servicos')
+export class ObterFilaTrabalhoController {
+  constructor(private readonly obterFilaTrabalho: ObterFilaTrabalhoUseCase) { }
+
+  @Get('fila-trabalho')
+  @Roles('ADMIN', 'MECANICO', 'RECEPCAO')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Listar fila de trabalho com paginação e filtros' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de fila de trabalho retornada com sucesso.',
+    type: ObterFilaTrabalhoResponseDto,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Não autorizado ou erro na busca.',
+  })
+  async handle(@Query() query: ObterFilaTrabalhoQueryDto) {
+    const result = await this.obterFilaTrabalho.execute({
+      pagina: query.pagina ? Number(query.pagina) : 1,
+      limite: query.limite ? Number(query.limite) : 10,
+      status: query.status,
+    })
+
+    const { ordensServicos, limite, pagina, total } = unwrapEither(result)
+
+    return {
+      fila: ordensServicos.map(OrdemServicoPresenter.toHTTP),
+      meta: {
+        total,
+        pagina,
+        limite,
+        totalPaginas: Math.ceil(total / limite),
+      },
+    }
+  }
+}

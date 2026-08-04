@@ -1,5 +1,5 @@
 import { EmitirTermoRejeicaoUseCase } from "../../application/use-cases/emitir-termo-liberacao-rejeicao.js";
-import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordens-servico-repository.js";
+import { InMemoryOrdemServicoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js";
 import { InMemoryVeiculoRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-veiculo-repository.js";
 import { InMemoryTermoLiberacaoRepository } from "../repositories/in-memory-termo-liberacao-repository.js";
 import { makeVeiculo } from "@/modules/os-orcamento/testes/factories/make-veiculo.js"
@@ -9,6 +9,7 @@ import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js";
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/recurso-nao-encontrado.js";
 
 
 describe('Caso de Uso: Emitir Termo de Liberação por Rejeição - (ORÇAMENTO RECUSADO)', () => {
@@ -59,12 +60,16 @@ describe('Caso de Uso: Emitir Termo de Liberação por Rejeição - (ORÇAMENTO 
 
     await ordemServicoRepository.create(os)
 
-    const { termo } = await sut.execute({
+    const result = await sut.execute({
       ordemServicoId: os.getId().toValue()
     })
 
-    expect(termo.getPlacaVeiculo()).toBe(veiculo.getPlaca().getFormatada())
-    expect(termo.getMotivo()).toBe('REJEICAO_ORCAMENTO')
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const termo = result.value.termo
+      expect(termo.getPlacaVeiculo()).toBe(veiculo.getPlaca().getFormatada())
+      expect(termo.getMotivo()).toBe('REJEICAO_ORCAMENTO')
+    }
   })
 
 
@@ -95,14 +100,17 @@ describe('Caso de Uso: Emitir Termo de Liberação por Rejeição - (ORÇAMENTO 
 
     await ordemServicoRepository.create(os)
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       ordemServicoId: os.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
   })
 
 
 
-  it('não deve emitir o termo de liberação de um veiculo inexistente', async () => {
+  it('não deve emitir o termo de liberação de um mecanico inexistente', async () => {
     const cliente = makeCliente()
 
     const veiculo = makeVeiculo()
@@ -130,9 +138,12 @@ describe('Caso de Uso: Emitir Termo de Liberação por Rejeição - (ORÇAMENTO 
     })
 
 
-    await expect(sut.execute({
+    const result = await sut.execute({
       ordemServicoId: os.getId().toValue()
-    })).rejects.toBeInstanceOf(Error)
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RecursoNaoEncontradoError)
 
   })
 })

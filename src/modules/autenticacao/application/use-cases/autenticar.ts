@@ -1,16 +1,27 @@
 import { HashGenerator } from '@/modules/autenticacao/domain/cryptography/hash-generator.js'
 import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { Encrypter } from '../../domain/cryptography/encrypter.js'
+import { Role } from '../../domain/entities/usuario.js'
+import { Injectable } from '@nestjs/common'
+import { Either, left, right } from '@/core/either.js'
+import { CredenciaisInvalidasError } from '@/core/errors/credenciais-invalidas-error.js'
 
 interface AutenticarInput {
   email: string
   senha: string
 }
 
-interface AutenticarOutput {
-  accessToken: string
-}
+type AutenticarOutput = Either<
+  CredenciaisInvalidasError,
+  {
+    usuario: {
+      email: string
+      role: Role
+    }
+    accessToken: string
+  }>
 
+@Injectable()
 export class AutenticarUseCase {
   constructor(
     private readonly usuariosRepository: UsuariosRepository,
@@ -22,7 +33,7 @@ export class AutenticarUseCase {
     const usuario = await this.usuariosRepository.findByEmail(email)
 
     if (!usuario) {
-      throw new Error('email/senha incorreto');
+      return left(new CredenciaisInvalidasError())
     }
 
     const passwordMatch = await this.hashGenerator.compareHash(
@@ -31,7 +42,7 @@ export class AutenticarUseCase {
     )
 
     if (!passwordMatch) {
-      throw new Error('email/senha incorreto');
+      return left(new CredenciaisInvalidasError())
     }
 
     const accessToken = await this.encrypter.encrypt({
@@ -39,8 +50,12 @@ export class AutenticarUseCase {
       sub: usuario.getId().toValue()
     })
 
-    return {
+    return right({
+      usuario: {
+        email: usuario.getEmail().getValor(),
+        role: usuario.getRole()
+      },
       accessToken
-    }
+    })
   }
 }

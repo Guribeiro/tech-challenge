@@ -1,8 +1,10 @@
 import { Mecanico } from '@/modules/os-orcamento/domain/entities/mecanico.js'
 
-export interface MecanicoRepository {
-  create(mecanico: Mecanico): Promise<void>
-  save(mecanico: Mecanico): Promise<void>
-  findById(id: string): Promise<Mecanico | null>
-  delete(id: string): Promise<void>
+export abstract class MecanicoRepository {
+  abstract create(mecanico: Mecanico): Promise<void>
+  abstract save(mecanico: Mecanico): Promise<void>
+  abstract findById(id: string): Promise<Mecanico | null>
+  abstract findByEmail(email: string): Promise<Mecanico | null>
+  abstract findByCpf(cpf: string): Promise<Mecanico | null>
+  abstract delete(id: string): Promise<void>
 }

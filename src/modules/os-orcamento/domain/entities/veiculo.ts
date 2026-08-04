@@ -1,9 +1,12 @@
 import { Entity } from '@/core/entities/entity.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
+import { ArgumentoInvalidoError } from '@/core/errors/domain-errors/argumento-invalido-error.js'
+import { RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/regra-de-negocio-violada-error.js'
 import { Optional } from '@/core/types/optional.js'
 import { Placa } from '@/modules/os-orcamento/domain/entities/value-objects/placa.js'
 
 export type VeiculoProps = {
+  clienteId: UniqueEntityID
   placa: Placa
   marca: string
   modelo: string
@@ -17,20 +20,21 @@ export type VeiculoProps = {
   deletadoEm?: Date | null
 }
 
-export type AtualizarVeiculoProps = {
+export type AtualizarVeiculoProps = Partial<{
   placa: Placa
   marca: string
   modelo: string
   ano: number
-  cor?: string
-  quilometragem?: number
-  combustivel?: string
-  observacoes?: string
-}
+  cor: string
+  quilometragem: number
+  combustivel: string
+  observacoes: string
+}>
+
 
 export class Veiculo extends Entity<VeiculoProps> {
   public static criar(
-    props: Optional<VeiculoProps, 'criadoEm' | 'atualizadoEm'>,
+    props: Optional<VeiculoProps, 'criadoEm'>,
     id?: UniqueEntityID,
   ): Veiculo {
 
@@ -47,26 +51,25 @@ export class Veiculo extends Entity<VeiculoProps> {
   }
 
   public atualizar(props: AtualizarVeiculoProps): void {
-    // 1. Garante que os novos dados também atendem às regras de negócio
-    Veiculo.validar(props)
+    this.props.placa = props.placa ?? this.props.placa
+    this.props.marca = props.marca ?? this.props.marca
+    this.props.modelo = props.modelo ?? this.props.modelo
+    this.props.ano = props.ano ?? this.props.ano
+    this.props.cor = props.cor ?? this.props.cor
+    this.props.quilometragem = props.quilometragem ?? this.props.quilometragem
+    this.props.combustivel = props.combustivel ?? this.props.combustivel
+    this.props.observacoes = props.observacoes ?? this.props.observacoes
 
-    // 2. Atualiza as propriedades e registra o momento da alteração
-    this.props.placa = props.placa
-    this.props.marca = props.marca
-    this.props.modelo = props.modelo
-    this.props.ano = props.ano
-    this.props.cor = props.cor
-    this.props.quilometragem = props.quilometragem
-    this.props.combustivel = props.combustivel
-    this.props.observacoes = props.observacoes
-    this.props.atualizadoEm = new Date()
+    Veiculo.validar(this.props)
+
+    this.touch()
   }
 
   private static validar(
     props: Pick<VeiculoProps, 'marca' | 'modelo' | 'ano' | 'quilometragem'>,
   ): void {
     if (!props.marca?.trim() || !props.modelo?.trim()) {
-      throw new Error(
+      throw new ArgumentoInvalidoError(
         'Marca e modelo são obrigatórios para o cadastro do veículo.',
       )
     }
@@ -76,20 +79,24 @@ export class Veiculo extends Entity<VeiculoProps> {
       props.ano < 1900 ||
       props.ano > new Date().getFullYear() + 1
     ) {
-      throw new Error('Ano do veículo inválido.')
+      throw new ArgumentoInvalidoError('Ano do veículo inválido.')
     }
 
     if (props.quilometragem !== undefined && props.quilometragem < 0) {
-      throw new Error('Quilometragem não pode ser negativa.')
+      throw new ArgumentoInvalidoError('Quilometragem não pode ser negativa.')
     }
   }
 
   public deletar(): void {
     if (this.props.deletadoEm) {
-      throw new Error('Este veículo já está excluído.')
+      throw new RegraDeNegocioVioladaError('Este veículo já está excluído.')
     }
 
     this.props.deletadoEm = new Date()
+    this.props.atualizadoEm = new Date()
+  }
+
+  public touch() {
     this.props.atualizadoEm = new Date()
   }
 
@@ -99,6 +106,10 @@ export class Veiculo extends Entity<VeiculoProps> {
 
   public getDeletadoEm(): Date | null | undefined {
     return this.props.deletadoEm
+  }
+
+  public getClienteId(): UniqueEntityID {
+    return this.props.clienteId
   }
 
   public getPlaca(): Placa {
@@ -133,16 +144,11 @@ export class Veiculo extends Entity<VeiculoProps> {
     return this.props.observacoes
   }
 
-  public toJSON(): Record<string, unknown> {
-    return {
-      placa: this.props.placa.getValor(),
-      marca: this.props.marca,
-      modelo: this.props.modelo,
-      ano: this.props.ano,
-      cor: this.props.cor,
-      quilometragem: this.props.quilometragem,
-      combustivel: this.props.combustivel,
-      observacoes: this.props.observacoes,
-    }
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
+  }
+
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
   }
 }

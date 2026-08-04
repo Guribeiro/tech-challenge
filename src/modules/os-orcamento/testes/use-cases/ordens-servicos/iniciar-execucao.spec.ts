@@ -5,7 +5,7 @@ import { IniciarExecucaoUseCase } from "@/modules/os-orcamento/application/use-c
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js"
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js"
-import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico.js"
+import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
 import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js"
 import { makeCliente } from "../../factories/make-cliente.js"
 import { makeMecanico } from "../../factories/make-mecanico.js"
@@ -13,7 +13,7 @@ import { makeServico } from "../../factories/make-servico.js"
 import { makeVeiculo } from "../../factories/make-veiculo.js"
 import { InMemoryClienteRepository } from "../../repositories/in-memory-cliente-repository.js"
 import { InMemoryMecanicosRepository } from "../../repositories/in-memory-mecanicos-repository.js"
-import { InMemoryOrdemServicoRepository } from "../../repositories/in-memory-ordens-servico-repository.js"
+import { InMemoryOrdemServicoRepository } from "../../repositories/in-memory-ordem-servico-repository.js"
 import { InMemoryServicoRepository } from "../../repositories/in-memory-servico-repository.js"
 import { InMemoryVeiculoRepository } from "../../repositories/in-memory-veiculo-repository.js"
 
@@ -64,8 +64,11 @@ describe('Iniciar execucao de OS', () => {
 
     await servicoRepository.create(servico)
 
-    const osServico = new OrdemServicoServico({
+    const ordemServicoId = new UniqueEntityID()
+
+    const osServico = OrdemServicoServico.criar({
       servicoId: servico.getId(),
+      ordemServicoId,
       categoria: servico.getCategoria(),
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
@@ -89,26 +92,30 @@ describe('Iniciar execucao de OS', () => {
         anoVeiculo: veiculo.getAno(),
         categoriasDosServicos: osServicoList.getItems().map(servico => servico.getCategoria()),
       }),
-    })
+    }, ordemServicoId)
 
     await ordemServicoRepository.create(ordemServico)
 
-    const output = await sut.executar({
+    const result = await sut.execute({
       mecanicoId: mecanico.getId().toValue(),
       ordemServicoId: ordemServico.getId().toValue()
     })
 
-    expect(output.ordemServico.getId()).toBe(ordemServico.getId())
-    expect(output.ordemServico.getStatus()).toBe('EM_EXECUCAO')
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.ordemServico.getId()).toBe(ordemServico.getId())
+      expect(result.value.ordemServico.getStatus()).toBe('EM_EXECUCAO')
 
-    vi.waitFor(() => {
-      expect(spy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          destinatario: cliente.getTelefone().getValor(),
-          mensagem: expect.stringContaining(ordemServico.getId().toValue())
-        })
-      )
-    })
+      vi.waitFor(() => {
+        expect(spy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            destinatario: cliente.getTelefone().getValor(),
+            mensagem: expect.stringContaining(ordemServico.getId().toValue())
+          })
+        )
+      })
+    }
+
 
   })
 

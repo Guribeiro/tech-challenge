@@ -5,7 +5,7 @@ export interface EncrypterPayload {
   role: 'MECANICO' | 'RECEPCAO' | 'ADMIN' | 'CLIENTE'
 }
 
-export interface Encrypter {
-  encrypt(payload: EncrypterPayload): Promise<string>
-  decrypt(token: string): Promise<EncrypterPayload | null>
+export abstract class Encrypter {
+  abstract encrypt(payload: EncrypterPayload): Promise<string>
+  abstract decrypt(token: string): Promise<EncrypterPayload | null>
 }

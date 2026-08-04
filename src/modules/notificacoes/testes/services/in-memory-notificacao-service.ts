@@ -6,11 +6,11 @@ export interface EnviarNotificacaoInput {
 }
 
 export class InMemoryNotificacaoService implements NotificacaoService {
-  // Uma lista em memória que armazena todas as notificações disparadas
   public envios: EnviarNotificacaoInput[] = []
 
   async enviar(dados: EnviarNotificacaoInput): Promise<void> {
     // Em vez de enviar um WhatsApp real, nós apenas guardamos o envio no array
+    console.log('[NOTIFICACAO SERVICE]', dados)
     this.envios.push(dados)
   }
 

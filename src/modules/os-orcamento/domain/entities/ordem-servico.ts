@@ -1,12 +1,11 @@
-import { Servico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { Optional } from '@/core/types/optional.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js'
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { OrdemServicoServicoList } from './value-objects/ordem-servico-servico-list.js'
 import { OrdemServicoComponenteList } from './value-objects/ordem-servico-componente-list.js'
-import { OrdemServicoServico } from './value-objects/ordem-servico-servico.js'
-import { OrdemServicoComponente } from './value-objects/ordem-servico-componente.js'
+import { OrdemServicoServico } from './ordem-servico-servico.js'
+import { OrdemServicoComponente } from './ordem-servico-componente.js'
 import { DiagnosticoConcluidoEvent } from '../events/diagnostico-concluido-event.js'
 import { DiagnosticoInicializadoEvent } from '../events/diagnostico-inicializado-event.js'
 import { OSExecucaoAutorizadaEvent } from '../events/os-execucao-autorizada-event.js'
@@ -39,11 +38,16 @@ export type OrdemServicoProps = {
   status: StatusOS
   criadoEm: Date
   atualizadoEm?: Date
+  iniciadoEm?: Date
+  finalizadoEm?: Date
 }
 
 export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public static criar(
-    props: Optional<OrdemServicoProps, 'status' | 'mecanicoId' | 'criadoEm'>,
+    props: Optional<
+      OrdemServicoProps,
+      'status' | 'mecanicoId' | 'criadoEm' | 'componentes' | 'servicos'
+    >,
     id?: UniqueEntityID,
   ): OrdemServico {
     const propriedadesCompletas: OrdemServicoProps = {
@@ -66,15 +70,14 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
       )
     }
 
-    if (props.servicos && props.servicos.getItems().some((item) => !item)) {
+    if (props.servicos?.getItems().some((item) => !item)) {
       throw new Error(
         'Cada serviço solicitado precisa apontar para uma entidade de serviço válida.',
       )
     }
 
     if (
-      props.componentes &&
-      props.componentes.getItems().some(
+      props.componentes?.getItems().some(
         (item) => !item.getDescricao()?.trim() || item.getQuantidade() <= 0,
       )
     ) {
@@ -95,6 +98,9 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   public getDescricao(): string {
     return this.props.descricao
   }
+  public getEGarantia(): boolean {
+    return this.props.eGarantia
+  }
 
   public getServicos(): OrdemServicoServicoList {
     return this.props.servicos
@@ -114,6 +120,22 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
   public getMecanicoId(): UniqueEntityID | undefined {
     return this.props.mecanicoId
+  }
+
+  public getCriadoEm(): Date {
+    return this.props.criadoEm
+  }
+
+  public getAtualizadoEm(): Date | undefined {
+    return this.props.atualizadoEm
+  }
+
+  public getIniciadoEm(): Date | undefined {
+    return this.props.iniciadoEm
+  }
+
+  public getFinalizadoEm(): Date | undefined {
+    return this.props.finalizadoEm
   }
 
   public iniciarDiagnostico(mecanicoId: UniqueEntityID): void {
@@ -186,6 +208,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
     this.props.status = 'EM_EXECUCAO'
     this.props.atualizadoEm = new Date()
+    this.props.iniciadoEm = new Date()
 
     this.addDomainEvent(new OSExecucaoIniciadaEvent(this))
   }
@@ -200,13 +223,14 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
 
     this.props.status = 'FINALIZADA'
     this.props.atualizadoEm = new Date()
+    this.props.finalizadoEm = new Date()
 
     this.addDomainEvent(new OSExecucaoFinalizadaEvent(this))
   }
 
 
   public encerrarPorRejeicao(): void {
-    if (this.props.status === 'FINALIZADA') {
+    if (this.props.status === 'ENCERRADA_REJEICAO') {
       throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
     }
 
@@ -217,7 +241,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
   }
 
   public encerrarPorFaturaPaga(): void {
-    if (this.props.status === 'FINALIZADA') {
+    if (this.props.status === 'ENCERRADA') {
       throw new Error('Não é possível encerrar uma Ordem de Serviço que já foi concluída.')
     }
 

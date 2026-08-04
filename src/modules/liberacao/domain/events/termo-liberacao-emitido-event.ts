@@ -12,6 +12,6 @@ export class TermoLiberacaoEmitidoEvent implements DomainEvent {
   }
 
   public getAggregateId(): UniqueEntityID {
-    return new UniqueEntityID(this.termo.getId())
+    return this.termo.getId()
   }
 }

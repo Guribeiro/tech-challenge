@@ -1,14 +1,24 @@
+import { Injectable } from "@nestjs/common";
 import { Produto } from "../../domain/entities/produto.js";
 import { ProdutoRepository } from "../../domain/repositories/produtos-repository.js";
+import { RecursoNaoEncontradoError } from "@/core/errors/index.js";
+import { Either, left, right } from "@/core/either.js";
+import { RegraDeNegocioVioladaError } from "@/core/errors/domain-errors/regra-de-negocio-violada-error.js";
 
 interface DesativarProdutoInput {
   produtoId: string
 }
 
-interface DesativarProdutoOutput {
-  produto: Produto
-}
+type Errors = RecursoNaoEncontradoError
 
+type DesativarProdutoOutput = Either<
+  Errors,
+  {
+    produto: Produto
+  }
+>
+
+@Injectable()
 export class DesativarProdutoUseCase {
   constructor(private readonly produtoRepository: ProdutoRepository) { }
   public async execute({
@@ -17,16 +27,22 @@ export class DesativarProdutoUseCase {
     const produto = await this.produtoRepository.findById(produtoId)
 
     if (!produto) {
-      throw new Error(`Produto com ID ${produtoId} não encontrado`)
+      return left(new RecursoNaoEncontradoError('Produto'))
     }
 
-    produto.desativar()
+    try {
+      produto.desativar()
+    } catch (error) {
+      if (error instanceof RegraDeNegocioVioladaError) {
+        return left(error)
+      }
+      throw error // Lança novamente erros inesperados (ex: falhas de infra/banco)
+    }
 
     await this.produtoRepository.save(produto)
 
-    return {
+    return right({
       produto
-    }
-
+    })
   }
 }
