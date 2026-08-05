@@ -65,7 +65,7 @@ export class GerarOrcamentoUseCase {
       clienteId: new UniqueEntityID(input.clienteId),
       servicos: new OrcamentoServicoList(servicosOrcamento),
       componentes: new OrcamentoComponenteList(componentesOrcamento),
-    })
+    }, orcamentoId)
 
     orcamento.enviar()
 

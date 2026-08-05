@@ -35,7 +35,11 @@ export class ConcluirDiagnosticoService {
     const existentesMap = new Map(
       ordemServico.getServicos().getItems().map((s) => [s.getId().toValue(), s]),
     )
-    const novosIds = [...new Set(servicosInput.filter((s) => !s.id).map((s) => s.servicoId))]
+    const novosIds = [...new Set(
+      servicosInput
+        .filter((s) => !s.id || !existentesMap.has(s.id))
+        .map((s) => s.servicoId)
+    )]
 
     const catalogo = novosIds.length > 0
       ? await this.servicoRepository.findManyByIds(novosIds)
@@ -81,7 +85,11 @@ export class ConcluirDiagnosticoService {
     const existentesMap = new Map(
       ordemServico.getComponentes().getItems().map((c) => [c.getId().toValue(), c]),
     )
-    const novosIds = [...new Set(componentesInput.filter((c) => !c.id).map((c) => c.produtoId))]
+    const novosIds = [...new Set(
+      componentesInput
+        .filter((c) => !c.id || !existentesMap.has(c.id))
+        .map((c) => c.produtoId)
+    )]
 
     const catalogo = novosIds.length > 0
       ? await this.produtoRepository.findManyByIds(novosIds)
