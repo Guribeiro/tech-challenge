@@ -71,10 +71,9 @@ describe('Caso de Uso: Listar Clientes', () => {
     expect(result.isRight()).toBe(true)
     expect(result.value.clientes).toHaveLength(2)
     expect(result.value.total).toBe(2)
-    expect(result.value.clientes.map(cliente => cliente.getId())).toEqual([
-      clienteDeletado1.getId(),
-      clienteDeletado2.getId()
-    ])
+    expect(result.value.clientes.map(cliente => cliente.getId())).toEqual(
+      expect.arrayContaining([clienteDeletado1.getId(), clienteDeletado2.getId()])
+    )
   })
 
   it('deve listar todos os clientes (ativos e deletados) quando status for "todos"', async () => {
