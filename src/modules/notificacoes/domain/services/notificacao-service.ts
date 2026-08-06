@@ -1,6 +1,11 @@
+// src/modules/notificacoes/domain/services/notificacao-service.ts
+
 export interface EnviarNotificacaoProps {
-  destinatario: string // Telefone ou E-mail
-  mensagem: string
+  destinatario: string
+  assunto: string
+  mensagem?: string
+  template?: string
+  contexto?: Record<string, unknown>
 }
 
 export abstract class NotificacaoService {

@@ -1,42 +1,38 @@
 import { Logger } from '@nestjs/common'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { DiagnosticoInicializadoEvent } from '@/modules/os-orcamento/domain/events/diagnostico-inicializado-event.js'
-import { NotificacaoService } from '@/modules/notificacoes/domain/services/notificacao-service.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { ClienteOrdemServicoGateway } from '@/modules/notificacoes/application/gateways/cliente-ordem-servico-gateway.js'
 import { OnDiagnosticoInicializado } from '../../application/subscribers/on-diagnostico-inicializado.js'
 
 describe('OnDiagnosticoInicializado (Subscriber)', () => {
   let clienteOrdemServicoGateway: ClienteOrdemServicoGateway
-  let notificacaoService: NotificacaoService
+  let criarNotificacao: CriarNotificacaoUseCase
   let subscriber: OnDiagnosticoInicializado
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // 1. Mocks das dependências especificadas no subscriber
     clienteOrdemServicoGateway = {
       obterDadosClientePorOrdemServicoId: vi.fn(),
     } as unknown as ClienteOrdemServicoGateway
 
-    notificacaoService = {
-      enviar: vi.fn(),
-    } as unknown as NotificacaoService
+    criarNotificacao = {
+      execute: vi.fn(),
+    } as unknown as CriarNotificacaoUseCase
 
-    // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
-    // 3. Instancia o subscriber (que assina o evento no construtor)
     subscriber = new OnDiagnosticoInicializado(
       clienteOrdemServicoGateway,
-      notificacaoService,
+      criarNotificacao,
     )
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnDiagnosticoInicializado(clienteOrdemServicoGateway, notificacaoService)
+    new OnDiagnosticoInicializado(clienteOrdemServicoGateway, criarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -52,7 +48,6 @@ describe('OnDiagnosticoInicializado (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    // Gateway retorna null para indicar que não encontrou o cliente
     vi.mocked(
       clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId,
     ).mockResolvedValueOnce(null)
@@ -61,22 +56,22 @@ describe('OnDiagnosticoInicializado (Subscriber)', () => {
       ordemServicoId: {
         toValue: () => 'os-uuid-123',
       },
+      clienteId: {
+        toValue: () => 'cli-uuid-123',
+      },
     } as unknown as DiagnosticoInicializadoEvent
 
     await handler(mockEvent)
 
-    // Valida a chamada ao gateway com o ID da OS
     expect(
       clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId,
     ).toHaveBeenCalledWith('os-uuid-123')
 
-    // Valida se o log de aviso (warn) foi emitido
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       '[Subscriber Warning]: Dados do cliente não encontrados para a liberação da OS/Orçamento #os-uuid-123.',
     )
 
-    // Garante que o serviço de notificação NÃO foi acionado
-    expect(notificacaoService.enviar).not.toHaveBeenCalled()
+    expect(criarNotificacao.execute).not.toHaveBeenCalled()
 
     loggerWarnSpy.mockRestore()
   })
@@ -89,10 +84,10 @@ describe('OnDiagnosticoInicializado (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    // Simula retorno dos dados do cliente
     vi.mocked(
       clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId,
     ).mockResolvedValueOnce({
+      clienteId: 'cli-uuid-123',
       clienteNome: 'João da Silva',
       clienteTelefone: '11988889999',
       ordemServicoId: 'os-uuid-123',
@@ -102,18 +97,24 @@ describe('OnDiagnosticoInicializado (Subscriber)', () => {
       ordemServicoId: {
         toValue: () => 'os-uuid-123',
       },
+      clienteId: {
+        toValue: () => 'cli-uuid-123',
+      },
     } as unknown as DiagnosticoInicializadoEvent
 
     await handler(mockEvent)
 
-    // Valida se o NotificacaoService foi chamado com destinatário e mensagem formatados
-    expect(notificacaoService.enviar).toHaveBeenCalledWith({
-      destinatario: '11988889999',
-      mensagem:
+    expect(criarNotificacao.execute).toHaveBeenCalledWith({
+      destinatarioId: 'cli-uuid-123',
+      titulo: 'Diagnostico inicializado',
+      conteudo:
         'Olá João da Silva! O mecânico acabou de iniciar o diagnóstico do seu veículo (OS: os-uuid-123).',
+      template: 'diagnostico-iniciado',
+      contexto: {
+        nome: 'João da Silva',
+      },
     })
 
-    // Valida log de sucesso
     expect(loggerLogSpy).toHaveBeenCalledWith(
       '[Notification Success]: Notificação enviada para o cliente da OS os-uuid-123',
     )
@@ -129,7 +130,9 @@ describe('OnDiagnosticoInicializado (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    const erroInesperado = new Error('Erro de conexão com gateway de SMS/Notificação')
+    const erroInesperado = new Error(
+      'Erro de conexão com gateway de SMS/Notificação',
+    )
     vi.mocked(
       clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId,
     ).mockRejectedValueOnce(erroInesperado)
@@ -138,12 +141,13 @@ describe('OnDiagnosticoInicializado (Subscriber)', () => {
       ordemServicoId: {
         toValue: () => 'os-uuid-123',
       },
+      clienteId: {
+        toValue: () => 'cli-uuid-123',
+      },
     } as unknown as DiagnosticoInicializadoEvent
 
-    // Confirma que a exceção foi capturada e não estoura para fora
     await expect(handler(mockEvent)).resolves.not.toThrow()
 
-    // Valida o log de erro no catch
     expect(loggerErrorSpy).toHaveBeenCalledWith(
       '[Notification Error]: Falha ao disparar notificação para o cliente da OS os-uuid-123',
       erroInesperado,

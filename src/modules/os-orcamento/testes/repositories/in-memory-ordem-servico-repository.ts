@@ -8,7 +8,7 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
   async create(ordemServico: OrdemServico): Promise<void> {
     this.items.push(ordemServico)
 
-    DomainEvents.dispatchEventsForAggregate(ordemServico)
+    await DomainEvents.dispatchEventsForAggregate(ordemServico)
     ordemServico.clearEvents()
   }
 
@@ -18,7 +18,7 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
       this.items[index] = ordemServico
     }
 
-    DomainEvents.dispatchEventsForAggregate(ordemServico)
+    await DomainEvents.dispatchEventsForAggregate(ordemServico)
     ordemServico.clearEvents()
   }
 

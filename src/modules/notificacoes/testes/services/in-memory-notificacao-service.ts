@@ -1,22 +1,19 @@
-import { NotificacaoService } from "../../domain/services/notificacao-service.js"
-
-export interface EnviarNotificacaoInput {
-  destinatario: string
-  mensagem: string
-}
+import { EnviarNotificacaoProps, NotificacaoService } from '../../domain/services/notificacao-service.js'
 
 export class InMemoryNotificacaoService implements NotificacaoService {
-  public envios: EnviarNotificacaoInput[] = []
+  public envios: EnviarNotificacaoProps[] = []
 
-  async enviar(dados: EnviarNotificacaoInput): Promise<void> {
-    // Em vez de enviar um WhatsApp real, nós apenas guardamos o envio no array
-    console.log('[NOTIFICACAO SERVICE]', dados)
-    this.envios.push(dados)
+  async enviar(props: EnviarNotificacaoProps): Promise<void> {
+    this.envios.push(props)
   }
 
   /**
-   * Helper útil para limpar o histórico entre os testes, se necessário
+   * Métodos auxiliares para facilitação de asserções em testes
    */
+  public obterUltimoEnvio(): EnviarNotificacaoProps | undefined {
+    return this.envios.at(-1)
+  }
+
   public limpar(): void {
     this.envios = []
   }

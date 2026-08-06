@@ -26,6 +26,7 @@ export class InMemoryClienteOrdemServicoGateway implements ClienteOrdemServicoGa
 
     // 3. Retorna o DTO esperado pelo domínio de Liberação
     return {
+      clienteId,
       ordemServicoId,
       clienteNome: cliente.getNome().getValor(),
       clienteTelefone: cliente.getTelefone().getValor(),

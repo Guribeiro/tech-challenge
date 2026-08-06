@@ -1,33 +1,29 @@
 import { Logger } from '@nestjs/common'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao-event.js'
-import { EnviarNotificacaoUseCase } from '../../domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { OnOrcamentoRenegociadoRecusado } from '../../application/subscribers/on-orcamento-renegociado-recusado.js'
 
 describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
-  let enviarNotificacao: EnviarNotificacaoUseCase
+  let criarNotificacao: CriarNotificacaoUseCase
   let subscriber: OnOrcamentoRenegociadoRecusado
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // 1. Mock do Use Case de notificação
-    enviarNotificacao = {
+    criarNotificacao = {
       execute: vi.fn(),
-    } as unknown as EnviarNotificacaoUseCase
+    } as unknown as CriarNotificacaoUseCase
 
-    // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
-    // 3. Instancia o subscriber que se auto-registra no construtor
-    subscriber = new OnOrcamentoRenegociadoRecusado(enviarNotificacao)
+    subscriber = new OnOrcamentoRenegociadoRecusado(criarNotificacao)
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnOrcamentoRenegociadoRecusado(enviarNotificacao)
+    new OnOrcamentoRenegociadoRecusado(criarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -51,14 +47,16 @@ describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se a notificação foi enviada para o e-mail da gerência com a mensagem formatada
-    expect(enviarNotificacao.execute).toHaveBeenCalledWith({
-      destinatario: 'gerencia@oficina.com',
-      mensagem:
+    // Valida se o Use Case foi chamado com a nova estrutura de DTO
+    expect(criarNotificacao.execute).toHaveBeenCalledWith({
+      destinatarioId: 'gerencia@oficina.com',
+      conteudo:
         'O orçamento da OS #os-uuid-123 foi REJEITADO DEFINITIVAMENTE pelo cliente após tentativas de renegociação. O processo foi encerrado.',
+      titulo: 'Orcamento renegociado recusado',
+      template: 'orcamento-renegociado-recusado',
     })
 
-    // Valida se o log de informação foi gerado
+    // Valida o log de informação
     expect(loggerLogSpy).toHaveBeenCalledWith(
       'Notificação enviada para a gerência sobre a recusa definitiva do orçamento da OS #os-uuid-123.',
     )
@@ -75,7 +73,7 @@ describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
     const handler = registerSpy.mock.calls[0][0]
 
     const erroInesperado = new Error('Falha de envio no provedor de e-mail')
-    vi.mocked(enviarNotificacao.execute).mockRejectedValueOnce(erroInesperado)
+    vi.mocked(criarNotificacao.execute).mockRejectedValueOnce(erroInesperado)
 
     const mockEvent = {
       ordemServico: {
@@ -83,10 +81,8 @@ describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
       },
     } as unknown as OSEncerradaPorRejeicaoEvent
 
-    // Confirma resiliência: o subscriber absorve o erro sem quebrar o fluxo
     await expect(handler(mockEvent)).resolves.not.toThrow()
 
-    // Valida se o log de erro foi gravado no bloco catch
     expect(loggerErrorSpy).toHaveBeenCalledWith(
       '[Subscriber Error]: Falha ao enviar notificação sobre a recusa definitiva do orçamento da OS #os-uuid-123',
       erroInesperado,

@@ -14,7 +14,7 @@ export class PrismaOrcamentoRepository implements OrcamentoRepository {
   public async create(orcamento: Orcamento): Promise<void> {
     const data = PrismaOrcamentoMapper.toPrisma(orcamento)
     await this.prisma.orcamento.create({ data })
-    DomainEvents.dispatchEventsForAggregate(orcamento)
+    await DomainEvents.dispatchEventsForAggregate(orcamento)
   }
 
   public async findById(id: string): Promise<Orcamento | null> {
@@ -115,7 +115,7 @@ export class PrismaOrcamentoRepository implements OrcamentoRepository {
         : []),
     ])
 
-    DomainEvents.dispatchEventsForAggregate(orcamento)
+    await DomainEvents.dispatchEventsForAggregate(orcamento)
     orcamento.clearEvents()
   }
 

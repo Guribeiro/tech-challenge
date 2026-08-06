@@ -1,5 +1,6 @@
 // src/modules/liberacao/application/gateways/cliente-ordem-servico-gateway.ts
 export interface DadosClienteOSDTO {
+  clienteId: string
   clienteNome: string
   clienteTelefone: string
   ordemServicoId: string

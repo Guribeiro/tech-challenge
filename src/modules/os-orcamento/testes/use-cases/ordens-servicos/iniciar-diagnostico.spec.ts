@@ -15,6 +15,9 @@ import { makeServico } from '../../factories/make-servico.js'
 import { OrdemServicoServico } from '@/modules/os-orcamento/domain/entities/ordem-servico-servico.js'
 import { OrdemServicoServicoList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js'
 import { OrdemServicoComponenteList } from '@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js'
+import { InMemoryClienteOrdemServicoGateway } from '@/modules/liberacao/testes/gateways/in-memory-cliente-ordem-servico-gateway.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
+import { InMemoryNotificacaoRepository } from '@/modules/notificacoes/testes/repositories/in-memory-notificacao-repository.js'
 
 let notificacaoService: InMemoryNotificacaoService
 let ordemServicoRepository: InMemoryOrdemServicoRepository
@@ -22,7 +25,9 @@ let mecanicoRepository: InMemoryMecanicosRepository
 let clienteRepository: InMemoryClienteRepository
 let veiculoRepository: InMemoryVeiculoRepository
 let sut: IniciarDiagnosticoUseCase
-
+let clienteOrdemServicoGateway: InMemoryClienteOrdemServicoGateway
+let criarNotificacao: CriarNotificacaoUseCase
+let notificacaoRepository: InMemoryNotificacaoRepository
 
 describe('Caso de Uso: Iniciar Diagnostico', () => {
   beforeEach(() => {
@@ -31,6 +36,14 @@ describe('Caso de Uso: Iniciar Diagnostico', () => {
     mecanicoRepository = new InMemoryMecanicosRepository()
     clienteRepository = new InMemoryClienteRepository()
     veiculoRepository = new InMemoryVeiculoRepository()
+    notificacaoRepository = new InMemoryNotificacaoRepository()
+
+    clienteOrdemServicoGateway = new InMemoryClienteOrdemServicoGateway(
+      ordemServicoRepository,
+      clienteRepository,
+    )
+
+    criarNotificacao = new CriarNotificacaoUseCase(notificacaoRepository)
 
     sut = new IniciarDiagnosticoUseCase(
       ordemServicoRepository,
@@ -38,7 +51,7 @@ describe('Caso de Uso: Iniciar Diagnostico', () => {
       veiculoRepository
     )
 
-    new OnDiagnosticoInicializado(clienteRepository, notificacaoService)
+    new OnDiagnosticoInicializado(clienteOrdemServicoGateway, criarNotificacao)
   })
 
   it('Caso de Uso: Iniciar Diagnostico', async () => {

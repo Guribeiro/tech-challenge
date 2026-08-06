@@ -33,6 +33,7 @@ export class InMemoryClienteOrcamentoGateway implements ClienteOrcamentoGateway 
     if (!cliente) return null
 
     return {
+      clienteId: cliente.getId().toValue(),
       nome: cliente.getNome().getValor(),
       telefone: cliente.getTelefone().getValor(),
       ordemServicoId: osId,

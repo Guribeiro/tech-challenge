@@ -16,7 +16,7 @@ export class PrismaFaturaRepository implements FaturaRepository {
       data,
     })
 
-    DomainEvents.dispatchEventsForAggregate(fatura)
+    await DomainEvents.dispatchEventsForAggregate(fatura)
   }
 
   async save(fatura: Fatura): Promise<void> {
@@ -34,7 +34,7 @@ export class PrismaFaturaRepository implements FaturaRepository {
     })
 
     // Dispara os eventos acumulados (ex: FaturaPagaEvent)
-    DomainEvents.dispatchEventsForAggregate(fatura)
+    await DomainEvents.dispatchEventsForAggregate(fatura)
   }
 
   async findById(id: string): Promise<Fatura | null> {

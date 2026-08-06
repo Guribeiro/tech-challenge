@@ -7,8 +7,7 @@ import { OnOrcamentoEnviado } from './application/subscribers/on-orcamento-envia
 import { OnExecucaoIniciada } from './application/subscribers/on-os-execucao-iniciada.js'
 import { OnUsuarioCriado } from './application/subscribers/on-usuario-criado.js'
 import { NotificacaoService } from './domain/services/notificacao-service.js'
-import { EnviarNotificacaoUseCase } from './domain/use-cases/enviar-notificacao.js'
-import { InMemoryNotificacaoService } from './testes/services/in-memory-notificacao-service.js'
+import { CriarNotificacaoUseCase } from './application/use-cases/criar-notificacao.js'
 import { ClienteOrcamentoGateway } from './application/gateways/cliente-orcamento-gateway.js'
 import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento-gateway.js'
 import { ClienteOrdemServicoGateway } from '@/modules/notificacoes/application/gateways/cliente-ordem-servico-gateway.js'
@@ -20,6 +19,12 @@ import { OnOrcamentoRecusado } from './application/subscribers/on-orcamento-recu
 import { OnOrcamentoRenegociadoRecusado } from './application/subscribers/on-orcamento-renegociado-recusado.js'
 import { OnOrcamentoRenegociado } from './application/subscribers/on-orcamento-renegociado.js'
 import { OnTermoLiberacaoEmitido } from './application/subscribers/on-termo-liberacao-emitido.js'
+import { OnNotificacaoCriada } from './application/subscribers/on-notificacao-criada.js'
+import { EtherealNotificacaoService } from './infra/services/ethereal-notificacao-service.js'
+import { NotificacaosRepository } from './domain/repositories/notificacao-repository.js'
+import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
+import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
+import { PrismaNotificacaosRepository } from '@/infra/database/prisma/repositories/prisma-notificacao-repository.js'
 
 @Module({
   imports: [
@@ -27,7 +32,7 @@ import { OnTermoLiberacaoEmitido } from './application/subscribers/on-termo-libe
   ],
   providers: [
     PrismaService,
-    EnviarNotificacaoUseCase,
+    CriarNotificacaoUseCase,
     OnUsuarioCriado,
     OnDiagnosticoInicializado,
     OnOrcamentoEnviado,
@@ -37,9 +42,10 @@ import { OnTermoLiberacaoEmitido } from './application/subscribers/on-termo-libe
     OnOrcamentoRenegociadoRecusado,
     OnOrcamentoRenegociado,
     OnTermoLiberacaoEmitido,
+    OnNotificacaoCriada,
     {
-      provide: NotificacaoService,
-      useClass: InMemoryNotificacaoService,
+      provide: NotificacaosRepository,
+      useClass: PrismaNotificacaosRepository,
     },
     {
       provide: ClienteRepository,
@@ -52,11 +58,19 @@ import { OnTermoLiberacaoEmitido } from './application/subscribers/on-termo-libe
     {
       provide: ClienteOrcamentoGateway,
       useClass: DbClienteOrcamentoGateway
-    }
+    },
+    {
+      provide: NotificacaoService,
+      useClass: EtherealNotificacaoService,
+    },
+    {
+      provide: UsuariosRepository,
+      useClass: PrismaUsuarioRepository,
+    },
 
   ],
   exports: [
-    EnviarNotificacaoUseCase,
+    CriarNotificacaoUseCase,
   ],
 })
 export class NotificacoesModule { }

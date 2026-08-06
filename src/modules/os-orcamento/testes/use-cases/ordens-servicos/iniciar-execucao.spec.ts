@@ -1,12 +1,13 @@
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
-import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-cases/enviar-notificacao.js"
-import { InMemoryNotificacaoService } from "@/modules/notificacoes/testes/services/in-memory-notificacao-service.js"
 import { IniciarExecucaoUseCase } from "@/modules/os-orcamento/application/use-cases/ordens-servicos/iniciar-execucao.js"
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js"
 import { OrdemServicoComponenteList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-componente-list.js"
 import { OrdemServicoServicoList } from "@/modules/os-orcamento/domain/entities/value-objects/ordem-servico-servico-list.js"
 import { OrdemServicoServico } from "@/modules/os-orcamento/domain/entities/ordem-servico-servico.js"
 import { Prioridade } from "@/modules/os-orcamento/domain/entities/value-objects/prioridade.js"
+import { CriarNotificacaoUseCase } from "@/modules/notificacoes/application/use-cases/criar-notificacao.js"
+import { ClienteOrdemServicoGateway } from "@/modules/notificacoes/application/gateways/cliente-ordem-servico-gateway.js"
+import { OnExecucaoIniciada } from "@/modules/notificacoes/application/subscribers/on-os-execucao-iniciada.js"
 import { makeCliente } from "../../factories/make-cliente.js"
 import { makeMecanico } from "../../factories/make-mecanico.js"
 import { makeServico } from "../../factories/make-servico.js"
@@ -17,36 +18,43 @@ import { InMemoryOrdemServicoRepository } from "../../repositories/in-memory-ord
 import { InMemoryServicoRepository } from "../../repositories/in-memory-servico-repository.js"
 import { InMemoryVeiculoRepository } from "../../repositories/in-memory-veiculo-repository.js"
 
-
-describe('Iniciar execucao de OS', () => {
-  let notificacaoService: InMemoryNotificacaoService
-  let enviarNotificacaoUseCase: EnviarNotificacaoUseCase
+describe('Iniciar execução de OS', () => {
   let ordemServicoRepository: InMemoryOrdemServicoRepository
   let mecanicoRepository: InMemoryMecanicosRepository
   let clienteRepository: InMemoryClienteRepository
   let veiculoRepository: InMemoryVeiculoRepository
   let servicoRepository: InMemoryServicoRepository
+  let clienteOrdemServicoGateway: ClienteOrdemServicoGateway
+  let criarNotificacao: CriarNotificacaoUseCase
   let sut: IniciarExecucaoUseCase
 
   beforeEach(() => {
-    notificacaoService = new InMemoryNotificacaoService()
+    vi.clearAllMocks()
+
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
     mecanicoRepository = new InMemoryMecanicosRepository()
     clienteRepository = new InMemoryClienteRepository()
     veiculoRepository = new InMemoryVeiculoRepository()
     servicoRepository = new InMemoryServicoRepository()
 
-    enviarNotificacaoUseCase = new EnviarNotificacaoUseCase(notificacaoService)
+    clienteOrdemServicoGateway = {
+      obterDadosClientePorOrdemServicoId: vi.fn(),
+    } as unknown as ClienteOrdemServicoGateway
+
+    criarNotificacao = {
+      execute: vi.fn(),
+    } as unknown as CriarNotificacaoUseCase
+
+    // Registra o subscriber que reage ao evento de inicio de execução
+    new OnExecucaoIniciada(clienteOrdemServicoGateway, criarNotificacao)
 
     sut = new IniciarExecucaoUseCase(
       ordemServicoRepository,
       mecanicoRepository,
     )
-
-    vi.clearAllMocks()
   })
 
-  it('mecanico deve poder iniciar a execucao de uma OS', async () => {
+  it('mecânico deve poder iniciar a execução de uma OS e disparar notificação via subscriber', async () => {
     const mecanico = makeMecanico()
     await mecanicoRepository.create(mecanico)
 
@@ -56,12 +64,9 @@ describe('Iniciar execucao de OS', () => {
     const veiculo = makeVeiculo()
     await veiculoRepository.create(veiculo)
 
-    const spy = vi.spyOn(enviarNotificacaoUseCase, 'execute')
-
     const servico = makeServico({
       categoria: 'ELETRICA'
     })
-
     await servicoRepository.create(servico)
 
     const ordemServicoId = new UniqueEntityID()
@@ -73,7 +78,7 @@ describe('Iniciar execucao de OS', () => {
       nome: servico.getNome(),
       precoUnitario: servico.getValorReferencia(),
       descricao: servico.getDescricao(),
-      observacao: 'Reparos nos sistema eletrico'
+      observacao: 'Reparos no sistema elétrico'
     })
 
     const osServicoList = new OrdemServicoServicoList([osServico])
@@ -96,6 +101,16 @@ describe('Iniciar execucao de OS', () => {
 
     await ordemServicoRepository.create(ordemServico)
 
+    // Configura o retorno do gateway simulando a busca dos dados do cliente
+    vi.mocked(
+      clienteOrdemServicoGateway.obterDadosClientePorOrdemServicoId,
+    ).mockResolvedValueOnce({
+      clienteId: cliente.getId().toValue(),
+      clienteNome: cliente.getNome().getValor(),
+      clienteTelefone: cliente.getTelefone().getValor(),
+      ordemServicoId: ordemServico.getId().toValue(),
+    })
+
     const result = await sut.execute({
       mecanicoId: mecanico.getId().toValue(),
       ordemServicoId: ordemServico.getId().toValue()
@@ -103,20 +118,18 @@ describe('Iniciar execucao de OS', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      expect(result.value.ordemServico.getId()).toBe(ordemServico.getId())
+      expect(result.value.ordemServico.getId().equals(ordemServico.getId())).toBe(true)
       expect(result.value.ordemServico.getStatus()).toBe('EM_EXECUCAO')
 
-      vi.waitFor(() => {
-        expect(spy).toHaveBeenCalledWith(
-          expect.objectContaining({
-            destinatario: cliente.getTelefone().getValor(),
-            mensagem: expect.stringContaining(ordemServico.getId().toValue())
-          })
-        )
+      // Valida se o subscriber capturou o evento e chamou a criação da notificação com o novo DTO
+      await vi.waitFor(() => {
+        expect(criarNotificacao.execute).toHaveBeenCalledWith({
+          destinatarioId: cliente.getId().toValue(),
+          conteudo: expect.stringContaining(ordemServico.getId().toValue()),
+          template: 'os-execucao-iniciada',
+          titulo: 'Execução de OS iniciada',
+        })
       })
     }
-
-
   })
-
 })
