@@ -21,18 +21,25 @@ import { OnOrcamentoRenegociado } from './application/subscribers/on-orcamento-r
 import { OnTermoLiberacaoEmitido } from './application/subscribers/on-termo-liberacao-emitido.js'
 import { OnNotificacaoCriada } from './application/subscribers/on-notificacao-criada.js'
 import { EtherealNotificacaoService } from './infra/services/ethereal-notificacao-service.js'
-import { NotificacaosRepository } from './domain/repositories/notificacao-repository.js'
+import { NotificacaoRepository } from './domain/repositories/notificacao-repository.js'
 import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
 import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/prisma-usuario.repository.js'
-import { PrismaNotificacaosRepository } from '@/infra/database/prisma/repositories/prisma-notificacao-repository.js'
+import { PrismaNotificacaoRepository } from '@/infra/database/prisma/repositories/prisma-notificacao-repository.js'
+import { ListarNotificacoesDestinatarioController } from './controllers/listar-notificacoes-destinatario.controller.js'
+import { ListarNotificacoesDestinatarioUseCase } from './application/use-cases/listar-notificacoes-destinatario.js'
+import { MarcarNotificacaoComoLidaController } from './controllers/marcar-notificacao-como-lida.controller.js'
+import { MarcarNotificacaoComoLidaUseCase } from './application/use-cases/marcar-notificacao-como-lida.js'
 
 @Module({
   imports: [
     OsOrcamentoModule
   ],
+  controllers: [ListarNotificacoesDestinatarioController, MarcarNotificacaoComoLidaController],
   providers: [
     PrismaService,
     CriarNotificacaoUseCase,
+    ListarNotificacoesDestinatarioUseCase,
+    MarcarNotificacaoComoLidaUseCase,
     OnUsuarioCriado,
     OnDiagnosticoInicializado,
     OnOrcamentoEnviado,
@@ -44,8 +51,8 @@ import { PrismaNotificacaosRepository } from '@/infra/database/prisma/repositori
     OnTermoLiberacaoEmitido,
     OnNotificacaoCriada,
     {
-      provide: NotificacaosRepository,
-      useClass: PrismaNotificacaosRepository,
+      provide: NotificacaoRepository,
+      useClass: PrismaNotificacaoRepository,
     },
     {
       provide: ClienteRepository,

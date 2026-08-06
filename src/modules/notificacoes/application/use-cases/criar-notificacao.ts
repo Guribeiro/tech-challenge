@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { Notificacao } from "../../domain/entities/notificacao.js"
-import { NotificacaosRepository } from "../../domain/repositories/notificacao-repository.js"
+import { NotificacaoRepository } from "../../domain/repositories/notificacao-repository.js"
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js"
 
 interface EnviarNotificacaoInput {
@@ -18,7 +18,7 @@ interface EnviarNotificacaoOutput {
 @Injectable()
 export class CriarNotificacaoUseCase {
   constructor(
-    private readonly notificacaoRepository: NotificacaosRepository
+    private readonly notificacaoRepository: NotificacaoRepository
   ) { }
 
   public async execute({
