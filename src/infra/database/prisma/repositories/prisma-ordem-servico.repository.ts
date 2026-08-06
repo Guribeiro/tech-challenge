@@ -15,7 +15,7 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
   public async create(ordem: OrdemServico): Promise<void> {
     const data = PrismaOrdemServicoMapper.toPrisma(ordem)
     await this.prisma.ordemServico.create({ data })
-    DomainEvents.dispatchEventsForAggregate(ordem)
+    await DomainEvents.dispatchEventsForAggregate(ordem)
   }
 
   public async findById(id: string): Promise<OrdemServico | null> {
@@ -99,7 +99,7 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
         : []),
     ])
 
-    DomainEvents.dispatchEventsForAggregate(ordem)
+    await DomainEvents.dispatchEventsForAggregate(ordem)
     ordem.clearEvents()
   }
 

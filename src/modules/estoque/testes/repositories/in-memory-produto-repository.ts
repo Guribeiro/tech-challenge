@@ -15,7 +15,7 @@ export class InMemoryProdutoRepository implements ProdutoRepository {
       this.produtos[index] = produto
     }
 
-    DomainEvents.dispatchEventsForAggregate(produto)
+    await DomainEvents.dispatchEventsForAggregate(produto)
   }
 
   async findById(id: string): Promise<Produto | null> {

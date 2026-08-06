@@ -1,33 +1,29 @@
 import { Logger } from '@nestjs/common'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { UsuarioCriadoEvent } from '@/modules/autenticacao/domain/events/usuario-criado-event.js'
-import { EnviarNotificacaoUseCase } from '../../domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { OnUsuarioCriado } from '../../application/subscribers/on-usuario-criado.js'
 
 describe('OnUsuarioCriado (Subscriber)', () => {
-  let enviarNotificacao: EnviarNotificacaoUseCase
+  let criarNotificacao: CriarNotificacaoUseCase
   let subscriber: OnUsuarioCriado
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // 1. Mock do Use Case de notificação
-    enviarNotificacao = {
+    criarNotificacao = {
       execute: vi.fn(),
-    } as unknown as EnviarNotificacaoUseCase
+    } as unknown as CriarNotificacaoUseCase
 
-    // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
-    // 3. Instancia o subscriber que se auto-registra no construtor
-    subscriber = new OnUsuarioCriado(enviarNotificacao)
+    subscriber = new OnUsuarioCriado(criarNotificacao)
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnUsuarioCriado(enviarNotificacao)
+    new OnUsuarioCriado(criarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -45,6 +41,7 @@ describe('OnUsuarioCriado (Subscriber)', () => {
 
     const mockEvent = {
       usuario: {
+        getId: () => ({ toValue: () => 'usr-uuid-123' }),
         getEmail: () => ({
           getValor: () => 'novo.usuario@oficina.com',
         }),
@@ -54,13 +51,20 @@ describe('OnUsuarioCriado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o Use Case de notificação foi acionado com o e-mail e a senha provisória
-    expect(enviarNotificacao.execute).toHaveBeenCalledWith({
-      destinatario: 'novo.usuario@oficina.com',
-      mensagem: 'Olá! A sua senha provisória é SenhaTemp123!.',
+    // Valida se o Use Case de notificação foi acionado com o DTO e contexto do template corretos
+    expect(criarNotificacao.execute).toHaveBeenCalledWith({
+      destinatarioId: 'usr-uuid-123',
+      titulo: 'Credenciais de acesso',
+      conteudo: 'Olá! A sua senha provisória é SenhaTemp123!.',
+      template: 'usuario-criado',
+      contexto: {
+        nome: 'novo.usuario@oficina.com',
+        email: 'novo.usuario@oficina.com',
+        senhaPlana: 'SenhaTemp123!',
+      },
     })
 
-    // Valida se o log de sucesso foi emitido com o e-mail do usuário
+    // Valida se o log de sucesso foi emitido
     expect(loggerLogSpy).toHaveBeenCalledWith(
       '[Notification Success]: Notificação enviada para o usuário novo.usuario@oficina.com',
     )
@@ -77,10 +81,11 @@ describe('OnUsuarioCriado (Subscriber)', () => {
     const handler = registerSpy.mock.calls[0][0]
 
     const erroInesperado = new Error('Falha no servidor SMTP / envio de e-mail')
-    vi.mocked(enviarNotificacao.execute).mockRejectedValueOnce(erroInesperado)
+    vi.mocked(criarNotificacao.execute).mockRejectedValueOnce(erroInesperado)
 
     const mockEvent = {
       usuario: {
+        getId: () => ({ toValue: () => 'usr-uuid-123' }),
         getEmail: () => ({
           getValor: () => 'novo.usuario@oficina.com',
         }),

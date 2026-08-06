@@ -1,42 +1,38 @@
 import { Logger } from '@nestjs/common'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { OrcamentoRenegociadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-renegociado-event.js'
-import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { ClienteOrcamentoGateway } from '../../application/gateways/cliente-orcamento-gateway.js'
 import { OnOrcamentoRenegociado } from '../../application/subscribers/on-orcamento-renegociado.js'
 
 describe('OnOrcamentoRenegociado (Subscriber)', () => {
   let clienteOrcamentoGateway: ClienteOrcamentoGateway
-  let enviarNotificacao: EnviarNotificacaoUseCase
+  let criarNotificacao: CriarNotificacaoUseCase
   let subscriber: OnOrcamentoRenegociado
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // 1. Mocks das dependências
     clienteOrcamentoGateway = {
       obterDadosNotificacaoPorOrcamentoId: vi.fn(),
     } as unknown as ClienteOrcamentoGateway
 
-    enviarNotificacao = {
+    criarNotificacao = {
       execute: vi.fn(),
-    } as unknown as EnviarNotificacaoUseCase
+    } as unknown as CriarNotificacaoUseCase
 
-    // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
-    // 3. Instancia o subscriber que registra a assinatura no construtor
     subscriber = new OnOrcamentoRenegociado(
       clienteOrcamentoGateway,
-      enviarNotificacao,
+      criarNotificacao,
     )
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnOrcamentoRenegociado(clienteOrcamentoGateway, enviarNotificacao)
+    new OnOrcamentoRenegociado(clienteOrcamentoGateway, criarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -52,7 +48,6 @@ describe('OnOrcamentoRenegociado (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    // Gateway retorna null para indicar que não encontrou o cliente
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockResolvedValueOnce(null)
@@ -65,18 +60,14 @@ describe('OnOrcamentoRenegociado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o gateway foi consultado com o ID correto do orçamento
     expect(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).toHaveBeenCalledWith('orcamento-uuid-123')
 
-    // Valida se o log de aviso foi emitido com o ID do orçamento
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       '[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: orcamento-uuid-123).',
     )
-
-    // Confirma que a notificação NÃO foi disparada
-    expect(enviarNotificacao.execute).not.toHaveBeenCalled()
+    expect(criarNotificacao.execute).not.toHaveBeenCalled()
 
     loggerWarnSpy.mockRestore()
   })
@@ -85,10 +76,10 @@ describe('OnOrcamentoRenegociado (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    // Simula retorno positivo do gateway
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockResolvedValueOnce({
+      clienteId: 'cli-uuid-123',
       nome: 'Fernanda Lima',
       telefone: '11966665555',
       ordemServicoId: 'os-uuid-789',
@@ -102,11 +93,12 @@ describe('OnOrcamentoRenegociado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o Use Case de notificação foi acionado com o template e link corretos
-    expect(enviarNotificacao.execute).toHaveBeenCalledWith({
-      destinatario: '11966665555',
-      mensagem:
+    expect(criarNotificacao.execute).toHaveBeenCalledWith({
+      destinatarioId: 'cli-uuid-123',
+      conteudo:
         'Olá Fernanda Lima! Preparamos uma proposta especial revisada para o seu veículo. Acesse o link para conferir as novas condições: [Link do Orçamento #orcamento-uuid-123]',
+      titulo: 'Orcamento renegociado recusado',
+      template: 'orcamento-renegociado',
     })
   })
 
@@ -118,7 +110,7 @@ describe('OnOrcamentoRenegociado (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    const erroInesperado = new Error('Falha de timeout na API de mensagens')
+    const erroInesperado = new Error('Falha de timeout na API de e-mail')
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockRejectedValueOnce(erroInesperado)
@@ -129,10 +121,8 @@ describe('OnOrcamentoRenegociado (Subscriber)', () => {
       },
     } as unknown as OrcamentoRenegociadoEvent
 
-    // Garante que o handler absorve a falha assíncrona
     await expect(handler(mockEvent)).resolves.not.toThrow()
 
-    // Valida se o log de erro foi gravado no bloco catch
     expect(loggerErrorSpy).toHaveBeenCalledWith(
       '[Subscriber Error]: Falha ao disparar nova proposta para o cliente',
       erroInesperado,

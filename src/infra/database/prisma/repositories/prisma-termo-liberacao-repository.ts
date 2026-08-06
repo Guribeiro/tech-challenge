@@ -40,7 +40,7 @@ export class PrismaTermoLiberacaoRepository implements TermoLiberacaoRepository 
       data,
     })
 
-    DomainEvents.dispatchEventsForAggregate(termo)
+    await DomainEvents.dispatchEventsForAggregate(termo)
   }
 
   async save(termo: TermoLiberacao): Promise<void> {
@@ -51,6 +51,6 @@ export class PrismaTermoLiberacaoRepository implements TermoLiberacaoRepository 
       data,
     })
 
-    DomainEvents.dispatchEventsForAggregate(termo)
+    await DomainEvents.dispatchEventsForAggregate(termo)
   }
 }

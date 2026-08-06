@@ -1,33 +1,32 @@
 import { Logger } from '@nestjs/common'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { OrcamentoRecusadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-recusado-event.js'
-import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { OnOrcamentoRecusado } from '../../application/subscribers/on-orcamento-recusado.js'
 
 describe('OnOrcamentoRecusado (Subscriber)', () => {
-  let enviarNotificacao: EnviarNotificacaoUseCase
+  let criarNotificacao: CriarNotificacaoUseCase
   let subscriber: OnOrcamentoRecusado
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     // 1. Mock do Use Case de notificação
-    enviarNotificacao = {
+    criarNotificacao = {
       execute: vi.fn(),
-    } as unknown as EnviarNotificacaoUseCase
+    } as unknown as CriarNotificacaoUseCase
 
     // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
     // 3. Instancia o subscriber que se auto-registra no construtor
-    subscriber = new OnOrcamentoRecusado(enviarNotificacao)
+    subscriber = new OnOrcamentoRecusado(criarNotificacao)
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnOrcamentoRecusado(enviarNotificacao)
+    new OnOrcamentoRecusado(criarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -52,11 +51,13 @@ describe('OnOrcamentoRecusado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se a mensagem foi disparada para o e-mail/destino fixo da recepção
-    expect(enviarNotificacao.execute).toHaveBeenCalledWith({
-      destinatario: 'recepcao@oficina.com',
-      mensagem:
+    // Valida se o Use Case de notificação foi acionado com o DTO correto
+    expect(criarNotificacao.execute).toHaveBeenCalledWith({
+      destinatarioId: 'recepcao@oficina.com',
+      conteudo:
         'Atenção! O cliente recusou o orçamento original da OS #os-uuid-456. Inicie o processo de renegociação.',
+      titulo: 'Orcamento recusado',
+      template: 'orcamento-recusado',
     })
 
     // Valida o log de informação
@@ -76,7 +77,7 @@ describe('OnOrcamentoRecusado (Subscriber)', () => {
     const handler = registerSpy.mock.calls[0][0]
 
     const erroInesperado = new Error('Erro de integração com serviço de e-mail')
-    vi.mocked(enviarNotificacao.execute).mockRejectedValueOnce(erroInesperado)
+    vi.mocked(criarNotificacao.execute).mockRejectedValueOnce(erroInesperado)
 
     const mockEvent = {
       orcamento: {

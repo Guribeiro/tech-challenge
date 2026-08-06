@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { OrcamentoRenegociadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-renegociado-event.js'
-import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { Injectable, Logger } from '@nestjs/common'
 import { ClienteOrcamentoGateway } from '../gateways/cliente-orcamento-gateway.js'
 
@@ -10,7 +10,7 @@ export class OnOrcamentoRenegociado implements EventHandler {
   private readonly logger = new Logger(OnOrcamentoRenegociado.name)
   constructor(
     private readonly clienteOrcamentoGateway: ClienteOrcamentoGateway,
-    private readonly enviarNotificacao: EnviarNotificacaoUseCase,
+    private readonly criarNotificacao: CriarNotificacaoUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -32,12 +32,15 @@ export class OnOrcamentoRenegociado implements EventHandler {
         this.logger.warn(`[Subscriber Warning]: Não foi possível obter os dados do cliente para notificação da fatura emitida (Orçamento ID: ${orcamentoId}).`)
         return
       }
-      const { nome, telefone } = dadosCliente
+      const { nome, clienteId } = dadosCliente
 
-      await this.enviarNotificacao.execute({
-        destinatario: telefone,
-        mensagem: `Olá ${nome}! Preparamos uma proposta especial revisada para o seu veículo. Acesse o link para conferir as novas condições: [Link do Orçamento #${orcamento.getId().toValue()}]`
+      await this.criarNotificacao.execute({
+        destinatarioId: clienteId,
+        conteudo: `Olá ${nome}! Preparamos uma proposta especial revisada para o seu veículo. Acesse o link para conferir as novas condições: [Link do Orçamento #${orcamento.getId().toValue()}]`,
+        titulo: 'Orcamento renegociado recusado',
+        template: 'orcamento-renegociado'
       })
+
     } catch (error) {
       this.logger.error(`[Subscriber Error]: Falha ao disparar nova proposta para o cliente`, error)
     }

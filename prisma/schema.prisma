@@ -81,12 +81,13 @@ enum MotivoTermoLiberacao {
 }
 
 model Usuario {
-  id           String    @id
-  email        String    @unique
-  senhaHash    String    @map("senha_hash")
-  criadoEm     DateTime  @default(now()) @map("criado_em")
-  atualizadoEm DateTime? @updatedAt @map("atualizado_em")
+  id           String        @id
+  email        String        @unique
+  senhaHash    String        @map("senha_hash")
+  criadoEm     DateTime      @default(now()) @map("criado_em")
+  atualizadoEm DateTime?     @updatedAt @map("atualizado_em")
   role         Role
+  notificacaos Notificacao[]
 
   @@map("usuarios")
 }
@@ -363,4 +364,20 @@ model TermoLiberacao {
   emitidoEm DateTime @default(now()) @map("emitido_em")
 
   @@map("termo_liberacoes")
+}
+
+model Notificacao {
+  id String @id
+
+  destinatarioId String  @map("destinatario_id")
+  destinatario   Usuario @relation(fields: [destinatarioId], references: [id])
+
+  titulo   String
+  conteudo String
+  template String?
+  contexto Json?
+  lidaEm   DateTime? @map("lida_em")
+  criadaEm DateTime  @default(now()) @map("criada_em")
+
+  @@map("notificacoes")
 }
