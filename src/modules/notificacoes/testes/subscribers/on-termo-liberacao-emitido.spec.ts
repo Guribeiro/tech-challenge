@@ -14,10 +14,13 @@ import { makeVeiculo } from '@/modules/os-orcamento/testes/factories/make-veicul
 import { InMemoryClienteRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-cliente-repository.js'
 import { InMemoryOrdemServicoRepository } from '@/modules/os-orcamento/testes/repositories/in-memory-ordem-servico-repository.js'
 import { OnTermoLiberacaoEmitido } from '../../application/subscribers/on-termo-liberacao-emitido.js'
+import { makeUsuario } from '@/modules/autenticacao/testes/factories/make-usuario.js'
+import { InMemoryUsuariosRepository } from '@/modules/autenticacao/testes/repositories/in-memory-users-repository.js'
 
 describe('OnTermoLiberacaoEmitido (Subscriber)', () => {
   let ordemServicoRepository: InMemoryOrdemServicoRepository
   let clienteRepository: InMemoryClienteRepository
+  let usuarioRepository: InMemoryUsuariosRepository
   let enviarNotificacao: CriarNotificacaoUseCase
   let clienteOrdemServicoGateway: InMemoryClienteOrdemServicoGateway
 
@@ -26,6 +29,7 @@ describe('OnTermoLiberacaoEmitido (Subscriber)', () => {
 
     ordemServicoRepository = new InMemoryOrdemServicoRepository()
     clienteRepository = new InMemoryClienteRepository()
+    usuarioRepository = new InMemoryUsuariosRepository()
     enviarNotificacao = {
       execute: vi.fn(),
     } as unknown as CriarNotificacaoUseCase
@@ -59,6 +63,9 @@ describe('OnTermoLiberacaoEmitido (Subscriber)', () => {
   it('deve chamar caso de uso CriarNotificacao quando motivo for PAGAMENTO_APROVADO', async () => {
     const cliente = makeCliente()
     await clienteRepository.create(cliente)
+
+    const usuario = makeUsuario({}, cliente.getId())
+    await usuarioRepository.create(usuario)
 
     const veiculo = makeVeiculo()
     const prioridade = Prioridade.calcular({
@@ -104,6 +111,9 @@ describe('OnTermoLiberacaoEmitido (Subscriber)', () => {
   it('deve chamar caso de uso CriarNotificacao quando motivo for REJEICAO_ORCAMENTO', async () => {
     const cliente = makeCliente()
     await clienteRepository.create(cliente)
+
+    const usuario = makeUsuario({}, cliente.getId())
+    await usuarioRepository.create(usuario)
 
     const veiculo = makeVeiculo()
     const prioridade = Prioridade.calcular({

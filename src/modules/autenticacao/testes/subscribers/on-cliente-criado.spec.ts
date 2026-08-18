@@ -6,21 +6,14 @@ import { OnClienteCriado } from '../../application/subscribers/on-cliente-criado
 
 describe('OnClienteCriado (Subscriber)', () => {
   let criarCredenciais: CriarCredenciaisUseCase
-  let subscriber: OnClienteCriado
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // 1. Mock do UseCase
+    // Mock do UseCase
     criarCredenciais = {
       execute: vi.fn(),
     } as unknown as CriarCredenciaisUseCase
-
-    // 2. Espia o registro de evento ANTES de instanciar no beforeEach
-    vi.spyOn(DomainEvents, 'register')
-
-    // 3. Instancia a classe que registra a assinatura no construtor
-    subscriber = new OnClienteCriado(criarCredenciais)
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
@@ -35,20 +28,18 @@ describe('OnClienteCriado (Subscriber)', () => {
   })
 
   it('deve criar credenciais para o cliente com a role CLIENTE com sucesso', async () => {
-    // Espia o log do NestJS
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    new OnClienteCriado(criarCredenciais)
+    const handler = registerSpy.mock.calls[0][0]
+
     const loggerLogSpy = vi
       .spyOn(Logger.prototype, 'log')
       .mockImplementation(() => { })
 
-    const registerSpy = vi.spyOn(DomainEvents, 'register')
-    const handler = registerSpy.mock.calls[0][0]
-
-    // Mock do usuario retornado no sucesso
     const mockUsuario = {
       getId: () => ({ toValue: () => 'usuario-uuid-789' }),
     }
 
-    // Simula resposta Right (sucesso) do UseCase
     vi.mocked(criarCredenciais.execute).mockResolvedValueOnce({
       isLeft: () => false,
       isRight: () => true,
@@ -64,14 +55,12 @@ describe('OnClienteCriado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o UseCase foi executado com os parametros e role corretos
     expect(criarCredenciais.execute).toHaveBeenCalledWith({
       id: 'cliente-uuid-123',
       email: 'cliente@email.com',
       role: 'CLIENTE',
     })
 
-    // Valida o log de sucesso
     expect(loggerLogSpy).toHaveBeenCalledWith(
       '[Autenticação] Credenciais criadas com sucesso para o ID: cliente-uuid-123. Usuário ID: usuario-uuid-789',
     )
@@ -80,14 +69,14 @@ describe('OnClienteCriado (Subscriber)', () => {
   })
 
   it('deve capturar e logar aviso (warn) caso o UseCase retorne Left (falha de negócio)', async () => {
+    const registerSpy = vi.spyOn(DomainEvents, 'register')
+    new OnClienteCriado(criarCredenciais)
+    const handler = registerSpy.mock.calls[0][0]
+
     const loggerWarnSpy = vi
       .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => { })
 
-    const registerSpy = vi.spyOn(DomainEvents, 'register')
-    const handler = registerSpy.mock.calls[0][0]
-
-    // Simula resposta Left (erro de negócio)
     vi.mocked(criarCredenciais.execute).mockResolvedValueOnce({
       isLeft: () => true,
       isRight: () => false,
@@ -103,7 +92,6 @@ describe('OnClienteCriado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o aviso (warn) foi disparado
     expect(loggerWarnSpy).toHaveBeenCalledWith(
       '[Autenticação] Não foi possível criar credenciais para o cliente ID: cliente-uuid-123.',
     )
@@ -112,11 +100,13 @@ describe('OnClienteCriado (Subscriber)', () => {
   })
 
   it('deve capturar exceções não tratadas (catch) e logar erro sem lançar exceção', async () => {
+    // 1. Silencia o Logger.error ANTES de qualquer exceção acontecer para não vazar no console/stdout
     const loggerErrorSpy = vi
       .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => { })
 
     const registerSpy = vi.spyOn(DomainEvents, 'register')
+    new OnClienteCriado(criarCredenciais)
     const handler = registerSpy.mock.calls[0][0]
 
     const erroInesperado = new Error('Erro de conexão com o banco de dados')
@@ -129,10 +119,10 @@ describe('OnClienteCriado (Subscriber)', () => {
       },
     } as unknown as ClienteCriadoEvent
 
-    // Garante que o handler resolve e não estoura erro não capturado
-    await expect(handler(mockEvent)).resolves.not.toThrow()
+    // 2. Executa o handler
+    await handler(mockEvent)
 
-    // Valida o log de erro de infraestrutura
+    // 3. Valida se o Logger foi invocado corretamente com a mensagem e o stack do erro
     expect(loggerErrorSpy).toHaveBeenCalledWith(
       '[Autenticação] Erro inesperado ao criar credenciais para o cliente ID: cliente-uuid-123',
       erroInesperado.stack,

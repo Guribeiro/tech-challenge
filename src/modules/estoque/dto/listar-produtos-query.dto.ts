@@ -26,7 +26,7 @@ export class ListarProdutosQueryDto extends PaginacaoQueryDto {
   @IsString()
   @Transform(({ value }) => {
     if (typeof value !== 'string') return value
-    return value.replaceAll(/\0/g, '').trim()
+    return value.replaceAll('\0', '').trim()
   })
   nome?: string
 }

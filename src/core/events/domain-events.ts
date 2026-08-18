@@ -26,14 +26,13 @@ export class DomainEvents {
   /**
    * Dispara o evento imediatamente para todos os inscritos ouvirem
    */
-  public static dispatch(event: DomainEvent): void {
+  public static async dispatch(event: DomainEvent): Promise<void> {
     const eventClassName = event.constructor.name
     const handlers = this.handlersMap.get(eventClassName) || []
 
     if (handlers.length === 0) return
 
-    // Executa os handlers em segundo plano sem travar a requisição HTTP com await
-    Promise.allSettled(
+    const results = await Promise.allSettled(
       handlers.map(async (handler) => {
         try {
           await handler(event)
@@ -42,12 +41,12 @@ export class DomainEvents {
           throw err
         }
       })
-    ).then((results) => {
-      results.forEach((result) => {
-        if (result.status === 'rejected') {
-          console.error(`[DomainEvents]: Event failure log for ${eventClassName}:`, result.reason)
-        }
-      })
+    )
+
+    results.forEach((result) => {
+      if (result.status === 'rejected') {
+        console.error(`[DomainEvents]: Event failure log for ${eventClassName}:`, result.reason)
+      }
     })
   }
 
@@ -55,7 +54,7 @@ export class DomainEvents {
     const events = aggregate.domainEvents
 
     for (const event of events) {
-      this.dispatch(event)
+      await this.dispatch(event)
     }
 
     aggregate.clearEvents()

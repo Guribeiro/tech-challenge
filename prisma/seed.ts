@@ -111,14 +111,6 @@ async function main() {
   });
 
   // Clientes
-  await prisma.usuario.create({
-    data: {
-      id: cli1Id,
-      email: 'joao.cliente@gmail.com',
-      senhaHash: passwordHash,
-      role: 'CLIENTE',
-    },
-  });
   await prisma.cliente.create({
     data: {
       id: cli1Id,
@@ -132,12 +124,13 @@ async function main() {
 
   await prisma.usuario.create({
     data: {
-      id: cli2Id,
-      email: 'contato@logistica.com',
+      id: cli1Id,
+      email: 'joao.cliente@gmail.com',
       senhaHash: passwordHash,
       role: 'CLIENTE',
     },
   });
+
   await prisma.cliente.create({
     data: {
       id: cli2Id,
@@ -148,6 +141,16 @@ async function main() {
       tipo: 'PJ',
     },
   });
+
+  await prisma.usuario.create({
+    data: {
+      id: cli2Id,
+      email: 'contato@logistica.com',
+      senhaHash: passwordHash,
+      role: 'CLIENTE',
+    },
+  });
+
 
   // =========================================================================
   // 2. VEÍCULOS

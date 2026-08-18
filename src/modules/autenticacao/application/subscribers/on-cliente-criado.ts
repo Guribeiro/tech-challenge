@@ -1,4 +1,3 @@
-// src/modules/autenticacao/application/subscribers/on-mecanico-contratado.ts
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { CriarCredenciaisUseCase } from '../use-cases/criar-credenciais.js'
@@ -37,6 +36,7 @@ export class OnClienteCriado implements EventHandler {
       this.logger.log(`[Autenticação] Credenciais criadas com sucesso para o ID: ${cliente.getId().toValue()}. Usuário ID: ${usuario.getId().toValue()}`)
 
     } catch (error) {
+      console.log(error)
       this.logger.error(`[Autenticação] Erro inesperado ao criar credenciais para o cliente ID: ${cliente.getId().toValue()}`, error instanceof Error ? error.stack : error)
     }
   }

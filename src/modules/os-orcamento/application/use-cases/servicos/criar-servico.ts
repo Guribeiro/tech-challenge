@@ -26,7 +26,7 @@ export class CriarServicoUseCase {
     private readonly servicosRepository: ServicoRepository
   ) { }
   public async execute(input: CriarServicoInput): Promise<CriarServicoOutput> {
-    const nomeNormalizado = input.nome.replaceAll(/\0/g, '').trim()
+    const nomeNormalizado = input.nome.replaceAll('\0', '').trim()
 
     const servicoExistente = await this.servicosRepository.findByNome(nomeNormalizado)
 
