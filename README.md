@@ -95,25 +95,26 @@ src/
 - Docker e Docker Compose
 - npm ou pnpm
 
-### 1) Instale as dependências
+### 1) Clone e configure as variáveis de ambiente
+Crie o arquivo `.env` na raiz do projeto com base no arquivo de exemplo:
+```bash
+cp .env.example .env
+```
+
+### 2) Instale as dependências
 ```bash
 npm install
 ```
 
-### 2) Suba o banco PostgreSQL
+### 3) Suba o banco PostgreSQL
 ```bash
-docker compose up -d postgres postgres-test
+docker compose up -d
 ```
 
-### 3) Aplique as migrations e seed inicial
+### 4) Aplique as migrations e seed inicial
 ```bash
 npx prisma migrate deploy
 npm run db:seed
-```
-
-### 4) Inicie a aplicação em modo desenvolvimento
-```bash
-npm run start:dev
 ```
 
 A API ficará disponível em:
@@ -181,5 +182,5 @@ A análise usa a configuração de cobertura em `coverage/lcov.info` e as fontes
 
 ---
 
-## �📄 Licença
+## 📄 Licença
 Este projeto está licenciado sob a licença ISC, conforme informado no arquivo de configuração do pacote.
