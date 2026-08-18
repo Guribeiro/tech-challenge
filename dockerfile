@@ -20,6 +20,9 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+RUN npx prisma generate
+RUN npm run build
+
 RUN npm run build
 
 RUN npm prune --production
@@ -27,7 +30,7 @@ RUN npm prune --production
 FROM node:24-alpine AS production
 WORKDIR /app
 
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 ENV PORT=3000
 
 USER node
