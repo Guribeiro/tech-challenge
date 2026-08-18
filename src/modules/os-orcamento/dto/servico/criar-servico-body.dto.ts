@@ -31,8 +31,8 @@ export class CriarServicoBodyDto implements CriarServicoInput {
     if (typeof value !== 'string') return value
     // Remove null bytes e caracteres tipicamente usados em payloads de injection
     return value
-      .replace(/\0/g, '')
-      .replace(/['"--]/g, '')
+      .replaceAll(/\0/g, '')
+      .replaceAll(/['"--]/g, '')
       .trim()
   })
   nome!: string
