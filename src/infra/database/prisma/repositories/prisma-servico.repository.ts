@@ -29,7 +29,10 @@ export class PrismaServicoRepository implements ServicoRepository {
   public async findByNome(nome: string): Promise<Servico | null> {
     const raw = await this.prisma.servico.findFirst({
       where: {
-        nome,
+        nome: {
+          equals: nome,
+          mode: 'insensitive'
+        },
         desativadoEm: null,
       }
     })

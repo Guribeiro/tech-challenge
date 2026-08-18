@@ -2,6 +2,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger'
 import { IsEnum, IsOptional, IsString } from 'class-validator'
 import { type TipoProduto } from '../domain/entities/produto.js'
 import { PaginacaoQueryDto } from '@/infra/http/dto/paginacao-query.dto.js'
+import { Transform } from 'class-transformer'
 
 const TIPOS_PRODUTO = ['PECA', 'INSUMO'] as const
 
@@ -23,5 +24,9 @@ export class ListarProdutosQueryDto extends PaginacaoQueryDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value
+    return value.replace(/\0/g, '').trim()
+  })
   nome?: string
 }

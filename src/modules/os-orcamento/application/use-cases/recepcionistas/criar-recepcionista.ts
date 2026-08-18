@@ -1,5 +1,6 @@
 import { Either, left, right } from '@/core/either.js';
 import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js';
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js';
 import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js';
 import { Recepcionista } from '@/modules/os-orcamento/domain/entities/recepcionista.js'
 import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js';
@@ -47,16 +48,23 @@ export class CriarRecepcionistaUseCase {
       return left(new CpfJaCadastradoError())
     }
 
-    const recepcionista = Recepcionista.criar({
-      nome: NomeCompleto.criar(nome),
-      cpf: Cpf.criar(cpf),
-      email: Email.criar(email),
-    })
+    try {
+      const recepcionista = Recepcionista.criar({
+        nome: NomeCompleto.criar(nome),
+        cpf: Cpf.criar(cpf),
+        email: Email.criar(email),
+      })
 
-    await this.recepcionistaRepository.create(recepcionista)
+      await this.recepcionistaRepository.create(recepcionista)
 
-    return right({
-      recepcionista
-    })
+      return right({
+        recepcionista
+      })
+    } catch (error) {
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }

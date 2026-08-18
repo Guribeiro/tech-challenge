@@ -10,6 +10,7 @@ import {
 } from 'class-validator'
 import { type CategoriaServico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { CriarServicoInput } from '@/modules/os-orcamento/application/use-cases/servicos/criar-servico.js'
+import { Transform } from 'class-transformer'
 
 const CATEGORIAS_VALIDAS = [
   'SEGURANCA',
@@ -26,6 +27,14 @@ export class CriarServicoBodyDto implements CriarServicoInput {
   })
   @IsString({ message: 'O nome do serviço deve ser um texto.' })
   @IsNotEmpty({ message: 'O nome do serviço é obrigatório.' })
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value
+    // Remove null bytes e caracteres tipicamente usados em payloads de injection
+    return value
+      .replace(/\0/g, '')
+      .replace(/['"--]/g, '')
+      .trim()
+  })
   nome!: string
 
   @ApiProperty({

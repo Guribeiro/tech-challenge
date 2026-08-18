@@ -26,13 +26,14 @@ export class CriarServicoUseCase {
     private readonly servicosRepository: ServicoRepository
   ) { }
   public async execute(input: CriarServicoInput): Promise<CriarServicoOutput> {
-    const nomeNormalizado = input.nome.trim()
+    const nomeNormalizado = input.nome.replace(/\0/g, '').trim()
 
     const servicoExistente = await this.servicosRepository.findByNome(nomeNormalizado)
 
     if (servicoExistente) {
       return left(new ServicoJaCadastradoError(nomeNormalizado))
     }
+
     const servico = Servico.criar({
       nome: input.nome,
       descricao: input.descricao,
