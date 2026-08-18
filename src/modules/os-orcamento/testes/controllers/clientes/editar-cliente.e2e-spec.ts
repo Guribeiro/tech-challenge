@@ -7,6 +7,7 @@ import { makeCliente } from '../../factories/make-cliente.js'
 import { generate as gerarCpf } from 'gerador-validador-cpf'
 import { randomUUID } from 'node:crypto'
 import { Email } from '@/shared/domain/value-objects/email.js'
+import { resetDatabase } from '@/teste/helpers/reset-database.js'
 
 describe('Editar Cliente (E2E)', () => {
   let app: INestApplication
@@ -26,28 +27,7 @@ describe('Editar Cliente (E2E)', () => {
   })
 
   beforeEach(async () => {
-    await prisma.$transaction([
-      // 1. Tabelas pivot / filhas mais profundas
-      prisma.ordemServicoServico.deleteMany(),
-      prisma.ordemServicoComponente.deleteMany(),
-      prisma.orcamentoServico.deleteMany(),
-      prisma.orcamentoComponente.deleteMany(),
-      prisma.fatura.deleteMany(),
-      prisma.termoLiberacao.deleteMany(),
-
-      // 2. Entidades intermediárias
-      prisma.orcamento.deleteMany(),
-      prisma.ordemServico.deleteMany(),
-      prisma.veiculo.deleteMany(),
-
-      // 3. Entidades raiz / sem dependências filhas
-      prisma.cliente.deleteMany(),
-      prisma.mecanico.deleteMany(),
-      prisma.recepcionista.deleteMany(),
-      prisma.servico.deleteMany(),
-      prisma.produto.deleteMany(),
-      prisma.usuario.deleteMany(),
-    ])
+    await resetDatabase(prisma)
   })
 
   afterAll(async () => {

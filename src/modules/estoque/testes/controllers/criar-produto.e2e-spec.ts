@@ -5,6 +5,7 @@ import { Test, TestingModule } from '@nestjs/testing'
 import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/make-usuario-autenticado.js'
 import { randomUUID } from 'node:crypto'
 import { ProdutoResponseDto } from '../../dto/produto-response.dto.js'
+import { resetDatabase } from '@/teste/helpers/reset-database.js'
 
 describe('Criar Produto (E2E)', () => {
   let app: INestApplication
@@ -24,8 +25,7 @@ describe('Criar Produto (E2E)', () => {
   })
 
   beforeEach(async () => {
-    await prisma.produto.deleteMany()
-    await prisma.usuario.deleteMany()
+    await resetDatabase(prisma)
   })
 
   afterAll(async () => {

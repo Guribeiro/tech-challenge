@@ -1,6 +1,8 @@
+import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '../src/generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
+import { generate as gerarCpf } from 'gerador-validador-cpf'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
@@ -36,8 +38,14 @@ async function main() {
   const SENHA_PADRAO = 'senha123';
   const passwordHash = await bcrypt.hash(SENHA_PADRAO, 10);
 
+  const adminId = randomUUID();
+  const recepId = randomUUID();
+  const mec1Id = randomUUID();
+  const mec2Id = randomUUID();
+  const cli1Id = randomUUID();
+  const cli2Id = randomUUID();
+
   // Admin
-  const adminId = 'usr-admin-01';
   await prisma.usuario.create({
     data: {
       id: adminId,
@@ -48,7 +56,6 @@ async function main() {
   });
 
   // Recepcionista
-  const recepId = 'usr-recep-01';
   await prisma.usuario.create({
     data: {
       id: recepId,
@@ -59,15 +66,14 @@ async function main() {
   });
   await prisma.recepcionista.create({
     data: {
-      id: recepId, // Mesmo ID do Usuário
+      id: recepId,
       nome: 'Maria Oliveira',
       email: 'maria.recepcao@oficina.com',
-      cpf: '111.222.333-44',
+      cpf: gerarCpf(),
     },
   });
 
   // Mecânicos
-  const mec1Id = 'usr-mec-01';
   await prisma.usuario.create({
     data: {
       id: mec1Id,
@@ -78,15 +84,14 @@ async function main() {
   });
   await prisma.mecanico.create({
     data: {
-      id: mec1Id, // Mesmo ID do Usuário
+      id: mec1Id,
       nome: 'Carlos Silva',
       email: 'carlos.mecanico@oficina.com',
-      cpf: '222.333.444-55',
+      cpf: gerarCpf(),
       especialidade: 'Injeção Eletrônica e Motor',
     },
   });
 
-  const mec2Id = 'usr-mec-02';
   await prisma.usuario.create({
     data: {
       id: mec2Id,
@@ -97,16 +102,15 @@ async function main() {
   });
   await prisma.mecanico.create({
     data: {
-      id: mec2Id, // Mesmo ID do Usuário
+      id: mec2Id,
       nome: 'Roberto Santos',
       email: 'roberto.mecanico@oficina.com',
-      cpf: '333.444.555-66',
+      cpf: gerarCpf(),
       especialidade: 'Suspensão e Freios',
     },
   });
 
   // Clientes
-  const cli1Id = 'usr-cli-01';
   await prisma.usuario.create({
     data: {
       id: cli1Id,
@@ -117,16 +121,15 @@ async function main() {
   });
   await prisma.cliente.create({
     data: {
-      id: cli1Id, // Mesmo ID do Usuário
+      id: cli1Id,
       nome: 'João da Silva',
       email: 'joao.cliente@gmail.com',
-      cpf: '444.555.666-77',
+      cpf: gerarCpf(),
       telefone: '(11) 98765-4321',
       tipo: 'PF',
     },
   });
 
-  const cli2Id = 'usr-cli-02';
   await prisma.usuario.create({
     data: {
       id: cli2Id,
@@ -137,10 +140,10 @@ async function main() {
   });
   await prisma.cliente.create({
     data: {
-      id: cli2Id, // Mesmo ID do Usuário
+      id: cli2Id,
       nome: 'Transportadora Express Ltda',
       email: 'contato@logistica.com',
-      cpf: '12.345.678/0001-90',
+      cpf: gerarCpf(),
       telefone: '(11) 3333-4444',
       tipo: 'PJ',
     },
@@ -151,7 +154,7 @@ async function main() {
   // =========================================================================
   const veic1 = await prisma.veiculo.create({
     data: {
-      id: 'veic-01',
+      id: randomUUID(),
       placa: 'ABC1D23',
       marca: 'Volkswagen',
       modelo: 'Gol 1.6',
@@ -165,7 +168,7 @@ async function main() {
 
   const veic2 = await prisma.veiculo.create({
     data: {
-      id: 'veic-02',
+      id: randomUUID(),
       placa: 'XYZ9K87',
       marca: 'Chevrolet',
       modelo: 'Onix 1.0 Turbo',
@@ -179,7 +182,7 @@ async function main() {
 
   const veic3 = await prisma.veiculo.create({
     data: {
-      id: 'veic-03',
+      id: randomUUID(),
       placa: 'MNO5E55',
       marca: 'Fiat',
       modelo: 'Fiorino 1.4',
@@ -196,7 +199,7 @@ async function main() {
   // =========================================================================
   const prodOleo = await prisma.produto.create({
     data: {
-      id: 'prod-01',
+      id: randomUUID(),
       nome: 'Óleo Sintético 5W30',
       tipo: 'INSUMO',
       marca: 'Castrol',
@@ -214,7 +217,7 @@ async function main() {
 
   const prodPastilha = await prisma.produto.create({
     data: {
-      id: 'prod-02',
+      id: randomUUID(),
       nome: 'Jogo de Pastilhas de Freio Dianteira',
       tipo: 'PECA',
       marca: 'Cobreq',
@@ -232,7 +235,7 @@ async function main() {
 
   const prodFiltro = await prisma.produto.create({
     data: {
-      id: 'prod-03',
+      id: randomUUID(),
       nome: 'Filtro de Óleo do Motor',
       tipo: 'PECA',
       marca: 'Tecfil',
@@ -253,7 +256,7 @@ async function main() {
   // =========================================================================
   const servTrocaOleo = await prisma.servico.create({
     data: {
-      id: 'serv-01',
+      id: randomUUID(),
       categoria: 'MANUTENCAO_PREVENTIVA',
       nome: 'Troca de Óleo e Filtro',
       descricao: 'Mão de obra para substituição do óleo de motor e filtro.',
@@ -263,7 +266,7 @@ async function main() {
 
   const servFreio = await prisma.servico.create({
     data: {
-      id: 'serv-02',
+      id: randomUUID(),
       categoria: 'SEGURANCA',
       nome: 'Manutenção do Sistema de Freios',
       descricao: 'Troca de pastilhas, discos e sangria do sistema.',
@@ -273,7 +276,7 @@ async function main() {
 
   const servAlinhamento = await prisma.servico.create({
     data: {
-      id: 'serv-03',
+      id: randomUUID(),
       categoria: 'MECANICA_GERAL',
       nome: 'Alinhamento 3D e Balanceamento',
       descricao: 'Alinhamento de direção e balanceamento das 4 rodas.',
@@ -288,7 +291,7 @@ async function main() {
   // OS 1: Status RECEBIDA (Regra 2: mecanicoId deve ser NULL)
   const osRecebida = await prisma.ordemServico.create({
     data: {
-      id: 'os-01',
+      id: randomUUID(),
       clienteId: cli1Id,
       veiculoId: veic1.id,
       mecanicoId: null, // Regra 2: Apenas RECEBIDA não possui mecanicoId
@@ -303,7 +306,7 @@ async function main() {
   // OS 2: Status EM_EXECUCAO
   const osEmExecucao = await prisma.ordemServico.create({
     data: {
-      id: 'os-02',
+      id: randomUUID(),
       clienteId: cli1Id,
       veiculoId: veic2.id,
       mecanicoId: mec1Id,
@@ -319,7 +322,7 @@ async function main() {
   // OS 3: Status FINALIZADA
   const osFinalizada = await prisma.ordemServico.create({
     data: {
-      id: 'os-03',
+      id: randomUUID(),
       clienteId: cli2Id,
       veiculoId: veic3.id,
       mecanicoId: mec2Id,
@@ -336,7 +339,7 @@ async function main() {
   // OS 4: Status ENCERRADA_REJEICAO (Regra 1: Deve possuir TermoLiberacao)
   const osEncerradaRejeicao = await prisma.ordemServico.create({
     data: {
-      id: 'os-04',
+      id: randomUUID(),
       clienteId: cli1Id,
       veiculoId: veic1.id,
       mecanicoId: mec1Id,
@@ -353,7 +356,7 @@ async function main() {
   // OS 5: Status ENCERRADA (Regra 1: Deve possuir TermoLiberacao)
   const osEncerrada = await prisma.ordemServico.create({
     data: {
-      id: 'os-05',
+      id: randomUUID(),
       clienteId: cli2Id,
       veiculoId: veic3.id,
       mecanicoId: mec2Id,
@@ -374,7 +377,7 @@ async function main() {
   // Itens da OS 5 (Encerrada)
   await prisma.ordemServicoServico.create({
     data: {
-      id: 'os-serv-01',
+      id: randomUUID(),
       ordemServicoId: osEncerrada.id,
       servicoId: servTrocaOleo.id,
       nome: servTrocaOleo.nome,
@@ -387,7 +390,7 @@ async function main() {
   await prisma.ordemServicoComponente.createMany({
     data: [
       {
-        id: 'os-comp-01',
+        id: randomUUID(),
         ordemServicoId: osEncerrada.id,
         produtoId: prodOleo.id,
         nome: prodOleo.nome,
@@ -400,7 +403,7 @@ async function main() {
         quantidade: 4,
       },
       {
-        id: 'os-comp-02',
+        id: randomUUID(),
         ordemServicoId: osEncerrada.id,
         produtoId: prodFiltro.id,
         nome: prodFiltro.nome,
@@ -422,7 +425,7 @@ async function main() {
   // Orçamento da OS 4 (Recusado pelo cliente)
   const orcamentoRecusado = await prisma.orcamento.create({
     data: {
-      id: 'orc-01',
+      id: randomUUID(),
       ordemServicoId: osEncerradaRejeicao.id,
       clienteId: cli1Id,
       versao: 1,
@@ -434,7 +437,7 @@ async function main() {
   // Orçamento da OS 5 (Aprovado e Faturado)
   const orcamentoAprovado = await prisma.orcamento.create({
     data: {
-      id: 'orc-02',
+      id: randomUUID(),
       ordemServicoId: osEncerrada.id,
       clienteId: cli2Id,
       versao: 1,
@@ -445,7 +448,7 @@ async function main() {
 
   await prisma.orcamentoServico.create({
     data: {
-      id: 'orc-serv-01',
+      id: randomUUID(),
       orcamentoId: orcamentoAprovado.id,
       servicoId: servTrocaOleo.id,
       nome: servTrocaOleo.nome,
@@ -456,7 +459,7 @@ async function main() {
 
   await prisma.orcamentoComponente.create({
     data: {
-      id: 'orc-comp-01',
+      id: randomUUID(),
       orcamentoId: orcamentoAprovado.id,
       produtoId: prodOleo.id,
       nome: prodOleo.nome,
@@ -470,7 +473,7 @@ async function main() {
   // Fatura referente ao orçamento aprovado
   await prisma.fatura.create({
     data: {
-      id: 'fat-01',
+      id: randomUUID(),
       orcamentoId: orcamentoAprovado.id,
       status: 'PAGA',
       valorTotal: 28500, // (8000 + 4 * 5500) - 5% desconto
@@ -485,7 +488,7 @@ async function main() {
   // Termo para a OS Encerrada por Rejeição de Orçamento
   await prisma.termoLiberacao.create({
     data: {
-      id: 'termo-01',
+      id: randomUUID(),
       ordemServicoId: osEncerradaRejeicao.id,
       placaVeiculo: veic1.placa,
       motivo: 'REJEICAO_ORCAMENTO',
@@ -498,7 +501,7 @@ async function main() {
   // Termo para a OS Encerrada com Sucesso/Pagamento Aprovado
   await prisma.termoLiberacao.create({
     data: {
-      id: 'termo-02',
+      id: randomUUID(),
       ordemServicoId: osEncerrada.id,
       placaVeiculo: veic3.placa,
       motivo: 'PAGAMENTO_APROVADO',

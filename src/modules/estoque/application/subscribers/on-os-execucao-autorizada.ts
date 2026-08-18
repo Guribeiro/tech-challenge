@@ -1,7 +1,7 @@
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
-import { OSExecucaoAutorizadaEvent } from '../../domain/events/os-execucao-autorizada-event.js'
-import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js' // Caminho fictício do seu outro módulo
+import { OSExecucaoAutorizadaEvent } from '@/modules/os-orcamento/domain/events/os-execucao-autorizada-event.js'
+import { ReservarProdutosEstoqueUseCase } from '@/modules/estoque/application/use-cases/reservar-produtos-estoque.js'
 import { Injectable, Logger } from '@nestjs/common'
 
 @Injectable()
@@ -23,7 +23,6 @@ export class OnExecucaoAutorizada implements EventHandler {
   private async executar(event: OSExecucaoAutorizadaEvent): Promise<void> {
     const { ordemServico } = event
 
-    // ⚡ Filtra se a OS de fato possui componentes/peças para serem reservados
     const componentes = ordemServico.getComponentes().getItems()
     if (componentes.length === 0) {
       this.logger.log(`[Subscriber Info]: OS ${ordemServico.getId().toValue()} autorizada sem peças para reservar.`)

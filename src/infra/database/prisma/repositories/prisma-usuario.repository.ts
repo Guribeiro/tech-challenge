@@ -13,7 +13,7 @@ export class PrismaUsuarioRepository implements UsuariosRepository {
   public async create(usuario: Usuario): Promise<void> {
     const data = PrismaUsuarioMapper.toPrisma(usuario)
     await this.prisma.usuario.create({ data })
-    DomainEvents.dispatchEventsForAggregate(usuario)
+    await DomainEvents.dispatchEventsForAggregate(usuario)
   }
 
   public async findByEmail(email: string): Promise<Usuario | null> {

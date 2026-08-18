@@ -2,12 +2,12 @@ import { Logger } from '@nestjs/common'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { FaturaEmitidaEvent } from '@/modules/faturamento/domain/events/fatura-emitida-event.js'
 import { ClienteOrcamentoGateway } from '@/modules/notificacoes/application/gateways/cliente-orcamento-gateway.js'
-import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { OnFaturaEmitida } from '../../application/subscribers/on-fatura-emitida.js'
 
 describe('OnFaturaEmitida (Subscriber)', () => {
   let clienteOrcamentoGateway: ClienteOrcamentoGateway
-  let enviarNotificacao: EnviarNotificacaoUseCase
+  let criarNotificacao: CriarNotificacaoUseCase
   let subscriber: OnFaturaEmitida
 
   beforeEach(() => {
@@ -18,9 +18,9 @@ describe('OnFaturaEmitida (Subscriber)', () => {
       obterDadosNotificacaoPorOrcamentoId: vi.fn(),
     } as unknown as ClienteOrcamentoGateway
 
-    enviarNotificacao = {
+    criarNotificacao = {
       execute: vi.fn(),
-    } as unknown as EnviarNotificacaoUseCase
+    } as unknown as CriarNotificacaoUseCase
 
     // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
@@ -28,14 +28,14 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     // 3. Instancia a classe que registra a assinatura no construtor
     subscriber = new OnFaturaEmitida(
       clienteOrcamentoGateway,
-      enviarNotificacao,
+      criarNotificacao,
     )
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnFaturaEmitida(clienteOrcamentoGateway, enviarNotificacao)
+    new OnFaturaEmitida(clienteOrcamentoGateway, criarNotificacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -77,7 +77,7 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     )
 
     // Garante que o caso de uso de envio de notificação NÃO foi chamado
-    expect(enviarNotificacao.execute).not.toHaveBeenCalled()
+    expect(criarNotificacao.execute).not.toHaveBeenCalled()
 
     loggerWarnSpy.mockRestore()
   })
@@ -94,8 +94,9 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockResolvedValueOnce({
-      nome: 'Carlos Eduardo',
       telefone: '11988887777',
+      clienteId: 'cli-uuid-123',
+      nome: 'Carlos Eduardo',
       ordemServicoId: 'os-uuid-789',
     })
 
@@ -109,11 +110,13 @@ describe('OnFaturaEmitida (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o Use Case de notificação foi executado com o texto e telefone formatados
-    expect(enviarNotificacao.execute).toHaveBeenCalledWith({
-      destinatario: '11988887777',
-      mensagem:
+    // Valida se o Use Case de notificação foi executado com o DTO exato (conteudo, titulo, template)
+    expect(criarNotificacao.execute).toHaveBeenCalledWith({
+      destinatarioId: 'cli-uuid-123',
+      conteudo:
         'Olá, Carlos Eduardo! A sua fatura referente ao serviço (OS #os-uuid-789) foi emitida com sucesso no valor de R$ 350.50.',
+      titulo: 'Fatura de pagamento',
+      template: 'fatura-emitida',
     })
 
     // Valida o log de sucesso
@@ -132,7 +135,7 @@ describe('OnFaturaEmitida (Subscriber)', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
     const handler = registerSpy.mock.calls[0][0]
 
-    const erroInesperado = new Error('Falha de conexão com a API de WhatsApp/SMS')
+    const erroInesperado = new Error('Falha de conexão com a infraestrutura de e-mail')
     vi.mocked(
       clienteOrcamentoGateway.obterDadosNotificacaoPorOrcamentoId,
     ).mockRejectedValueOnce(erroInesperado)

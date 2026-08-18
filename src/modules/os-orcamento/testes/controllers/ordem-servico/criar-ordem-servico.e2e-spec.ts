@@ -6,6 +6,7 @@ import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/make-usuario-autenticado.js'
 import { OrdemServicoResponseDto } from '@/modules/os-orcamento/dto/ordem-servico/ordem-servico-response.dto.js'
+import { resetDatabase } from '@/teste/helpers/reset-database.js'
 
 describe('Criar Ordem de Serviço (E2E)', () => {
   let app: INestApplication
@@ -25,28 +26,7 @@ describe('Criar Ordem de Serviço (E2E)', () => {
   })
 
   beforeEach(async () => {
-    await prisma.$transaction([
-      // 1. Tabelas pivot / filhas mais profundas
-      prisma.ordemServicoServico.deleteMany(),
-      prisma.ordemServicoComponente.deleteMany(),
-      prisma.orcamentoServico.deleteMany(),
-      prisma.orcamentoComponente.deleteMany(),
-      prisma.fatura.deleteMany(),
-      prisma.termoLiberacao.deleteMany(),
-
-      // 2. Entidades intermediárias
-      prisma.orcamento.deleteMany(),
-      prisma.ordemServico.deleteMany(),
-      prisma.veiculo.deleteMany(),
-
-      // 3. Entidades raiz / sem dependências filhas
-      prisma.cliente.deleteMany(),
-      prisma.mecanico.deleteMany(),
-      prisma.recepcionista.deleteMany(),
-      prisma.servico.deleteMany(),
-      prisma.produto.deleteMany(),
-      prisma.usuario.deleteMany(),
-    ])
+    await resetDatabase(prisma)
   })
   afterAll(async () => {
     await app.close()

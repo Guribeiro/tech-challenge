@@ -19,7 +19,7 @@ export class PrismaClienteRepository implements ClienteRepository {
     const data = PrismaClienteMapper.toPrisma(cliente)
     await this.prisma.cliente.create({ data })
 
-    DomainEvents.dispatchEventsForAggregate(cliente)
+    await DomainEvents.dispatchEventsForAggregate(cliente)
   }
 
   public async findById(id: string): Promise<Cliente | null> {
@@ -68,7 +68,7 @@ export class PrismaClienteRepository implements ClienteRepository {
       data,
     });
 
-    DomainEvents.dispatchEventsForAggregate(cliente)
+    await DomainEvents.dispatchEventsForAggregate(cliente)
   }
 
   public async list(): Promise<Cliente[]> {

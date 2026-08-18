@@ -4,6 +4,7 @@ import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/make-usuario-autenticado.js'
 import { randomUUID } from 'node:crypto'
+import { resetDatabase } from '@/teste/helpers/reset-database.js'
 
 describe('Desativar Servico (E2E)', () => {
   let app: INestApplication
@@ -23,28 +24,7 @@ describe('Desativar Servico (E2E)', () => {
   })
 
   beforeEach(async () => {
-    await prisma.$transaction([
-      // 1. Tabelas pivot / filhas mais profundas
-      prisma.ordemServicoServico.deleteMany(),
-      prisma.ordemServicoComponente.deleteMany(),
-      prisma.orcamentoServico.deleteMany(),
-      prisma.orcamentoComponente.deleteMany(),
-      prisma.fatura.deleteMany(),
-      prisma.termoLiberacao.deleteMany(),
-
-      // 2. Entidades intermediárias
-      prisma.orcamento.deleteMany(),
-      prisma.ordemServico.deleteMany(),
-      prisma.veiculo.deleteMany(),
-
-      // 3. Entidades raiz / sem dependências filhas
-      prisma.cliente.deleteMany(),
-      prisma.mecanico.deleteMany(),
-      prisma.recepcionista.deleteMany(),
-      prisma.servico.deleteMany(),
-      prisma.produto.deleteMany(),
-      prisma.usuario.deleteMany(),
-    ])
+    await resetDatabase(prisma)
   })
 
   afterAll(async () => {

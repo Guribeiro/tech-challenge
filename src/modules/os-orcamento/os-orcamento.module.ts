@@ -98,7 +98,7 @@ import { PrismaRecepcionistaRepository } from '@/infra/database/prisma/repositor
 //Subscribers
 import { OnDiagnosticoConcluido } from './application/subscribers/on-diagnostico-concluido.js'
 import { OnClienteAprovouOrcamento } from './application/subscribers/on-orcamento-aprovado.js'
-import { OnExecucaoAutorizada } from './application/subscribers/on-os-execucao-autorizada.js'
+import { OnExecucaoAutorizada } from '../estoque/application/subscribers/on-os-execucao-autorizada.js'
 import { OnProdutosReservados } from './application/subscribers/on-produtos-reservados.js'
 import { OnFaturaPagaEncerrarOrdemServico } from './application/subscribers/on-fatura-paga-encerrar-os.js'
 import { OnOrcamentoRenegociadoRecusadoEncerrarOS } from './application/subscribers/on-orcamento-renegociado-recusado-encerrar-os.js'

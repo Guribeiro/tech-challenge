@@ -18,6 +18,7 @@ export class DbClienteOrdemServicoGateway implements ClienteOrdemServicoGateway 
     if (!cliente) return null
 
     return {
+      clienteId: cliente.getId().toValue(),
       ordemServicoId,
       clienteNome: cliente.getNome().getValor(),
       clienteTelefone: cliente.getTelefone().getValor(),

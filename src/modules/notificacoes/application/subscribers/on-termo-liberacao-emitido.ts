@@ -3,7 +3,7 @@ import { EventHandler } from '@/core/events/event-handler.js'
 import { ClienteOrdemServicoGateway } from '@/modules/notificacoes/application/gateways/cliente-ordem-servico-gateway.js'
 import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-emitido-event.js'
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js'
-import { EnviarNotificacaoUseCase } from '@/modules/notificacoes/domain/use-cases/enviar-notificacao.js'
+import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { Injectable } from '@nestjs/common'
 
 type TermoLiberacaoEvents = TermoLiberacaoEmitidoEvent | TermoLiberacaoPorRejeicaoEmitidoEvent
@@ -12,7 +12,7 @@ type TermoLiberacaoEvents = TermoLiberacaoEmitidoEvent | TermoLiberacaoPorRejeic
 export class OnTermoLiberacaoEmitido implements EventHandler {
   constructor(
     private readonly clienteOrdemServicoGateway: ClienteOrdemServicoGateway,
-    private readonly enviarNotificacao: EnviarNotificacaoUseCase
+    private readonly criarNotificacao: CriarNotificacaoUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -40,16 +40,18 @@ export class OnTermoLiberacaoEmitido implements EventHandler {
         throw new Error(`[Subscriber Warning]: Dados do cliente não encontrados para a liberação da OS/Orçamento #${ordemServico}.`)
       }
 
-      const { ordemServicoId, clienteNome, clienteTelefone } = dadosCliente
+      const { ordemServicoId, clienteNome, clienteId } = dadosCliente
 
       // Mensagem personalizada conforme o motivo
-      const mensagem = termo.getMotivo() === 'PAGAMENTO_APROVADO'
+      const conteudo = termo.getMotivo() === 'PAGAMENTO_APROVADO'
         ? `Olá, ${clienteNome}! O pagamento da sua OS #${ordemServicoId} foi confirmado e o seu veículo está liberado para retirada no pátio físico.`
         : `Olá, ${clienteNome}! Conforme sua solicitação, a OS #${ordemServicoId} foi encerrada e o seu veículo está liberado para retirada no pátio físico.`
 
-      await this.enviarNotificacao.execute({
-        destinatario: clienteTelefone,
-        mensagem,
+      await this.criarNotificacao.execute({
+        destinatarioId: clienteId,
+        conteudo,
+        titulo: 'Termo de liberacao',
+        template: 'termo-liberacao'
       })
 
       console.log(`[Notification Success]: Cliente ${clienteNome} notificado da liberação da OS #${ordemServicoId}`)

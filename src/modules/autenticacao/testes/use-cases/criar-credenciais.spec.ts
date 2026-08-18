@@ -3,9 +3,7 @@ import { FakeHasher } from "../cryptography/fake-hasher.js";
 import { InMemoryUsuariosRepository } from "../repositories/in-memory-users-repository.js";
 import { CriarCredenciaisUseCase } from "../../application/use-cases/criar-credenciais.js";
 import { OnUsuarioCriado } from "@/modules/notificacoes/application/subscribers/on-usuario-criado.js";
-import { EnviarNotificacaoUseCase } from "@/modules/notificacoes/domain/use-cases/enviar-notificacao.js";
-import { InMemoryNotificacaoService } from "@/modules/notificacoes/testes/services/in-memory-notificacao-service.js";
-import { NotificacaoService } from "@/modules/notificacoes/domain/services/notificacao-service.js";
+import { CriarNotificacaoUseCase } from "@/modules/notificacoes/application/use-cases/criar-notificacao.js";
 import { makeMecanico } from "@/modules/os-orcamento/testes/factories/make-mecanico.js";
 import { MecanicoRepository } from "@/modules/os-orcamento/domain/repositories/mecanicos-repository.js";
 import { InMemoryMecanicosRepository } from "@/modules/os-orcamento/testes/repositories/in-memory-mecanicos-repository.js";
@@ -15,18 +13,20 @@ describe('Caso de Uso: Criar Credenciais', () => {
   let sut: CriarCredenciaisUseCase
   let usuariosRepository: InMemoryUsuariosRepository
   let hashGenerator: HashGenerator
-  let enviarNotificacao: EnviarNotificacaoUseCase
-  let notificacaoService: NotificacaoService
-
+  let criarNotificacao: CriarNotificacaoUseCase
   let mecanicoRepository: MecanicoRepository
 
   beforeEach(() => {
+    vi.clearAllMocks()
+
     usuariosRepository = new InMemoryUsuariosRepository()
     hashGenerator = new FakeHasher()
-    notificacaoService = new InMemoryNotificacaoService()
 
-    enviarNotificacao = new EnviarNotificacaoUseCase(notificacaoService)
-    mecanicoRepository = new InMemoryMecanicosRepository
+    criarNotificacao = {
+      execute: vi.fn(),
+    } as unknown as CriarNotificacaoUseCase
+
+    mecanicoRepository = new InMemoryMecanicosRepository()
 
     sut = new CriarCredenciaisUseCase(
       usuariosRepository,
@@ -34,8 +34,7 @@ describe('Caso de Uso: Criar Credenciais', () => {
     )
 
     new OnMecanicoCriado(sut)
-
-    new OnUsuarioCriado(enviarNotificacao)
+    new OnUsuarioCriado(criarNotificacao)
   })
 
   it('Deve criar usuario de acesso para MECANICO', async () => {
