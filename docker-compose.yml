@@ -75,7 +75,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: deps
+      target: development
     container_name: fiap_tech_challenge_app
     ports:
       - "${PORT:-3000}:3000"
@@ -91,9 +91,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - .:/app
-      - /app/node_modules
+    # volumes:
+    #   - .:/app
+    #   - /app/node_modules
     command: npm run start:dev
 
 volumes:
