@@ -62,6 +62,15 @@ describe('Iniciar Diagnóstico de Ordem de Serviço (E2E)', () => {
         },
       })
 
+      await prisma.usuario.create({
+        data: {
+          id: clienteId,
+          email: `cliente-${randomUUID().substring(0, 8)}@example.com`,
+          role: 'CLIENTE',
+          senhaHash: 'hashed-password'
+        }
+      })
+
       const veiculoId = randomUUID()
       await prisma.veiculo.create({
         data: {
