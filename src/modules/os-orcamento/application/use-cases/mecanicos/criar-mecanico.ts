@@ -1,5 +1,6 @@
 import { Either, left, right } from '@/core/either.js';
 import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js';
+import { DomainError } from '@/core/errors/domain-errors/domain-error.js';
 import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js';
 import { Mecanico } from '@/modules/os-orcamento/domain/entities/mecanico.js'
 import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js';
@@ -49,17 +50,25 @@ export class CriarMecanicoUseCase {
       return left(new CpfJaCadastradoError())
     }
 
-    const mecanico = Mecanico.criar({
-      nome: NomeCompleto.criar(nome),
-      cpf: Cpf.criar(cpf),
-      email: Email.criar(email),
-      especialidade,
-    })
+    try {
+      const mecanico = Mecanico.criar({
+        nome: NomeCompleto.criar(nome),
+        cpf: Cpf.criar(cpf),
+        email: Email.criar(email),
+        especialidade,
+      })
 
-    await this.mecanicoRepository.create(mecanico)
+      await this.mecanicoRepository.create(mecanico)
 
-    return right({
-      mecanico
-    })
+      return right({
+        mecanico
+      })
+    } catch (error) {
+      console.log({ error })
+      if (error instanceof DomainError) {
+        return left(error)
+      }
+      throw error
+    }
   }
 }

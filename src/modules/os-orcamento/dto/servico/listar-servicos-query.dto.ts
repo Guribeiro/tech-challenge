@@ -1,6 +1,7 @@
 import { IsOptional, IsString } from 'class-validator'
 import { ApiPropertyOptional } from '@nestjs/swagger'
 import { PaginacaoQueryDto } from '@/infra/http/dto/paginacao-query.dto.js'
+import { Transform } from 'class-transformer'
 
 export class ListarServicosQueryDto extends PaginacaoQueryDto {
   @ApiPropertyOptional({
@@ -9,5 +10,9 @@ export class ListarServicosQueryDto extends PaginacaoQueryDto {
   })
   @IsOptional()
   @IsString()
+  @Transform(({ value }) => {
+    if (typeof value !== 'string') return value
+    return value.replace(/\0/g, '').trim()
+  })
   nome?: string
 }

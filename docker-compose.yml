@@ -75,6 +75,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: development
     container_name: fiap_tech_challenge_app
     ports:
       - "${PORT:-3000}:3000"
@@ -86,8 +87,6 @@ services:
           ignore:
             - node_modules/
     environment:
-      - NODE_ENV=development
-      - PORT=3000
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-oficina_db}?schema=public
     depends_on:
       postgres:
