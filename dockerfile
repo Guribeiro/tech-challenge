@@ -2,7 +2,9 @@ FROM node:24-alpine AS deps
 WORKDIR /app
 
 COPY package*.json ./
+COPY prisma ./prisma/
 RUN npm ci
+RUN npx prisma generate
 
 FROM node:24-alpine AS development
 WORKDIR /app
@@ -20,11 +22,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN npx prisma generate
 RUN npm run build
-
-RUN npm run build
-
 RUN npm prune --production
 
 FROM node:24-alpine AS production
