@@ -66,3 +66,6 @@ dist
 
 CLAUDE.md
 /src/generated/prisma
+
+# Relatórios de Segurança / Scans
+relatorio-snyk*
