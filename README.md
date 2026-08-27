@@ -39,7 +39,7 @@ A solução foi estruturada com uma abordagem modular e orientada a domínios, p
 - **Framework & Core:** NestJS, Express, Passport JWT
 - **Banco de Dados & ORM:** PostgreSQL, Prisma ORM, Prisma Driver Adapter para PostgreSQL
 - **Documentação:** Swagger / OpenAPI
-- **Testes & Qualidade:** Vitest, Supertest, ESLint
+- **Testes & Qualidade:** Vitest, ESLint
 
 ---
 
@@ -101,20 +101,15 @@ Crie o arquivo `.env` na raiz do projeto com base no arquivo de exemplo:
 cp .env.example .env
 ```
 
-### 2) Instale as dependências
+### 2) Suba o banco PostgreSQL
 ```bash
-npm install
+docker compose up -d --build
 ```
 
-### 3) Suba o banco PostgreSQL
+### 3) Aplique as migrations e seed inicial
 ```bash
-docker compose up -d
-```
-
-### 4) Aplique as migrations e seed inicial
-```bash
-npx prisma migrate deploy
-npm run db:seed
+docker compose exec app npx prisma migrate deploy
+docker compose exec app npm run db:seed
 ```
 
 A API ficará disponível em:
