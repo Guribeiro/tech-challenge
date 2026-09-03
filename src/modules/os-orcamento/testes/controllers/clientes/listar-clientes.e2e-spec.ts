@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { generate as gerarCpf } from 'gerador-validador-cpf'
 import { resetDatabase } from '@/teste/helpers/reset-database.js'
+import { gerarCNPJ } from '@/teste/helpers/gerar-cnpj.js'
 
 describe('Listar Clientes (E2E)', () => {
   let app: INestApplication
@@ -46,9 +47,9 @@ describe('Listar Clientes (E2E)', () => {
             id: randomUUID(),
             nome: 'Ana Silva',
             email: `ana.${randomUUID().substring(0, 8)}@example.com`,
-            cpf: gerarCpf(),
+            documento: gerarCNPJ(),
             telefone: '(11) 91111-1111',
-            tipo: 'PF',
+            tipo: 'PJ',
           },
         }),
         prisma.cliente.create({
@@ -56,7 +57,7 @@ describe('Listar Clientes (E2E)', () => {
             id: randomUUID(),
             nome: 'Bruno Lima',
             email: `bruno.${randomUUID().substring(0, 8)}@example.com`,
-            cpf: gerarCpf(),
+            documento: gerarCpf(),
             telefone: '(11) 92222-2222',
             tipo: 'PF',
           },
@@ -66,7 +67,7 @@ describe('Listar Clientes (E2E)', () => {
             id: randomUUID(),
             nome: 'Carlos Eduardo',
             email: `carlos.${randomUUID().substring(0, 8)}@example.com`,
-            cpf: gerarCpf(),
+            documento: gerarCpf(),
             telefone: '(11) 93333-3333',
             tipo: 'PF',
           },
@@ -111,7 +112,7 @@ describe('Listar Clientes (E2E)', () => {
             id: clienteAlvo.getId().toValue(),
             nome: clienteAlvo.getNome().getValor(),
             email: `marcos.${randomUUID().substring(0, 8)}@example.com`,
-            cpf: gerarCpf(),
+            documento: gerarCpf(),
             telefone: '(11) 94444-4444',
             tipo: 'PF',
           },
@@ -119,7 +120,7 @@ describe('Listar Clientes (E2E)', () => {
             id: clienteOutro.getId().toValue(),
             nome: clienteOutro.getNome().getValor(),
             email: `fernanda.${randomUUID().substring(0, 8)}@example.com`,
-            cpf: gerarCpf(),
+            documento: gerarCpf(),
             telefone: '(11) 95555-5555',
             tipo: 'PF',
           },
@@ -155,7 +156,7 @@ describe('Listar Clientes (E2E)', () => {
           id: randomUUID(),
           nome: 'Cliente Ativo',
           email: `ativo.${randomUUID().substring(0, 8)}@example.com`,
-          cpf: gerarCpf(),
+          documento: gerarCpf(),
           telefone: '(11) 96666-6666',
           tipo: 'PF',
           deletadoEm: null,
@@ -168,7 +169,7 @@ describe('Listar Clientes (E2E)', () => {
           id: randomUUID(),
           nome: 'Cliente Inativo',
           email: `inativo.${randomUUID().substring(0, 8)}@example.com`,
-          cpf: gerarCpf(),
+          documento: gerarCpf(),
           telefone: '(11) 97777-7777',
           tipo: 'PF',
           deletadoEm: new Date(),

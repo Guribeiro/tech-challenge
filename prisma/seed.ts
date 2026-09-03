@@ -3,6 +3,7 @@ import { PrismaClient } from '../src/generated/prisma/client.js';
 import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcryptjs';
 import { generate as gerarCpf } from 'gerador-validador-cpf'
+import { gerarCNPJ } from '../src/teste/helpers/gerar-cnpj.js'
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
@@ -116,7 +117,7 @@ async function main() {
       id: cli1Id,
       nome: 'João da Silva',
       email: 'joao.cliente@gmail.com',
-      cpf: gerarCpf(),
+      documento: gerarCpf(),
       telefone: '(11) 98765-4321',
       tipo: 'PF',
     },
@@ -136,7 +137,7 @@ async function main() {
       id: cli2Id,
       nome: 'Transportadora Express Ltda',
       email: 'contato@logistica.com',
-      cpf: gerarCpf(),
+      documento: gerarCNPJ(),
       telefone: '(11) 3333-4444',
       tipo: 'PJ',
     },

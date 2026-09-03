@@ -9,7 +9,6 @@ import { makeVeiculo } from '../../factories/make-veiculo.js'
 import { makeOrdemServico } from '../../factories/make-ordem-servico.js'
 import { makeOrcamento } from '../../factories/make-orcamento.js'
 import { DomainEvents } from '@/core/events/domain-events.js'
-import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { randomUUID } from 'node:crypto'
 
 describe('Renegociar Orçamento (E2E)', () => {
@@ -73,7 +72,7 @@ describe('Renegociar Orçamento (E2E)', () => {
         id: clienteDomain.getId().toValue(),
         nome: clienteDomain.getNome().getValor(),
         email: clienteDomain.getEmail().getValor(),
-        cpf: clienteDomain.getCpf().getValor(),
+        documento: clienteDomain.getDocumento().getValor(),
         telefone: clienteDomain.getTelefone().getValor(),
         tipo: clienteDomain.getTipo(),
       },

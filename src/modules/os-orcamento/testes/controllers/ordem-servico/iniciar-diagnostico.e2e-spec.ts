@@ -6,6 +6,7 @@ import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/
 import { randomUUID } from 'node:crypto'
 import { generate as gerarCpf } from 'gerador-validador-cpf'
 import { resetDatabase } from '@/teste/helpers/reset-database.js'
+import { makeCliente } from '../../factories/make-cliente'
 
 describe('Iniciar Diagnóstico de Ordem de Serviço (E2E)', () => {
   let app: INestApplication
@@ -56,7 +57,7 @@ describe('Iniciar Diagnóstico de Ordem de Serviço (E2E)', () => {
           id: clienteId,
           nome: 'Cliente Exemplo OS',
           email: `cliente-${randomUUID().substring(0, 8)}@example.com`,
-          cpf: gerarCpf(),
+          documento: makeCliente().getDocumento().getValor(),
           telefone: '11999999999',
           tipo: 'PF',
         },
