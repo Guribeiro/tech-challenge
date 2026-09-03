@@ -108,6 +108,7 @@ docker compose up -d --build
 
 ### 3) Aplique as migrations e seed inicial
 ```bash
+docker compose exec app npx prisma generate
 docker compose exec app npx prisma migrate deploy
 docker compose exec app npm run db:seed
 ```
