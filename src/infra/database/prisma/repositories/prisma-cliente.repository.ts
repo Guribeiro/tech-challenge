@@ -47,10 +47,10 @@ export class PrismaClienteRepository implements ClienteRepository {
   }
 
 
-  public async findByCpf(cpf: string): Promise<Cliente | null> {
+  public async findByDocumento(documento: string): Promise<Cliente | null> {
     const raw = await this.prisma.cliente.findUnique({
       where: {
-        cpf
+        documento
       }
     })
 

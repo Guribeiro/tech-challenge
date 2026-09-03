@@ -28,16 +28,25 @@ export default defineConfig({
       cleanOnRerun: true,
       include: ['src/**/*.{ts,tsx}'],
       exclude: [
+        // Testes e Utilitários de Teste
         'src/**/*.spec.ts',
         'src/**/*.test.ts',
         'src/**/*.e2e-spec.ts',
         'src/**/tests/**',
         'src/**/factories/**',
-        'src/generated/**',
+
+        // Boilerplate, Módulos e DTOs
         'src/main.ts',
         'src/**/*.module.ts',
         'src/**/*.dto.ts',
-        'src/generated/**'
+        'src/**/*.entity.ts',
+        'src/generated/**',
+
+        // Camada de Infraestrutura e Banco de Dados
+        'src/**/infra/**',
+        'src/infra/**',
+        'src/**/prisma/**',
+        '**/seed.ts',
       ],
     },
   },

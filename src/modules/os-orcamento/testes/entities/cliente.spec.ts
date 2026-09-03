@@ -7,14 +7,15 @@ import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js
 import { ClienteCriadoEvent } from '@/modules/os-orcamento/domain/events/cliente-criado-event.js'
 import { RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/index.js'
 import { makeCliente } from '../factories/make-cliente.js'
+import { CpfCnpj } from '../../domain/entities/value-objects/cpf-cnpj.js'
 
 describe('Entidade: Cliente', () => {
-  let cpf: Cpf
+  let documento: CpfCnpj
   let email: Email
   let telefone: Telefone
 
   beforeEach(() => {
-    cpf = makeCliente().getCpf()
+    documento = makeCliente().getDocumento()
     email = makeCliente().getEmail()
     telefone = makeCliente().getTelefone()
   })
@@ -23,7 +24,7 @@ describe('Entidade: Cliente', () => {
     nome: NomeCompleto.criar('João da Silva'),
     email,
     telefone,
-    cpf,
+    documento,
     tipo: 'PF' as const,
   })
 
@@ -37,7 +38,7 @@ describe('Entidade: Cliente', () => {
       expect(cliente.getNome().getValor()).toBe('João da Silva')
       expect(cliente.getEmail().getValor()).toBe(email.getValor())
       expect(cliente.getTelefone().getValor()).toBe(telefone.getValor())
-      expect(cliente.getCpf().getValor()).toBe(cpf.getValor())
+      expect(cliente.getDocumento().getValor()).toBe(documento.getValor())
       expect(cliente.getTipo()).toBe('PF')
       expect(cliente.getCriadoEm()).toBeInstanceOf(Date)
       expect(cliente.isDeletado()).toBe(false)
