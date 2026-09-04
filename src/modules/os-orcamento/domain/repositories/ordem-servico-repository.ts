@@ -26,4 +26,5 @@ export abstract class OrdemServicoRepository {
   abstract listServiceQueue(params: BuscarFilaTrabalhoParams): Promise<BuscarFilaTrabalhoResultado>
   abstract findManyReadyToInitialize(mecanicoId?: string): Promise<OrdemServico[]>
   abstract calcularTempoMedio(params?: CalcularTempoMedioParams): Promise<CalcularTempoMedioResultado>;
+  abstract findByClienteIdAndVeiculoId(clienteId: string, veiculoId: string): Promise<OrdemServico | null>;
 }

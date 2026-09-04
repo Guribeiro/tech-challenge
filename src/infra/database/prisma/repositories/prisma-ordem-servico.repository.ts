@@ -158,6 +158,25 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
     return raw.map(PrismaOrdemServicoMapper.toDomain);
   }
 
+  async findByClienteIdAndVeiculoId(clienteId: string, veiculoId: string): Promise<OrdemServico | null> {
+    const raw = await this.prisma.ordemServico.findFirst({
+      where: {
+        clienteId,
+        veiculoId,
+      },
+      include: {
+        veiculo: true,
+        cliente: true,
+        componentes: true,
+        servicos: true,
+      },
+    });
+
+    if (!raw) return null;
+
+    return PrismaOrdemServicoMapper.toDomain(raw);
+  }
+
   async calcularTempoMedio(params?: CalcularTempoMedioParams) {
     const dataInicio = params?.dataInicio ?? null;
     const dataFim = params?.dataFim ?? null;
