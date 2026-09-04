@@ -8,7 +8,7 @@ import { Either, left, right } from '@/core/either.js'
 import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js'
 import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js'
 import { DomainError } from '@/core/errors/domain-errors/domain-error.js'
-import { CpfCnpj } from '@/modules/os-orcamento/domain/entities/value-objects/cpf-cnpj'
+import { CpfCnpj } from '@/modules/os-orcamento/domain/entities/value-objects/cpf-cnpj.js'
 
 export type CriarClienteInput = {
   nome: string

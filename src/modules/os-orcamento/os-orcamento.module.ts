@@ -22,6 +22,7 @@ import { DesativarServicoController } from './controllers/servicos/desativar-ser
 import { ReativarServicoController } from './controllers/servicos/reativar-servico.controller.js'
 import { EditarServicoController } from './controllers/servicos/editar-servico.controller.js'
 import { CalcularTempoMedioExecucaoServicosController } from './controllers/ordem-servico/calcular-tempo-media-execucao.controller.js'
+import { ConsultarSituacaoOSPublicoController } from './controllers/ordem-servico/consultar-situacao-os-publico.controller.js'
 
 import { CriarOrdemServicoController } from './controllers/ordem-servico/criar-ordem-servico.controller.js'
 import { ObterFilaTrabalhoController } from './controllers/ordem-servico/obter-fila-trabalho.controller.js'
@@ -61,6 +62,7 @@ import { IniciarDiagnosticoUseCase } from './application/use-cases/ordens-servic
 import { ConcluirDiagnosticoUseCase } from './application/use-cases/ordens-servicos/concluir-diagnostico.js'
 import { EncerrarOrdemServicoUseCase } from './application/use-cases/ordens-servicos/encerrar-os-por-rejeicao.js'
 import { CalcularTempoMediaExecucaoServicosUseCase } from './application/use-cases/ordens-servicos/calcular-tempo-media-execucao.js'
+import { ConsultarSituacaoOSPublicoUseCase } from './application/use-cases/ordens-servicos/consultar-situacao-os-publico.js'
 
 import { GerarOrcamentoUseCase } from './application/use-cases/orcamento/gerar-orcamento.js'
 import { AprovarOrcamentoUseCase } from './application/use-cases/orcamento/aprovar-orcamento.js'
@@ -141,6 +143,7 @@ import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento
     RecusarOrcamentoController,
     RenegociarOrcamentoController,
     CalcularTempoMedioExecucaoServicosController,
+    ConsultarSituacaoOSPublicoController
   ],
   providers: [
     // Database Service
@@ -178,6 +181,7 @@ import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento
     RenegociarOrcamentoUseCase,
     RenegociarOrcamentoService,
     CalcularTempoMediaExecucaoServicosUseCase,
+    ConsultarSituacaoOSPublicoUseCase,
 
     //Subscribers
     OnDiagnosticoConcluido,
