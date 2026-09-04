@@ -6,7 +6,7 @@ export class ClientePresenter {
       id: cliente.getId().toValue(),
       nome: cliente.getNome().getValor(),
       email: cliente.getEmail().getValor(),
-      cpf: cliente.getCpf().getValor(),
+      documento: cliente.getDocumento().getValor(),
       telefone: cliente.getTelefone().getValorFormatado(),
       tipo: cliente.getTipo(),
       criadoEm: cliente.getCriadoEm(),

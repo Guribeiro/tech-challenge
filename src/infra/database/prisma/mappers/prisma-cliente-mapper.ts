@@ -4,7 +4,7 @@ import { Email } from '@/shared/domain/value-objects/email.js'
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/telefone.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
-import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js'
+import { CpfCnpj } from '@/modules/os-orcamento/domain/entities/value-objects/cpf-cnpj'
 
 export class PrismaClienteMapper {
   // Transforma o modelo do Prisma (Banco) para Entidade de Domínio
@@ -14,7 +14,7 @@ export class PrismaClienteMapper {
         email: Email.criar(raw.email),
         nome: NomeCompleto.criar(raw.nome),
         telefone: Telefone.criar(raw.telefone),
-        cpf: Cpf.criar(raw.cpf),
+        documento: CpfCnpj.criar(raw.documento),
         tipo: raw.tipo,
         criadoEm: raw.criadoEm,
         atualizadoEm: raw.atualizadoEm ?? undefined,
@@ -31,7 +31,7 @@ export class PrismaClienteMapper {
       email: cliente.getEmail().getValor(),
       nome: cliente.getNome().getValor(),
       telefone: cliente.getTelefone().getValor(),
-      cpf: cliente.getCpf().getValor(),
+      documento: cliente.getDocumento().getValor(),
       tipo: cliente.getTipo(),
       criadoEm: cliente.getCriadoEm(),
       atualizadoEm: cliente.getAtualizadoEm() ?? null,

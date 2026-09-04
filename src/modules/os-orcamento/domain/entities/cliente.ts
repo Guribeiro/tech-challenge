@@ -3,16 +3,16 @@ import { Telefone } from '@/modules/os-orcamento/domain/entities/value-objects/t
 import { NomeCompleto } from '@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { Optional } from '@/core/types/optional.js'
-import { Cpf } from './value-objects/cpf.js'
 import { AggregateRoot } from '@/core/entities/aggregate-root.js'
 import { ClienteCriadoEvent } from '../events/cliente-criado-event.js'
 import { ArgumentoInvalidoError, RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/index.js'
+import { CpfCnpj } from './value-objects/cpf-cnpj.js'
 
 export interface ClienteProps {
   nome: NomeCompleto
   email: Email
   telefone: Telefone
-  cpf: Cpf
+  documento: CpfCnpj
   tipo: 'PF' | 'PJ'
   criadoEm: Date
   atualizadoEm?: Date
@@ -23,7 +23,7 @@ export type AtualizarClienteProps = Partial<{
   nome: NomeCompleto
   email: Email
   telefone: Telefone
-  cpf: Cpf
+  documento: CpfCnpj
   tipo: 'PF' | 'PJ'
 }>
 
@@ -47,7 +47,7 @@ export class Cliente extends AggregateRoot<ClienteProps> {
 
   public atualizar(props: AtualizarClienteProps) {
     this.props.nome = props.nome ?? this.props.nome
-    this.props.cpf = props.cpf ?? this.props.cpf
+    this.props.documento = props.documento ?? this.props.documento
     this.props.email = props.email ?? this.props.email
     this.props.telefone = props.telefone ?? this.props.telefone
     this.props.tipo = props.tipo ?? this.props.tipo
@@ -62,8 +62,8 @@ export class Cliente extends AggregateRoot<ClienteProps> {
       throw new ArgumentoInvalidoError('Nome do cliente é obrigatório.')
     }
 
-    if (!props.cpf?.getValor().trim()) {
-      throw new ArgumentoInvalidoError('CPF do mecânico é obrigatório.')
+    if (!props.documento?.getValor().trim()) {
+      throw new ArgumentoInvalidoError('Documento (CPF/CNPJ) do cliente é obrigatório.')
     }
 
     if (!props.email.getValor()?.trim()) {
@@ -100,8 +100,8 @@ export class Cliente extends AggregateRoot<ClienteProps> {
     return this.props.email
   }
 
-  public getCpf(): Cpf {
-    return this.props.cpf
+  public getDocumento(): CpfCnpj {
+    return this.props.documento
   }
 
   public getTelefone(): Telefone {

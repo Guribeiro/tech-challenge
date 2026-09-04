@@ -15,7 +15,7 @@ export abstract class ClienteRepository {
   abstract save(cliente: Cliente): Promise<void>
   abstract findById(id: string): Promise<Cliente | null>
   abstract findByEmail(email: string): Promise<Cliente | null>
-  abstract findByCpf(cpf: string): Promise<Cliente | null>
+  abstract findByDocumento(documento: string): Promise<Cliente | null>
   abstract list(): Promise<Cliente[]>
   abstract findMany(params: BuscarClientesParams): Promise<BuscarClientesResultado>
   abstract delete(id: string): Promise<void>

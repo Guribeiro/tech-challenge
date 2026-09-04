@@ -25,7 +25,7 @@ export class CriarClienteBodyDto {
   })
   @IsString({ message: 'O CPF/CNPJ deve ser uma string' })
   @IsNotEmpty({ message: 'CPF ou CNPJ é obrigatório' })
-  cpf!: string
+  documento!: string
 
   @ApiProperty({
     description: 'Telefone de contato do cliente',

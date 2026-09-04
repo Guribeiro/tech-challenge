@@ -41,7 +41,7 @@ describe('Criar Cliente (E2E)', () => {
       const payload = {
         nome: 'Juliana Costa',
         email: 'juliana.costa@oficina.com',
-        cpf: gerarCpf(),
+        documento: gerarCpf(),
         telefone: makeCliente().getTelefone().getValor(),
         tipo: 'PF',
       }
@@ -76,7 +76,7 @@ describe('Criar Cliente (E2E)', () => {
       const payload = {
         nome: 'Maria Souza',
         email: 'maria.souza@example.com',
-        cpf: gerarCpf(),
+        documento: gerarCpf(),
         telefone: makeCliente().getTelefone().getValor(),
         tipo: 'PF',
       }
@@ -118,7 +118,7 @@ describe('Criar Cliente (E2E)', () => {
         body: JSON.stringify({
           nome: 'Carlos Santos',
           email: 'carlos@example.com',
-          cpf: gerarCpf(),
+          documento: gerarCpf(),
           telefone: makeCliente().getTelefone().getValor(),
           tipo: 'PF',
         }),
@@ -136,7 +136,7 @@ describe('Criar Cliente (E2E)', () => {
         body: JSON.stringify({
           nome: 'Sem Token',
           email: 'semtoken@example.com',
-          cpf: gerarCpf(),
+          documento: gerarCpf(),
           telefone: makeCliente().getTelefone().getValor(),
           tipo: 'PF',
         }),
@@ -153,7 +153,7 @@ describe('Criar Cliente (E2E)', () => {
       const payload = {
         nome: 'Cliente Duplicado',
         email: 'duplicado@example.com',
-        cpf: gerarCpf(),
+        documento: gerarCpf(),
         telefone: makeCliente().getTelefone().getValor(),
         tipo: 'PF',
       }
@@ -177,7 +177,7 @@ describe('Criar Cliente (E2E)', () => {
         },
         body: JSON.stringify({
           ...payload,
-          cpf: gerarCpf(), // CPF diferente, mesmo e-mail
+          documento: gerarCpf(), // CPF diferente, mesmo e-mail
         }),
       })
 
