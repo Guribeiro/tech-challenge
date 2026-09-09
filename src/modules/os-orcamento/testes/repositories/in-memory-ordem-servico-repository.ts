@@ -1,6 +1,7 @@
-import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, CalcularTempoMedioParams, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
+import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, CalcularTempoMedioParams, ListarOrdensServicoAtivasParams, ListarOrdensServicoAtivasResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js"
 import { OrdemServico } from "../../domain/entities/ordem-servico.js"
 import { DomainEvents } from "@/core/events/domain-events.js"
+import { PRIORIDADE_STATUS, STATUS_FINALIZADOS } from "../../domain/constants/status-prioridade.js"
 
 export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
   public items: OrdemServico[] = []
@@ -65,6 +66,38 @@ export class InMemoryOrdemServicoRepository implements OrdemServicoRepository {
       limite,
     }
   }
+
+  async listActiveOrders({
+    pagina,
+    limite,
+  }: ListarOrdensServicoAtivasParams): Promise<ListarOrdensServicoAtivasResultado> {
+    const ordensAtivas = this.items.filter(
+      (ordem) => !STATUS_FINALIZADOS.includes(ordem.getStatus())
+    )
+
+    const ordensOrdenadas = [...ordensAtivas].sort((a, b) => {
+      const prioridadeA = PRIORIDADE_STATUS[a.getStatus()] ?? 99
+      const prioridadeB = PRIORIDADE_STATUS[b.getStatus()] ?? 99
+
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB
+      }
+
+      return a.getCriadoEm().getTime() - b.getCriadoEm().getTime()
+    })
+
+    const inicio = (pagina - 1) * limite
+    const fim = pagina * limite
+    const paginadas = ordensOrdenadas.slice(inicio, fim)
+
+    return {
+      ordensServicos: paginadas,
+      total: ordensAtivas.length,
+      limite,
+      pagina
+    }
+  }
+
   async findManyReadyToInitialize(mecanicoId?: string): Promise<OrdemServico[]> {
     // 1. Filtra os registros com base nas regras de negócio
     const ordensFiltradas = this.items.filter(item => {

@@ -55,7 +55,7 @@ export class OrdemServico extends AggregateRoot<OrdemServicoProps> {
       servicos: props.servicos ?? new OrdemServicoServicoList(),
       componentes: props.componentes ?? new OrdemServicoComponenteList(),
       status: props.status ?? 'RECEBIDA',
-      criadoEm: new Date()
+      criadoEm: props.criadoEm ?? new Date()
     }
 
     this.validar(propriedadesCompletas)
