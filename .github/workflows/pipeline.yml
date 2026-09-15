@@ -41,11 +41,14 @@ jobs:
       - name: Executar Linter
         run: npm run lint
 
-      - name: Executar Testes Unitários com Cobertura
-        run: npm run test:cov
+      - name: Executar Testes Unitários
+        run: npm run test
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/oficina_test_db?schema=public
-
+      
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        
       - name: Executar Testes End-to-End (E2E)
         run: npm run test:e2e
         env:
