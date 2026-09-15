@@ -88,10 +88,7 @@ jobs:
 
       - name: Gerar Prisma Client
         run: npx prisma generate
-
-      - name: Sincronizar Schema com o Banco da CI
-        run: npx prisma db push --accept-data-loss
-
+        
       - name: Executar Testes End-to-End (E2E)
         run: npm run test:e2e
         env:
