@@ -1,6 +1,7 @@
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 
 export async function resetDatabase(prisma: PrismaService) {
+  console.log('DATABASE_URL em uso:', process.env.DATABASE_URL)
   const tables = await prisma.$queryRaw<Array<{ tablename: string }>>`
     SELECT tablename 
     FROM pg_tables 
