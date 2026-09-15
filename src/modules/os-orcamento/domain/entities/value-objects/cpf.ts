@@ -41,7 +41,7 @@ export class Cpf {
       soma += Number.parseInt(cpf.charAt(i)) * (10 - i)
     }
     let resto = 11 - (soma % 11)
-    let digitoVerificador1 = resto > 9 ? 0 : resto
+    const digitoVerificador1 = resto > 9 ? 0 : resto
     if (Number.parseInt(cpf.charAt(9)) !== digitoVerificador1) return false
 
     // Validação do segundo dígito verificador
@@ -50,7 +50,7 @@ export class Cpf {
       soma += Number.parseInt(cpf.charAt(i)) * (11 - i)
     }
     resto = 11 - (soma % 11)
-    let digitoVerificador2 = resto > 9 ? 0 : resto
+    const digitoVerificador2 = resto > 9 ? 0 : resto
     if (Number.parseInt(cpf.charAt(10)) !== digitoVerificador2) return false
 
     return true
