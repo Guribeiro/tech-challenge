@@ -2,5 +2,5 @@ projectKey=oficina-mecanica
 serverUrl=http://localhost:9000
 serverVersion=26.7.0.124771
 dashboardUrl=http://localhost:9000/dashboard?id=oficina-mecanica
-ceTaskId=482ca597-eb23-4baf-a481-d5df6de25f7f
-ceTaskUrl=http://localhost:9000/api/ce/task?id=482ca597-eb23-4baf-a481-d5df6de25f7f
+ceTaskId=d34f39c3-304f-4220-bd16-20a290901ed3
+ceTaskUrl=http://localhost:9000/api/ce/task?id=d34f39c3-304f-4220-bd16-20a290901ed3
