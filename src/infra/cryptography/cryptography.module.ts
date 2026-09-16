@@ -28,6 +28,6 @@ import { JwtEncrypter } from './jwt-encrypter.js'
       useClass: JwtEncrypter,
     },
   ],
-  exports: [HashGenerator, Encrypter],
+  exports: [HashGenerator, Encrypter, JwtModule],
 })
 export class CryptographyModule { }

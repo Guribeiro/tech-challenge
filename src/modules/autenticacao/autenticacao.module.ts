@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Global, Module } from '@nestjs/common'
 import { CryptographyModule } from '@/infra/cryptography/cryptography.module.js'
 import { DatabaseModule } from '@/infra/database/database.module.js'
 import { PassportModule } from '@nestjs/passport'
@@ -14,11 +14,12 @@ import { PrismaUsuarioRepository } from '@/infra/database/prisma/repositories/pr
 import { OnClienteCriado } from './application/subscribers/on-cliente-criado.js'
 import { OnRecepcionistaCriado } from './application/subscribers/on-recepcionista-criado.js'
 
+@Global()
 @Module({
   imports: [
     DatabaseModule,
     CryptographyModule,
-    PassportModule
+    PassportModule.register({ defaultStrategy: 'jwt' })
   ],
   controllers: [AutenticarController],
   providers: [
@@ -33,6 +34,12 @@ import { OnRecepcionistaCriado } from './application/subscribers/on-recepcionist
       useClass: PrismaUsuarioRepository
     }
   ],
-  exports: [AutenticarUseCase, CriarCredenciaisUseCase],
+  exports: [
+    AutenticarUseCase,
+    CriarCredenciaisUseCase,
+    PassportModule,
+    JwtStrategy,
+    CryptographyModule
+  ],
 })
 export class AutenticacaoModule { }
