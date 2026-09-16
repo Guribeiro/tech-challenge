@@ -1,18 +1,25 @@
 variable "db_user" {
-  description = "Usuário do banco de dados PostgreSQL"
   type        = string
-  default     = "postgres"
+  description = "Usuário do banco de dados PostgreSQL"
 }
 
 variable "db_password" {
-  description = "Senha do banco de dados PostgreSQL"
   type        = string
-  default     = "postgres"
+  description = "Senha do banco de dados PostgreSQL"
   sensitive   = true
 }
 
 variable "db_name" {
-  description = "Nome do banco de dados da oficina"
   type        = string
-  default     = "oficina_db"
+  description = "Nome do banco de dados da oficina"
+}
+
+variable "kube_context" {
+  type        = string
+  description = "Nome do contexto do Kubernetes no ~/.kube/config"
+}
+
+variable "namespace" {
+  type        = string
+  description = "Namespace para isolamento dos recursos"
 }
