@@ -23,10 +23,10 @@ resource "kubernetes_deployment_v1" "oficina_app" {
       metadata { labels = { app = "oficina-app" } }
       spec {
         init_container {
-          name    = "prisma-migration"
-          image   = "guribeiro/oficina-app:latest"
+          name              = "prisma-migration"
+          image             = "guribeiro/oficina-app:latest"
           image_pull_policy = "Always"
-          command = ["sh", "-c", "npx prisma migrate deploy"]
+          command           = ["sh", "-c", "npx prisma migrate deploy"]
 
           env_from {
             secret_ref {
@@ -35,8 +35,8 @@ resource "kubernetes_deployment_v1" "oficina_app" {
           }
         }
         container {
-          name    = "oficina-app"
-          image   = "guribeiro/oficina-app:latest"
+          name              = "oficina-app"
+          image             = "guribeiro/oficina-app:latest"
           image_pull_policy = "Always"
 
           port { container_port = 3000 }
@@ -116,6 +116,18 @@ resource "kubernetes_horizontal_pod_autoscaler_v2" "oficina_app_hpa" {
         target {
           type                = "Utilization"
           average_utilization = 70
+        }
+      }
+    }
+
+    # Adicionado para monitorar e escalar também por consumo de memória
+    metric {
+      type = "Resource"
+      resource {
+        name = "memory"
+        target {
+          type                = "Utilization"
+          average_utilization = 80
         }
       }
     }
