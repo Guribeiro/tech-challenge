@@ -42,4 +42,4 @@ COPY --from=builder /app/prisma.config.ts ./
 EXPOSE 3000
 
 # Executa a aplicação compilada em JavaScript
-CMD ["node", "dist/src/infra/main.js"]
+CMD ["node", "dist/infra/main.js"]
