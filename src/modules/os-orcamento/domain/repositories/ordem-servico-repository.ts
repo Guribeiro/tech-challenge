@@ -5,9 +5,16 @@ export type BuscarFilaTrabalhoParams = PaginationParams & {
   status?: StatusOS
 }
 
+export type ListarOrdensServicoAtivasParams = PaginationParams
+
 export type BuscarFilaTrabalhoResultado = PaginationResult & {
   ordensServicos: OrdemServico[]
 }
+
+export type ListarOrdensServicoAtivasResultado = PaginationResult & {
+  ordensServicos: OrdemServico[]
+}
+
 
 export interface CalcularTempoMedioParams {
   dataInicio?: Date;
@@ -24,6 +31,8 @@ export abstract class OrdemServicoRepository {
   abstract save(ordem: OrdemServico): Promise<void>
   abstract findById(id: string): Promise<OrdemServico | null>
   abstract listServiceQueue(params: BuscarFilaTrabalhoParams): Promise<BuscarFilaTrabalhoResultado>
+  abstract listActiveOrders(params: ListarOrdensServicoAtivasParams): Promise<ListarOrdensServicoAtivasResultado>
   abstract findManyReadyToInitialize(mecanicoId?: string): Promise<OrdemServico[]>
   abstract calcularTempoMedio(params?: CalcularTempoMedioParams): Promise<CalcularTempoMedioResultado>;
+  abstract findByClienteIdAndVeiculoId(clienteId: string, veiculoId: string): Promise<OrdemServico | null>;
 }

@@ -43,7 +43,7 @@ export function makeOrdemServico(
       servicos: new OrdemServicoServicoList(),
       componentes: new OrdemServicoComponenteList(),
       status: 'RECEBIDA',
-      criadoEm: faker.date.recent(),
+      criadoEm: override.criadoEm ?? faker.date.recent(),
       ...override,
     },
     id,

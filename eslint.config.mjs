@@ -13,6 +13,14 @@ export default defineConfig([
   // Aplicar regras globais recomendadas
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ['**/*.js', '**/*.mjs', '**/*.cjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
 
   // Configurações customizadas do ambiente Node + TypeScript
   {

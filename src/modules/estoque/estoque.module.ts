@@ -16,8 +16,10 @@ import { ReativarProdutoController } from './controllers/produto/reativar-produt
 import { PrismaProdutoRepository } from '@/infra/database/prisma/repositories/prisma-produto.repository.js'
 import { OnOrdemServicoFinalizadaDeduzirEstoque } from './application/subscribers/on-os-finalizada-deduzir-estoque.js'
 import { DeduzirEstoqueUseCase } from './application/use-cases/deduzir-estoque.js'
+import { PassportModule } from '@nestjs/passport'
 
 @Module({
+  imports: [PassportModule.register({ defaultStrategy: 'jwt' })],
   controllers: [
     CriarProdutoController,
     ListarProdutosController,

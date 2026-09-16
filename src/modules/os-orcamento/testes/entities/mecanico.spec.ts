@@ -4,8 +4,8 @@ import { Cpf } from '../../domain/entities/value-objects/cpf.js'
 import { Email } from '@/shared/domain/value-objects/email.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { MecanicoCriadoEvent } from '../../domain/events/mecanico-criado-event.js'
-import { makeCliente } from '../factories/make-cliente.js'
 import { ArgumentoInvalidoError } from '@/core/errors/domain-errors/argumento-invalido-error.js'
+import { makeMecanico } from '../factories/make-mecanico.js'
 
 describe('Entidade: Mecanico', () => {
   let cpf: Cpf
@@ -14,10 +14,10 @@ describe('Entidade: Mecanico', () => {
 
   beforeEach(() => {
 
-    const clienteFake = makeCliente()
-    cpf = clienteFake.getCpf()
-    email = clienteFake.getEmail()
-    nome = clienteFake.getNome()
+    const mecanicoFake = makeMecanico()
+    cpf = mecanicoFake.getCpf()
+    email = mecanicoFake.getEmail()
+    nome = mecanicoFake.getNome()
   })
 
   const makePropsValidas = () => ({

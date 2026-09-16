@@ -19,7 +19,7 @@ try {
   } else {
     console.log('Container do banco de dados já está rodando.')
   }
-} catch (error) {
+} catch {
   console.log('Iniciando container do banco de dados...')
   try {
     execSync('docker compose up -d postgres', { stdio: 'inherit' })
