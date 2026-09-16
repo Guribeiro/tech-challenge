@@ -9,6 +9,7 @@
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
 - [Arquitetura e Estrutura de Pastas](#-arquitetura-e-estrutura-de-pastas)
 - [Funcionalidades Principais](#-funcionalidades-principais)
+- [Infraestrutura, Kubernetes & CI/CD](#-infraestrutura-kubernetes--cicd)
 - [Como Executar o Projeto](#-como-executar-o-projeto)
 - [Documentação da API (Swagger)](#-documentação-da-api-swagger)
 - [Rodando os Testes](#-rodando-os-testes)
@@ -86,6 +87,14 @@ src/
 - Geração de termo de liberação e fluxo de entrega do veículo.
 - Métricas de tempo médio de execução de ordens de serviço.
 - Autenticação JWT para áreas administrativas.
+
+---
+
+## 🚀 Infraestrutura, Kubernetes & CI/CD
+
+A infraestrutura completa da aplicação utiliza **Kubernetes (Kind)**, **Terraform (IaC)**, **InitContainers** para migrações automatizadas via Prisma e **Horizontal Pod Autoscaler (HPA)**. 
+
+Para instruções detalhadas de como subir o ambiente localmente via Makefile, configurar o Terraform ou entender os workflows de CI/CD, consulte o nosso [Guia de Infraestrutura e DevOps](./docs/INFRASTRUCTURE.md).
 
 ---
 
