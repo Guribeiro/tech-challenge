@@ -69,3 +69,16 @@ CLAUDE.md
 
 # Relatórios de Segurança / Scans
 relatorio-snyk*
+
+# Arquivos de variáveis com segredos
+*.tfvars
+*.tfvars.json
+
+# Exceção para o arquivo de exemplo
+!terraform.tfvars.example
+
+# Arquivos de estado local do Terraform (contêm segredos em texto puro)
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
