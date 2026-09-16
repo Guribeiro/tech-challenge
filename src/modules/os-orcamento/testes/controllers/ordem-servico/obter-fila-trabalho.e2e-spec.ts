@@ -8,7 +8,6 @@ import { makeCliente } from '../../factories/make-cliente.js'
 import { makeVeiculo } from '../../factories/make-veiculo.js'
 import { makeOrdemServico } from '../../factories/make-ordem-servico.js'
 import { DomainEvents } from '@/core/events/domain-events.js'
-import { randomUUID } from 'node:crypto'
 import { ObterFilaTrabalhoResponseDto } from '@/modules/os-orcamento/dto/ordem-servico/obter-fila-trabalho-response.dto.js'
 
 describe('Obter Fila de Trabalho (E2E)', () => {
@@ -71,7 +70,7 @@ describe('Obter Fila de Trabalho (E2E)', () => {
         id: clienteDomain.getId().toValue(),
         nome: clienteDomain.getNome().getValor(),
         email: clienteDomain.getEmail().getValor(),
-        cpf: clienteDomain.getCpf().getValor(),
+        documento: clienteDomain.getDocumento().getValor(),
         telefone: clienteDomain.getTelefone().getValor(),
         tipo: clienteDomain.getTipo(),
       },
@@ -155,7 +154,7 @@ describe('Obter Fila de Trabalho (E2E)', () => {
         id: clienteDomain.getId().toValue(),
         nome: clienteDomain.getNome().getValor(),
         email: clienteDomain.getEmail().getValor(),
-        cpf: clienteDomain.getCpf().getValor(),
+        documento: clienteDomain.getDocumento().getValor(),
         telefone: clienteDomain.getTelefone().getValor(),
         tipo: clienteDomain.getTipo(),
       },

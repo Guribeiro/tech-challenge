@@ -9,6 +9,7 @@ import { makeVeiculo } from '../../factories/make-veiculo.js'
 import { makeOrdemServico } from '../../factories/make-ordem-servico.js'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { randomUUID } from 'node:crypto'
+import { generate as gerarCpf } from 'gerador-validador-cpf'
 
 describe('Iniciar Execução (E2E)', () => {
   let app: INestApplication
@@ -70,7 +71,7 @@ describe('Iniciar Execução (E2E)', () => {
         id: usuario.id,
         nome: 'Mecânico Teste',
         especialidade: 'GERAL',
-        cpf: makeCliente().getCpf().getValor(),
+        cpf: gerarCpf(),
         email: makeCliente().getEmail().getValor()
       },
     })
@@ -81,7 +82,7 @@ describe('Iniciar Execução (E2E)', () => {
         id: clienteDomain.getId().toValue(),
         nome: clienteDomain.getNome().getValor(),
         email: clienteDomain.getEmail().getValor(),
-        cpf: clienteDomain.getCpf().getValor(),
+        documento: clienteDomain.getDocumento().getValor(),
         telefone: clienteDomain.getTelefone().getValor(),
         tipo: clienteDomain.getTipo(),
       },
@@ -167,7 +168,7 @@ describe('Iniciar Execução (E2E)', () => {
         id: usuario.id,
         nome: 'Mecânico Teste',
         especialidade: 'GERAL',
-        cpf: makeCliente().getCpf().getValor(),
+        cpf: gerarCpf(),
         email: makeCliente().getEmail().getValor()
       },
     })

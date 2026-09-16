@@ -1,5 +1,5 @@
 import { OrdemServico } from "@/modules/os-orcamento/domain/entities/ordem-servico.js";
-import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, CalcularTempoMedioParams, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
+import { BuscarFilaTrabalhoParams, BuscarFilaTrabalhoResultado, CalcularTempoMedioParams, ListarOrdensServicoAtivasParams, ListarOrdensServicoAtivasResultado, OrdemServicoRepository } from "@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js";
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma.service.js";
 import { PrismaOrdemServicoMapper } from "../mappers/prisma-ordem-servico-mapper.js";
@@ -7,6 +7,7 @@ import { PrismaOrdemServicoServicoMapper } from "../mappers/prisma-os-servico-ma
 import { PrismaOrdemServicoComponenteMapper } from "../mappers/prisma-os-componente-mapper.js";
 import { DomainEvents } from "@/core/events/domain-events.js";
 import { Prisma } from "@/generated/prisma/client.js";
+import { STATUS_FINALIZADOS, PRIORIDADE_STATUS } from "@/modules/os-orcamento/domain/constants/status-prioridade.js";
 
 @Injectable()
 export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
@@ -138,6 +139,52 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
     }
   }
 
+  async listActiveOrders({ pagina, limite }: ListarOrdensServicoAtivasParams): Promise<ListarOrdensServicoAtivasResultado> {
+    const [raw, total] = await Promise.all([
+      this.prisma.ordemServico.findMany({
+        where: {
+          status: {
+            notIn: [...STATUS_FINALIZADOS],
+          },
+        },
+        include: {
+          componentes: true,
+          servicos: true,
+        },
+        orderBy: {
+          criadoEm: 'asc',
+        },
+      }),
+      this.prisma.ordemServico.count({
+        where: {
+          status: {
+            notIn: [...STATUS_FINALIZADOS],
+          },
+        },
+      }),
+    ])
+
+    const ordensOrdenadas = raw.toSorted((a, b) => {
+      const prioridadeA = PRIORIDADE_STATUS[a.status] ?? 99
+      const prioridadeB = PRIORIDADE_STATUS[b.status] ?? 99
+
+      if (prioridadeA !== prioridadeB) {
+        return prioridadeA - prioridadeB
+      }
+
+      return a.criadoEm.getTime() - b.criadoEm.getTime()
+    })
+
+    const paginadas = ordensOrdenadas.slice((pagina - 1) * limite, pagina * limite)
+
+    return {
+      ordensServicos: paginadas.map(PrismaOrdemServicoMapper.toDomain),
+      total,
+      pagina,
+      limite,
+    }
+  }
+
   public async findManyReadyToInitialize(
     mecanicoId?: string,
   ): Promise<OrdemServico[]> {
@@ -156,6 +203,25 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
     });
 
     return raw.map(PrismaOrdemServicoMapper.toDomain);
+  }
+
+  async findByClienteIdAndVeiculoId(clienteId: string, veiculoId: string): Promise<OrdemServico | null> {
+    const raw = await this.prisma.ordemServico.findFirst({
+      where: {
+        clienteId,
+        veiculoId,
+      },
+      include: {
+        veiculo: true,
+        cliente: true,
+        componentes: true,
+        servicos: true,
+      },
+    });
+
+    if (!raw) return null;
+
+    return PrismaOrdemServicoMapper.toDomain(raw);
   }
 
   async calcularTempoMedio(params?: CalcularTempoMedioParams) {

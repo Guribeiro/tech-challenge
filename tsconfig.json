@@ -14,9 +14,14 @@
     "rootDir": "./src",
     "outDir": "./dist"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "prisma.config.ts",
+    "prisma/**/*",
+    "*.config.ts",
+    "vitest.config.*.ts"
+  ],
   "exclude": [
     "node_modules",
-    "vite.config.ts"
   ]
 }

@@ -5,7 +5,7 @@ import { makeCliente } from '../../factories/make-cliente.js'
 import { EmailJaCadastradoError } from '@/core/errors/email-ja-cadastrado-error.js'
 import { CpfJaCadastradoError } from '@/core/errors/cpf-ja-cadastrado.js'
 import { Email } from '@/shared/domain/value-objects/email.js'
-import { Cpf } from '@/modules/os-orcamento/domain/entities/value-objects/cpf.js'
+import { CpfCnpj } from '@/modules/os-orcamento/domain/entities/value-objects/cpf-cnpj.js'
 
 describe('CriarClienteUseCase', () => {
   let clienteRepository: InMemoryClienteRepository
@@ -17,11 +17,11 @@ describe('CriarClienteUseCase', () => {
   })
 
   it('deve criar um novo cliente com sucesso', async () => {
-    const cpf = makeCliente().getCpf().getValor()
+    const documento = makeCliente().getDocumento().getValor()
     const input = {
       nome: 'João da Silva',
       email: 'joao@email.com',
-      cpf: cpf,
+      documento: documento,
       telefone: '11999999999',
       tipo: 'PF' as const,
     }
@@ -50,7 +50,7 @@ describe('CriarClienteUseCase', () => {
     const result = await sut.execute({
       nome: 'Outro Cliente',
       email: emailExistente,
-      cpf: '98765432100',
+      documento: '98765432100',
       telefone: '11988888888',
       tipo: 'PF',
     })
@@ -61,18 +61,18 @@ describe('CriarClienteUseCase', () => {
   })
 
   it('deve retornar CpfJaCadastradoError ao tentar cadastrar CPF duplicado', async () => {
-    const cpfExistente = makeCliente().getCpf().getValor()
+    const documentoExistente = makeCliente().getDocumento().getValor()
 
-    // Cadastra um cliente prévio com o CPF que causará conflito
+    // Cadastra um cliente prévio com o documento que causará conflito
     const clienteExistente = makeCliente({
-      cpf: Cpf.criar(cpfExistente),
+      documento: CpfCnpj.criar(documentoExistente),
     })
     await clienteRepository.create(clienteExistente)
 
     const result = await sut.execute({
       nome: 'Outro Cliente',
       email: 'novo.email@email.com',
-      cpf: cpfExistente,
+      documento: documentoExistente,
       telefone: '11988888888',
       tipo: 'PF',
     })

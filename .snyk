@@ -9,4 +9,9 @@ ignore:
           exclusivamente em ambiente de desenvolvimento via sonarqube-scanner.
         expires: 2026-09-26T13:50:44.216Z
         created: 2026-08-27T13:50:44.217Z
+  SNYK-JS-NODEFORGE-19635204:
+    - '*':
+        reason: DevDependency sem patch disponivel no sonarqube-scanner
+        expires: 2026-10-30T00:00:00.000Z
+        created: 2026-09-16T00:33:44.445Z
 patch: {}

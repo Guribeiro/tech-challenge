@@ -5,7 +5,8 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { EnviarNotificacaoProps, NotificacaoService } from '../../domain/services/notificacao-service.js'
 
-const Handlebars = (handlebarsModule as any).default || handlebarsModule
+const Handlebars = (handlebarsModule as unknown as { default?: typeof handlebarsModule }).default ?? handlebarsModule
+
 @Injectable()
 export class EtherealNotificacaoService implements NotificacaoService, OnModuleInit {
   private transporter!: nodemailer.Transporter
@@ -101,7 +102,7 @@ export class EtherealNotificacaoService implements NotificacaoService, OnModuleI
       return compiledTemplate(contexto)
     } catch (error) {
       this.logger.error(`Falha ao carregar o template no caminho: ${templateName}`, error)
-      throw new Error(`Não foi possível carregar o template de e-mail: ${templateName}`)
+      throw new Error(`Não foi possível carregar o template de e-mail: ${templateName}`, { cause: error })
     }
   }
 }

@@ -45,7 +45,7 @@ describe('Criar Ordem de Serviço (E2E)', () => {
           id: clienteId,
           nome: 'Cliente Teste OS',
           email: `cliente-${randomUUID().substring(0, 8)}@example.com`,
-          cpf: gerarCpf(),
+          documento: gerarCpf(),
           telefone: '11999999999',
           tipo: 'PF',
         },

@@ -23,10 +23,9 @@ export class InMemoryClienteRepository implements ClienteRepository {
     return this.clientes.find(c => c.getEmail().getValor() === email) || null
   }
 
-  async findByCpf(cpf: string): Promise<Cliente | null> {
-    return this.clientes.find(c => c.getCpf().getValor() === cpf) || null
+  async findByDocumento(documento: string): Promise<Cliente | null> {
+    return this.clientes.find(c => c.getDocumento().getValor() === documento) || null
   }
-
 
   async list(): Promise<Cliente[]> {
     return this.clientes

@@ -1,15 +1,11 @@
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from '@/infra/nest/app.module.js';
-import { DatabaseModule } from '@faker-js/faker';
-import { JwtService } from '@nestjs/jwt';
 import { makeOrdemServico } from '../../factories/make-ordem-servico.js';
-import { PrismaOrdemServicoRepository } from '@/infra/database/prisma/repositories/prisma-ordem-servico.repository.js';
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js';
 import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/make-usuario-autenticado.js';
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js';
 import { Prioridade } from '@/modules/os-orcamento/domain/entities/value-objects/prioridade.js';
-import { PrismaOrdemServicoMapper } from '@/infra/database/prisma/mappers/prisma-ordem-servico-mapper.js';
 import { generate as gerarCpf } from 'gerador-validador-cpf'
 
 describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
@@ -82,7 +78,7 @@ describe('Calcular Tempo Médio de Execução de Serviços (E2E)', () => {
         id: clienteId.toValue(),
         nome: 'Cliente Exemplo Diagnóstico',
         email: `cliente-${clienteId.toValue().substring(0, 8)}@example.com`,
-        cpf: gerarCpf(),
+        documento: gerarCpf(),
         telefone: '11999999999',
         tipo: 'PF',
       },

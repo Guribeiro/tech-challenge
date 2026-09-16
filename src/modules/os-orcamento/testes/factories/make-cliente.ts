@@ -5,8 +5,8 @@ import { Cliente, ClienteProps } from "@/modules/os-orcamento/domain/entities/cl
 import { NomeCompleto } from "@/modules/os-orcamento/domain/entities/value-objects/nome-completo.js";
 import { Email } from "../../../../shared/domain/value-objects/email.js";
 import { Telefone } from "../../domain/entities/value-objects/telefone.js";
-import { Cpf } from "../../domain/entities/value-objects/cpf.js";
 import { UniqueEntityID } from "@/core/entities/unique-entity-id.js";
+import { CpfCnpj } from "../../domain/entities/value-objects/cpf-cnpj.js";
 
 export function makeCliente(override: Partial<ClienteProps> = {}, id?: UniqueEntityID): Cliente {
   const dddsValidos = [
@@ -32,7 +32,7 @@ export function makeCliente(override: Partial<ClienteProps> = {}, id?: UniqueEnt
     nome: NomeCompleto.criar(faker.person.fullName()),
     email: Email.criar(faker.internet.email()), //
     telefone: Telefone.criar(celularValidoBruto),
-    cpf: Cpf.criar(gerarCpf()),
+    documento: CpfCnpj.criar(gerarCpf()),
     tipo: 'PF',
     ...override
   }, id)
