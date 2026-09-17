@@ -5,7 +5,7 @@ IMAGE_NAME     = $(DOCKER_USER)/oficina-app:latest
 CLUSTER_NAME   = oficina-cluster
 NAMESPACE      = oficina-mecanica
 APP_DEPLOYMENT = oficina-app-deployment
-TERRAFORM_DIR  = terraform
+TERRAFORM_DIR = src/infra/terraform
 
 # Help / Menu de Ajuda
 help:

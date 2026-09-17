@@ -1,5 +1,0 @@
-db_user      = "postgres"
-db_password  = "postgres"
-db_name      = "oficina_db"
-kube_context = "kind-oficina-cluster"
-namespace    = "oficina-mecanica"

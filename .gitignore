@@ -81,4 +81,8 @@ relatorio-snyk*
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
+.terraform.lock.hcl # (Opcional, mas muitos preferem ignorar ou commitar apenas dependendo da política. O ideal para módulos locais é ignorar tfstate).
+
+# Arquivos de configuração gerados localmente
+oficina-cluster-config
+kubeconfig*

@@ -62,6 +62,7 @@ src/
 │   ├── nest/               # Módulo raiz da aplicação NestJS
 │   ├── auth/               # Estratégias e guardas de autenticação
 │   ├── database/           # Configuração de banco e conexão
+    ├── terraform/          # Configuração do terraform
 │   └── main.ts             # Bootstrap da aplicação
 ├── generated/              # Cliente Prisma gerado automaticamente
 └── shared/                 # Regras e utilidades compartilhadas
