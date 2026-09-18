@@ -95,7 +95,7 @@ src/
 
 A infraestrutura completa da aplicação utiliza **Kubernetes (Kind)**, **Terraform (IaC)**, **InitContainers** para migrações automatizadas via Prisma e **Horizontal Pod Autoscaler (HPA)**. 
 
-Para instruções detalhadas de como subir o ambiente localmente via Makefile, configurar o Terraform ou entender os workflows de CI/CD, consulte o nosso [Guia de Infraestrutura e DevOps](./docs/INFRASTRUCTURE.md).
+Para instruções detalhadas de como subir o ambiente localmente via Makefile, configurar o Terraform, publicar no AWS EKS Learning Lab ou entender os workflows de CI/CD, consulte o nosso [Guia de Infraestrutura e DevOps](./docs/INFRASTRUCTURE.md).
 
 ---
 

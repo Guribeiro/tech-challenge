@@ -47,6 +47,11 @@ app.useGlobalPipes(
   }),
 )
 
+app.enableCors({
+  origin: true,
+  credentials: true,
+})
+
 const port = process.env.PORT || 3000
 await app.listen(port)
 

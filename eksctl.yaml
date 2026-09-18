@@ -1,0 +1,31 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: oficina-eks
+  region: us-east-1
+  version: "1.33"
+
+iam:
+  serviceRoleARN: __EKS_CLUSTER_ROLE_ARN__
+
+managedNodeGroups:
+  - name: oficina-workers
+    instanceType: t3.small
+    minSize: 1
+    desiredCapacity: 2
+    maxSize: 2
+    volumeSize: 20
+    privateNetworking: false
+    iam:
+      instanceRoleARN: __EKS_NODE_ROLE_ARN__
+
+addons:
+  - name: vpc-cni
+    version: latest
+  - name: kube-proxy
+    version: latest
+  - name: coredns
+    version: latest
+  - name: aws-ebs-csi-driver
+    version: latest

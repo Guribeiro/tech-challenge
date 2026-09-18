@@ -67,5 +67,56 @@ A automação está dividida em dois workflows no diretório .github/workflows/:
 
 2. Docker Build & Push (docker-build.yml): Disparado automaticamente após o sucesso dos testes na branch principal, realizando o build da imagem e o envio autenticado para o Docker Hub com tags versionadas (latest e <github.sha>).
 
+## Deploy no AWS EKS Learning Lab
+
+O fluxo EKS fica separado do ambiente Kind e usa ECR para armazenar a imagem. No Learning Lab, o PostgreSQL usa armazenamento efêmero (`emptyDir`) porque a role fornecida aos nodes não possui as permissões EC2 necessárias para o EBS CSI. Isso é suficiente para demonstrações acadêmicas, mas os dados são perdidos se o pod for recriado. Para persistência real, associe `AmazonEBSCSIDriverPolicy` à role dos nodes ou migre o banco para RDS.
+
+### Pré-requisitos
+
+Instale também [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) e [eksctl](https://eksctl.io/installation/). Configure as credenciais temporárias fornecidas pelo laboratório e confirme a conta:
+
+```bash
+aws sts get-caller-identity
+```
+
+O laboratório precisa permitir EKS, EC2, VPC, ECR e ELB. A configuração descobre automaticamente as roles IAM preexistentes contendo `LabEksClusterRole` e `LabEksNodeRole`, conforme a permissão fornecida pelo Learning Lab. O cluster usa dois nós `t3.small`; ajuste [eksctl.yaml](../eksctl.yaml) se a cota da turma for menor.
+
+### Criar cluster e publicar
+
+Na raiz do repositório:
+
+```bash
+export AWS_REGION=us-east-1
+export DB_PASSWORD='troque-esta-senha'
+export JWT_SECRET='troque-este-segredo'
+make eks-up
+```
+
+O script [deploy-eks.sh](../scripts/deploy-eks.sh) cria o cluster, o repositório ECR, a imagem de produção, os Secrets via `kubectl`, o PostgreSQL, executa `prisma migrate deploy` em um Job e aguarda o rollout da API.
+
+Depois, obtenha o endereço público:
+
+```bash
+kubectl get service oficina-service -n oficina-mecanica
+```
+
+A API estará em `http://<hostname-do-load-balancer>/api` e o Swagger em `http://<hostname-do-load-balancer>/docs`.
+
+### Publicar alterações
+
+Com o cluster já criado, execute:
+
+```bash
+make eks-deploy
+```
+
+Para limpar recursos e evitar cobrança ao terminar o laboratório:
+
+```bash
+make eks-down
+```
+
+Como o banco está no cluster, apagar o cluster também apaga os dados do PostgreSQL. O repositório ECR pode ser removido separadamente com `aws ecr delete-repository --repository-name oficina-app --force --region "$AWS_REGION"`.
+
 
 

@@ -1,4 +1,4 @@
-.PHONY: up down stop start build migrate status logs help
+.PHONY: up down stop start build migrate status logs eks-up eks-deploy eks-down help
 
 DOCKER_USER    = guribeiro
 IMAGE_NAME     = $(DOCKER_USER)/oficina-app:latest
@@ -6,6 +6,9 @@ CLUSTER_NAME   = oficina-cluster
 NAMESPACE      = oficina-mecanica
 APP_DEPLOYMENT = oficina-app-deployment
 TERRAFORM_DIR = src/infra/terraform
+AWS_REGION     ?= us-east-1
+EKS_CLUSTER    ?= oficina-eks
+ECR_REPOSITORY ?= oficina-app
 
 # Help / Menu de Ajuda
 help:
@@ -72,3 +75,13 @@ status:
 # Logs da API em tempo real
 logs:
 	kubectl logs -l app=oficina-app -n $(NAMESPACE) -f --tail=50
+
+# Deploy acadêmico na AWS EKS via eksctl + ECR
+eks-up:
+	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ECR_REPOSITORY=$(ECR_REPOSITORY) ./scripts/deploy-eks.sh up
+
+eks-deploy:
+	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ECR_REPOSITORY=$(ECR_REPOSITORY) ./scripts/deploy-eks.sh deploy
+
+eks-down:
+	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ./scripts/deploy-eks.sh down

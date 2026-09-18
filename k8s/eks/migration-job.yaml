@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oficina-prisma-migrate
+  namespace: oficina-mecanica
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 300
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: prisma-migration
+          image: __IMAGE_URI__
+          command: ["sh", "-c", "npx prisma migrate deploy"]
+          envFrom:
+            - secretRef:
+                name: oficina-app-secret
