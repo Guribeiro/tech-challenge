@@ -29,7 +29,7 @@ up:
 	@echo "==> 2/5 Enviando imagem para o Docker Hub..."
 	docker push $(IMAGE_NAME)
 	@echo "==> 3/5 Subindo infraestrutura via Terraform..."
-	cd $(TERRAFORM_DIR) && terraform apply -auto-approve
+	cd $(TERRAFORM_DIR) && terraform apply -auto-approve -var="app_image=$(IMAGE_NAME)"
 	@echo "==> 4/5 Aguardando inicialização dos pods..."
 	kubectl rollout status deployment/$(APP_DEPLOYMENT) -n $(NAMESPACE) --timeout=120s
 	@echo "\n🚀 Aplicação pronta! Acesse em: http://localhost:30000"

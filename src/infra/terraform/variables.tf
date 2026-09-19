@@ -14,12 +14,13 @@ variable "db_name" {
   description = "Nome do banco de dados da oficina"
 }
 
-variable "kube_context" {
-  type        = string
-  description = "Nome do contexto do Kubernetes no ~/.kube/config"
-}
-
 variable "namespace" {
   type        = string
   description = "Namespace para isolamento dos recursos"
+}
+
+variable "app_image" {
+  type        = string
+  description = "Imagem Docker da API a ser publicada no cluster"
+  default     = "guribeiro/oficina-app:v1.0.2"
 }

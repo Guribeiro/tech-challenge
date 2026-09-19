@@ -5,7 +5,7 @@ module "cluster" {
 
 resource "kubernetes_namespace_v1" "oficina_namespace" {
   metadata {
-    name = "oficina-mecanica"
+    name = var.namespace
   }
   depends_on = [module.cluster]
 }
@@ -27,6 +27,7 @@ module "app" {
   db_password     = var.db_password
   db_name         = var.db_name
   db_service_name = module.database.db_service_name
+  app_image       = var.app_image
 
   depends_on = [module.database]
 }

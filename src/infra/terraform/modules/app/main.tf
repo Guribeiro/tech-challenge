@@ -24,7 +24,7 @@ resource "kubernetes_deployment_v1" "oficina_app" {
       spec {
         init_container {
           name              = "prisma-migration"
-          image             = "guribeiro/oficina-app:latest"
+          image             = var.app_image
           image_pull_policy = "Always"
           command           = ["sh", "-c", "npx prisma migrate deploy"]
 
@@ -36,7 +36,7 @@ resource "kubernetes_deployment_v1" "oficina_app" {
         }
         container {
           name              = "oficina-app"
-          image             = "guribeiro/oficina-app:latest"
+          image             = var.app_image
           image_pull_policy = "Always"
 
           port { container_port = 3000 }
@@ -57,8 +57,8 @@ resource "kubernetes_deployment_v1" "oficina_app" {
           }
 
           liveness_probe {
-            http_get { 
-              path = "/api/health" 
+            http_get {
+              path = "/api/health"
               port = 3000
             }
             initial_delay_seconds = 15
@@ -66,9 +66,9 @@ resource "kubernetes_deployment_v1" "oficina_app" {
           }
 
           readiness_probe {
-            http_get { 
-              path = "/api/health" 
-              port = 3000 
+            http_get {
+              path = "/api/health"
+              port = 3000
             }
             initial_delay_seconds = 10
             period_seconds        = 5

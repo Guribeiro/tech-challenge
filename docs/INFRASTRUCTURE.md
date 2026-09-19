@@ -71,6 +71,21 @@ A automação está dividida em dois workflows no diretório .github/workflows/:
 
 O fluxo EKS fica separado do ambiente Kind e usa ECR para armazenar a imagem. No Learning Lab, o PostgreSQL usa armazenamento efêmero (`emptyDir`) porque a role fornecida aos nodes não possui as permissões EC2 necessárias para o EBS CSI. Isso é suficiente para demonstrações acadêmicas, mas os dados são perdidos se o pod for recriado. Para persistência real, associe `AmazonEBSCSIDriverPolicy` à role dos nodes ou migre o banco para RDS.
 
+### Responsabilidades por ambiente
+
+| Ambiente | Provisionamento | Exposição da API | Banco de dados |
+| --- | --- | --- | --- |
+| Local | Terraform + Kind | Service `NodePort` na porta `30000` | Deployment PostgreSQL |
+| AWS Learning Lab | `eksctl` + manifests em `k8s/eks` | Service `LoadBalancer` | StatefulSet com `emptyDir` |
+
+O Terraform em `src/infra/terraform` é responsável pelo ambiente local. Ele cria o cluster Kind, o namespace, o PostgreSQL, a API, os Secrets, o Service e o HPA. O EKS não é gerenciado por esse Terraform: o cluster AWS é criado pelo `eksctl`, e o script `scripts/deploy-eks.sh` publica a imagem no ECR e aplica os recursos Kubernetes.
+
+### Limitação e decisão de armazenamento no Learning Lab
+
+O manifesto EKS usa `emptyDir` no volume do PostgreSQL porque a role dos nodes do Learning Lab não autoriza operações como `ec2:DescribeAvailabilityZones`, necessárias ao provisioner `ebs.csi.aws.com`. Assim, o deploy não depende do EBS CSI e pode ser demonstrado com as permissões disponíveis.
+
+Essa decisão tem impacto explícito: os dados são temporários e podem ser perdidos quando o StatefulSet ou o Pod for recriado. Para produção, substitua o PostgreSQL por Amazon RDS ou configure uma role adequada para o EBS CSI e utilize uma `StorageClass` persistente.
+
 ### Pré-requisitos
 
 Instale também [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) e [eksctl](https://eksctl.io/installation/). Configure as credenciais temporárias fornecidas pelo laboratório e confirme a conta:

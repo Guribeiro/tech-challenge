@@ -80,9 +80,12 @@ relatorio-snyk*
 # Arquivos de estado local do Terraform (contêm segredos em texto puro)
 *.tfstate
 *.tfstate.*
+*.tfplan
+tfplan
 .terraform/
 .terraform.lock.hcl # (Opcional, mas muitos preferem ignorar ou commitar apenas dependendo da política. O ideal para módulos locais é ignorar tfstate).
 
 # Arquivos de configuração gerados localmente
 oficina-cluster-config
 kubeconfig*
+.env

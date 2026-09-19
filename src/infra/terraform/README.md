@@ -40,16 +40,19 @@ Você pode subir a infraestrutura completa de forma automatizada pela raiz do pr
 ```bash
 make up
 ```
-__(O comando acima constrói a imagem local/remota, executa o terraform apply e valida o rollout do cluster).__
+__(O comando acima constrói e publica a imagem, executa o `terraform apply` usando essa mesma tag e valida o rollout do cluster).__
 
-Ou, se preferir executar os comandos manualmente dentro da pasta ```/terraform```:
+Ou, se preferir executar os comandos manualmente dentro da pasta `src/infra/terraform`:
 
 ```bash
 cd src/infra/terraform
+cp terraform.tfvars.example terraform.tfvars
 terraform init
-terraform plan
-terraform apply -auto-approve
+terraform plan -out=tfplan
+terraform apply tfplan
 ```
+
+Antes do `plan`, revise o arquivo `terraform.tfvars` e substitua os valores de exemplo. Ele é ignorado pelo Git porque contém credenciais do banco. O arquivo `tfplan` também é ignorado e deve ser recriado quando os valores ou a infraestrutura mudarem.
 
 ## 🧹 Como Destruir a Infraestrutura
 Para remover toda a infraestrutura e o cluster Kind:
@@ -59,5 +62,9 @@ Para remover toda a infraestrutura e o cluster Kind:
 make down
 
 # Ou diretamente pelo Terraform:
-cd terraform && terraform destroy -auto-approve
+cd src/infra/terraform && terraform destroy -auto-approve
 ```
+
+Este Terraform provisiona o ambiente Kubernetes local via Kind. O cluster EKS do Learning Lab é criado separadamente pelo `eksctl`, utilizando os manifests e o script descritos em `docs/INFRASTRUCTURE.md`.
+
+O estado do Terraform e os planos locais não devem ser versionados, pois podem conter dados de infraestrutura e valores sensíveis. Use `terraform.tfvars.example` como referência e forneça os valores reais por arquivo local ou variáveis de ambiente.
