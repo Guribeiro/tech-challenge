@@ -65,7 +65,17 @@ A automação está dividida em dois workflows no diretório .github/workflows/:
 
 1. Quality & Tests (quality.yml): Executa o linter, os testes unitários e os testes E2E (isolando um banco PostgreSQL em container) a cada push ou pull request nas branches main e fase-2.
 
-2. Docker Build & Push (docker-build.yml): Disparado automaticamente após o sucesso dos testes na branch principal, realizando o build da imagem e o envio autenticado para o Docker Hub com tags versionadas (latest e <github.sha>).
+2. Docker Build & Push (docker-build.yml): Disparado automaticamente após o sucesso dos testes nas branches `main` e `fase-2`, realizando o build da imagem e o envio autenticado para o Docker Hub e para o Amazon ECR com as tags `latest` e `<github.sha>`.
+
+Para habilitar o push no ECR usando as credenciais temporárias do AWS Learning Lab, configure no repositório do GitHub:
+
+- Secret `AWS_ACCESS_KEY_ID`: access key fornecida pelo Learning Lab.
+- Secret `AWS_SECRET_ACCESS_KEY`: secret key fornecida pelo Learning Lab.
+- Secret `AWS_SESSION_TOKEN`: session token fornecido pelo Learning Lab; ele é obrigatório para credenciais temporárias.
+- Variables `AWS_REGION` e `ECR_REPOSITORY` (opcionais; os valores padrão são `us-east-1` e `oficina-app`).
+- Um repositório ECR previamente criado com o mesmo nome de `ECR_REPOSITORY`.
+
+As credenciais do Learning Lab expiram e precisam ser atualizadas nos GitHub Secrets a cada rotação. O workflow usa as permissões ECR já associadas à sessão do laboratório; não é necessário criar ou alterar uma role IAM para OIDC.
 
 ## Deploy no AWS EKS Learning Lab
 
