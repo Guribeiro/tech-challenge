@@ -22,8 +22,11 @@ require_command() {
 
 require_command aws
 require_command eksctl
-require_command kubectl
-require_command docker
+
+if [[ "$ACTION" != "down" ]]; then
+  require_command kubectl
+  require_command docker
+fi
 
 if ! aws sts get-caller-identity >/dev/null 2>&1; then
   cat >&2 <<'EOF'
@@ -36,9 +39,11 @@ EOF
   exit 1
 fi
 
-ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
-ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+if [[ "$ACTION" != "down" ]]; then
+  ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
+  ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+  IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
+fi
 
 find_role_arn() {
   local role_fragment="$1"
