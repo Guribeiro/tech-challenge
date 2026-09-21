@@ -66,6 +66,7 @@ A automação está dividida em dois workflows no diretório .github/workflows/:
 1. Quality & Tests (quality.yml): Executa o linter, os testes unitários e os testes E2E (isolando um banco PostgreSQL em container) a cada push ou pull request nas branches main e fase-2.
 
 2. Docker Build & Push (docker-build.yml): Disparado automaticamente após o sucesso dos testes nas branches `main` e `fase-2`, realizando o build da imagem e o envio autenticado para o Docker Hub e para o Amazon ECR com as tags `latest` e `<github.sha>`.
+3. Deploy to EKS (deploy-eks.yml): Disparado após o sucesso do build na branch `main`, atualiza o kubeconfig, aplica os manifests do EKS, executa as migrations e aguarda o rollout da API usando a imagem versionada pelo SHA do commit.
 
 Para habilitar o push no ECR usando as credenciais temporárias do AWS Learning Lab, configure no repositório do GitHub:
 
@@ -73,9 +74,12 @@ Para habilitar o push no ECR usando as credenciais temporárias do AWS Learning 
 - Secret `AWS_SECRET_ACCESS_KEY`: secret key fornecida pelo Learning Lab.
 - Secret `AWS_SESSION_TOKEN`: session token fornecido pelo Learning Lab; ele é obrigatório para credenciais temporárias.
 - Variables `AWS_REGION` e `ECR_REPOSITORY` (opcionais; os valores padrão são `us-east-1` e `oficina-app`).
+- Variable `EKS_CLUSTER` (opcional; o valor padrão é `oficina-eks`).
 - Um repositório ECR previamente criado com o mesmo nome de `ECR_REPOSITORY`.
 
 As credenciais do Learning Lab expiram e precisam ser atualizadas nos GitHub Secrets a cada rotação. O workflow usa as permissões ECR já associadas à sessão do laboratório; não é necessário criar ou alterar uma role IAM para OIDC.
+
+Para o workflow de deploy, configure também os Secrets `DB_USER`, `DB_PASSWORD`, `DB_NAME` e `JWT_SECRET`. O cluster EKS precisa existir antes da execução do workflow; sua criação continua sendo feita pelo `make eks-up`/`eksctl`, enquanto novas versões na `main` são publicadas automaticamente.
 
 ## Deploy no AWS EKS Learning Lab
 
@@ -105,6 +109,25 @@ aws sts get-caller-identity
 ```
 
 O laboratório precisa permitir EKS, EC2, VPC, ECR e ELB. A configuração descobre automaticamente as roles IAM preexistentes contendo `LabEksClusterRole` e `LabEksNodeRole`, conforme a permissão fornecida pelo Learning Lab. O cluster usa dois nós `t3.small`; ajuste [eksctl.yaml](../eksctl.yaml) se a cota da turma for menor.
+
+No AWS CLI 2.36 ou superior, uma sessão interativa pode ser iniciada com:
+
+```bash
+aws login
+aws sts get-caller-identity
+```
+
+Se o laboratório fornecer credenciais temporárias para exportação, configure as três no mesmo terminal (a sessão inclui o token):
+
+```bash
+export AWS_ACCESS_KEY_ID='chave-fornecida-pelo-laboratorio'
+export AWS_SECRET_ACCESS_KEY='segredo-fornecido-pelo-laboratorio'
+export AWS_SESSION_TOKEN='token-fornecido-pelo-laboratorio'
+export AWS_REGION=us-east-1
+aws sts get-caller-identity
+```
+
+Não use `aws configure` apenas com access key e secret key para esse caso: sem `AWS_SESSION_TOKEN`, credenciais temporárias do Learning Lab não serão aceitas.
 
 ### Criar cluster e publicar
 

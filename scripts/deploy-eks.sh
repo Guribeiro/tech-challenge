@@ -25,6 +25,17 @@ require_command eksctl
 require_command kubectl
 require_command docker
 
+if ! aws sts get-caller-identity >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+Erro: o AWS CLI não encontrou credenciais válidas.
+Configure a sessão do AWS Learning Lab antes de executar este script:
+  aws login
+ou exporte AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY e AWS_SESSION_TOKEN
+fornecidos pelo laboratório e confirme com: aws sts get-caller-identity
+EOF
+  exit 1
+fi
+
 ACCOUNT_ID="$(aws sts get-caller-identity --query Account --output text)"
 ECR_REGISTRY="${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 IMAGE_URI="${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}"
