@@ -111,5 +111,18 @@ jobs:
           kubectl rollout status deployment/oficina-app-deployment \
             --namespace "$K8S_NAMESPACE" --timeout=180s
 
+      - name: Diagnosticar falha no rollout
+        if: ${{ failure() }}
+        run: |
+          kubectl get pods --namespace "$K8S_NAMESPACE" -o wide || true
+          kubectl describe deployment/oficina-app-deployment \
+            --namespace "$K8S_NAMESPACE" || true
+          kubectl describe pods -l app=oficina-app \
+            --namespace "$K8S_NAMESPACE" || true
+          kubectl logs -l app=oficina-app \
+            --namespace "$K8S_NAMESPACE" --all-containers --tail=200 || true
+          kubectl get events --namespace "$K8S_NAMESPACE" \
+            --sort-by=.lastTimestamp || true
+
       - name: Exibir endpoint da aplicação
         run: kubectl get service oficina-service --namespace "$K8S_NAMESPACE"
