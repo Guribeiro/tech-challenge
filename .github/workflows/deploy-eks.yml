@@ -22,6 +22,8 @@ jobs:
       EKS_CLUSTER: ${{ vars.EKS_CLUSTER || 'oficina-eks' }}
       K8S_NAMESPACE: oficina-mecanica
       IMAGE_TAG: ${{ github.event.workflow_run.head_sha }}
+      DB_USER: ${{ vars.DB_USER || 'postgres' }}
+      DB_NAME: ${{ vars.DB_NAME || 'oficina_db' }}
 
     steps:
       - name: Checkout do código
@@ -47,24 +49,20 @@ jobs:
 
       - name: Validar secrets do deploy
         env:
-          DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           set -euo pipefail
-          for variable in DB_USER DB_PASSWORD DB_NAME JWT_SECRET; do
+          for variable in DB_PASSWORD JWT_SECRET; do
             if [[ -z "${!variable}" ]]; then
-              echo "Secret do GitHub ausente: $variable" >&2
+              echo "Secret do GitHub ausente: $variable. Configure-o em Settings > Secrets and variables > Actions." >&2
               exit 1
             fi
           done
 
       - name: Aplicar infraestrutura da aplicação
         env:
-          DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          DB_NAME: ${{ secrets.DB_NAME }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           set -euo pipefail

@@ -79,7 +79,7 @@ Para habilitar o push no ECR usando as credenciais temporárias do AWS Learning 
 
 As credenciais do Learning Lab expiram e precisam ser atualizadas nos GitHub Secrets a cada rotação. O workflow usa as permissões ECR já associadas à sessão do laboratório; não é necessário criar ou alterar uma role IAM para OIDC.
 
-Para o workflow de deploy, configure também os Secrets `DB_USER`, `DB_PASSWORD`, `DB_NAME` e `JWT_SECRET`. O cluster EKS precisa existir antes da execução do workflow; sua criação continua sendo feita pelo `make eks-up`/`eksctl`, enquanto novas versões na `main` são publicadas automaticamente.
+Para o workflow de deploy, configure os Secrets `DB_PASSWORD` e `JWT_SECRET`. `DB_USER` e `DB_NAME` são opcionais como Variables, com defaults `postgres` e `oficina_db`. O cluster EKS precisa existir antes da execução do workflow; sua criação continua sendo feita pelo `make eks-up`/`eksctl`, enquanto novas versões na `main` são publicadas automaticamente.
 
 ## Deploy no AWS EKS Learning Lab
 
