@@ -17,7 +17,7 @@ A execução deste projeto automatiza a criação dos seguintes componentes:
 * **Deployment & Service:** Provisiona o banco de dados principal e o serviço de rede interna (`5432`).
 
 ### 4. Camada de Aplicação & Escalabilidade (`modules/app`)
-* **Secrets (`kubernetes_secret_v1`):** Injeção segura da `DATABASE_URL`.
+* **Secrets (`kubernetes_secret_v1`):** Injeção segura da `DATABASE_URL` e das credenciais do PostgreSQL.
 * **Deployment da API NestJS:** Configurado com `InitContainers` para rodar as migrações automáticas do Prisma antes de iniciar a API.
 * **Horizontal Pod Autoscaler (HPA):** Escalabilidade dinâmica baseada em limites de CPU (70%) e Memória (80%), variando de 2 a 5 réplicas.
 

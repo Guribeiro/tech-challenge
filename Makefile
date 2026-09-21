@@ -1,4 +1,4 @@
-.PHONY: up down stop start build migrate status logs eks-up eks-deploy eks-down help
+.PHONY: up down stop start build migrate seed status logs eks-up eks-deploy eks-down help
 
 DOCKER_USER    = guribeiro
 IMAGE_NAME     = $(DOCKER_USER)/oficina-app:latest
@@ -32,6 +32,8 @@ up:
 	cd $(TERRAFORM_DIR) && terraform apply -auto-approve -var="app_image=$(IMAGE_NAME)"
 	@echo "==> 4/5 Aguardando inicialização dos pods..."
 	kubectl rollout status deployment/$(APP_DEPLOYMENT) -n $(NAMESPACE) --timeout=120s
+	@echo "==> 5/5 Carregando dados demonstrativos..."
+	kubectl exec deployment/$(APP_DEPLOYMENT) -n $(NAMESPACE) -- npx prisma db seed
 	@echo "\n🚀 Aplicação pronta! Acesse em: http://localhost:30000"
 
 # Reconstrução rápida da imagem Docker e deploy sem reiniciar o cluster
@@ -47,6 +49,11 @@ build:
 migrate:
 	@echo "==> Executando 'npx prisma migrate deploy'..."
 	kubectl exec deployment/$(APP_DEPLOYMENT) -n $(NAMESPACE) -- sh -c 'npx prisma migrate deploy'
+
+# Recria os dados demonstrativos no ambiente local
+seed:
+	@echo "==> Executando o seed demonstrativo..."
+	kubectl exec deployment/$(APP_DEPLOYMENT) -n $(NAMESPACE) -- npx prisma db seed
 
 # Pausa os containers do cluster sem deletar nada
 stop:

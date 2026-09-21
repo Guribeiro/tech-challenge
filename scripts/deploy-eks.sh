@@ -101,6 +101,32 @@ apply_secrets() {
     --dry-run=client -o yaml | kubectl apply -f -
 }
 
+install_metrics_server() {
+  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+  if ! kubectl get deployment metrics-server -n kube-system -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -q -- '--kubelet-insecure-tls'; then
+    kubectl patch deployment metrics-server -n kube-system --type=json \
+      -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+  fi
+  kubectl rollout status deployment/metrics-server -n kube-system --timeout=180s
+}
+
+run_demo_seed() {
+  local rendered_seed
+  if kubectl get job oficina-prisma-seed -n "$NAMESPACE" >/dev/null 2>&1; then
+    if kubectl wait --for=condition=complete job/oficina-prisma-seed -n "$NAMESPACE" --timeout=1s >/dev/null 2>&1; then
+      echo "Seed demonstrativo já executado; mantendo os dados existentes."
+      return
+    fi
+    kubectl delete job oficina-prisma-seed -n "$NAMESPACE" --ignore-not-found
+  fi
+
+  rendered_seed="$(mktemp)"
+  sed "s|__IMAGE_URI__|${IMAGE_URI}|g" "$ROOT_DIR/k8s/eks/seed-job.yaml" > "$rendered_seed"
+  kubectl apply -f "$rendered_seed"
+  kubectl wait --for=condition=complete job/oficina-prisma-seed -n "$NAMESPACE" --timeout=180s
+  rm -f "$rendered_seed"
+}
+
 deploy_workloads() {
   local rendered_app rendered_job
   rendered_app="$(mktemp)"
@@ -109,6 +135,7 @@ deploy_workloads() {
   sed "s|__IMAGE_URI__|${IMAGE_URI}|g" "$ROOT_DIR/k8s/eks/migration-job.yaml" > "$rendered_job"
 
   kubectl apply -f "$ROOT_DIR/k8s/eks/namespace.yaml"
+  install_metrics_server
   apply_secrets
   kubectl delete statefulset postgres -n "$NAMESPACE" --ignore-not-found
   kubectl delete pvc postgres-data-postgres-0 -n "$NAMESPACE" --ignore-not-found
@@ -117,6 +144,7 @@ deploy_workloads() {
   kubectl delete job oficina-prisma-migrate -n "$NAMESPACE" --ignore-not-found
   kubectl apply -f "$rendered_job"
   kubectl wait --for=condition=complete job/oficina-prisma-migrate -n "$NAMESPACE" --timeout=180s
+  run_demo_seed
   kubectl apply -f "$rendered_app"
   kubectl rollout status deployment/oficina-app-deployment -n "$NAMESPACE" --timeout=180s
   rm -f "$rendered_app" "$rendered_job"

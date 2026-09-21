@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oficina-prisma-seed
+  namespace: oficina-mecanica
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: prisma-seed
+          image: __IMAGE_URI__
+          command: ["sh", "-c", "npx prisma db seed"]
+          envFrom:
+            - secretRef:
+                name: oficina-app-secret
