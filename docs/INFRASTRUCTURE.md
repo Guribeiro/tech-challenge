@@ -92,7 +92,7 @@ O fluxo EKS fica separado do ambiente Kind e usa ECR para armazenar a imagem. No
 | Local | Terraform + Kind | Service `NodePort` na porta `30000` | Deployment PostgreSQL |
 | AWS Learning Lab | `eksctl` + manifests em `k8s/eks` | Service `LoadBalancer` | StatefulSet com `emptyDir` |
 
-O Terraform em `src/infra/terraform` é responsável pelo ambiente local. Ele cria o cluster Kind, o namespace, o PostgreSQL, a API, os Secrets, o Service e o HPA. O EKS não é gerenciado por esse Terraform: o cluster AWS é criado pelo `eksctl`, e o script `scripts/deploy-eks.sh` publica a imagem no ECR e aplica os recursos Kubernetes.
+O Terraform em `src/infra/terraform` é responsável pelo ambiente local. Ele cria o cluster Kind, o namespace, o PostgreSQL, os Secrets da aplicação e do banco, o Service e o HPA. O EKS não é gerenciado por esse Terraform: o cluster AWS é criado pelo `eksctl`, e o script `scripts/deploy-eks.sh` publica a imagem no ECR, instala o Metrics Server e aplica os recursos Kubernetes.
 
 ### Limitação e decisão de armazenamento no Learning Lab
 
@@ -140,7 +140,9 @@ export JWT_SECRET='troque-este-segredo'
 make eks-up
 ```
 
-O script [deploy-eks.sh](../scripts/deploy-eks.sh) cria o cluster, o repositório ECR, a imagem de produção, os Secrets via `kubectl`, o PostgreSQL, executa `prisma migrate deploy` em um Job e aguarda o rollout da API.
+O script [deploy-eks.sh](../scripts/deploy-eks.sh) cria o cluster, o repositório ECR, a imagem de produção, os Secrets via `kubectl`, o PostgreSQL, executa `prisma migrate deploy` e o seed demonstrativo em Jobs e aguarda o rollout da API. O Job de seed fica persistido após concluir; assim, um novo `make eks-deploy` não apaga os dados existentes. Para resetar os dados demonstrativos, remova o Job `oficina-prisma-seed` antes de executar o deploy novamente.
+
+As credenciais demonstrativas são `admin@oficina.com` / `senha123` e `maria.recepcao@oficina.com` / `senha123`.
 
 Depois, obtenha o endereço público:
 

@@ -66,6 +66,22 @@ O ambiente local com Kind é utilizado para desenvolvimento e validação rápid
 ## 🏗️ Arquitetura e Estrutura de Pastas
 A aplicação segue um padrão arquitetural modular com forte separação entre módulos de negócio, casos de uso, controladores e infraestrutura. A organização é inspirada em princípios de Clean Architecture e DDD, com cada contexto encapsulando suas regras e integrações.
 
+### Diagramas da solução
+
+Os diagramas abaixo apresentam a arquitetura da aplicação, a infraestrutura Kubernetes provisionada e o fluxo de deploy:
+
+#### Arquitetura da aplicação
+
+![Arquitetura da aplicação](./docs/images/arquitetura-aplicacao.png)
+
+#### Infraestrutura Kubernetes e AWS
+
+![Infraestrutura Kubernetes e AWS](./docs/images/infraestrutura-kubernetes.png)
+
+#### Fluxo de deploy
+
+![Fluxo de deploy](./docs/images/fluxo-deploy.png)
+
 ### Estrutura representativa
 ```text
 src/
@@ -175,6 +191,10 @@ O fluxo EKS usa [eksctl.yaml](eksctl.yaml), [scripts/deploy-eks.sh](scripts/depl
 - O HPA permite escalar a API de duas a quatro réplicas.
 - Um Job executa as migrations do Prisma antes do rollout da API.
 - O PostgreSQL roda em um StatefulSet dentro do namespace.
+
+O manifesto [k8s/eks/app.yaml](k8s/eks/app.yaml) contém o `ConfigMap`, o `Deployment`, o `Service` `LoadBalancer` e o HPA, que escala por CPU e memória. Os Secrets não armazenam valores no Git: o script [scripts/deploy-eks.sh](scripts/deploy-eks.sh) cria `oficina-db-secret` e `oficina-app-secret` a partir das variáveis fornecidas pelo workflow ou pelo terminal. O mesmo script instala o Metrics Server e aguarda seu rollout para disponibilizar a API `metrics.k8s.io` ao HPA.
+
+O deploy também carrega dados demonstrativos para facilitar a avaliação. No Kind, `make up` executa o seed ao final da criação do ambiente; no EKS, o Job `oficina-prisma-seed` é executado apenas uma vez e preservado nos deploys seguintes. As credenciais demonstrativas são `admin@oficina.com` / `senha123` e `maria.recepcao@oficina.com` / `senha123`. O seed é destrutivo e deve ser executado novamente somente quando for desejado resetar os dados.
 
 Os comandos principais são:
 

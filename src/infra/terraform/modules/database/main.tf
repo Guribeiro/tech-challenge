@@ -1,3 +1,16 @@
+resource "kubernetes_secret_v1" "postgres_secret" {
+  metadata {
+    name      = "oficina-db-secret"
+    namespace = var.namespace
+  }
+
+  data = {
+    POSTGRES_USER     = var.db_user
+    POSTGRES_PASSWORD = var.db_password
+    POSTGRES_DB       = var.db_name
+  }
+}
+
 resource "kubernetes_deployment_v1" "postgres" {
   metadata {
     name      = "postgres-deployment"
@@ -20,16 +33,31 @@ resource "kubernetes_deployment_v1" "postgres" {
           port { container_port = 5432 }
 
           env {
-            name  = "POSTGRES_USER"
-            value = var.db_user
+            name = "POSTGRES_USER"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret_v1.postgres_secret.metadata[0].name
+                key  = "POSTGRES_USER"
+              }
+            }
           }
           env {
-            name  = "POSTGRES_PASSWORD"
-            value = var.db_password
+            name = "POSTGRES_PASSWORD"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret_v1.postgres_secret.metadata[0].name
+                key  = "POSTGRES_PASSWORD"
+              }
+            }
           }
           env {
-            name  = "POSTGRES_DB"
-            value = var.db_name
+            name = "POSTGRES_DB"
+            value_from {
+              secret_key_ref {
+                name = kubernetes_secret_v1.postgres_secret.metadata[0].name
+                key  = "POSTGRES_DB"
+              }
+            }
           }
 
           resources {
