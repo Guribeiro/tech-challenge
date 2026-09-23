@@ -66,6 +66,22 @@ O ambiente local com Kind é utilizado para desenvolvimento e validação rápid
 ## 🏗️ Arquitetura e Estrutura de Pastas
 A aplicação segue um padrão arquitetural modular com forte separação entre módulos de negócio, casos de uso, controladores e infraestrutura. A organização é inspirada em princípios de Clean Architecture e DDD, com cada contexto encapsulando suas regras e integrações.
 
+### Diagramas da solução
+
+Os diagramas abaixo apresentam a arquitetura da aplicação, a infraestrutura Kubernetes provisionada e o fluxo de deploy:
+
+#### Arquitetura da aplicação
+
+![Arquitetura da aplicação](./docs/images/arquitetura-aplicacao.png)
+
+#### Infraestrutura Kubernetes e AWS
+
+![Infraestrutura Kubernetes e AWS](./docs/images/infraestrutura-kubernetes.png)
+
+#### Fluxo de deploy
+
+![Fluxo de deploy](./docs/images/fluxo-deploy.png)
+
 ### Estrutura representativa
 ```text
 src/
