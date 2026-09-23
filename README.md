@@ -1,23 +1,4 @@
 # 🛠️ FIAP Tech Challenge - Oficina Mecânica
-
-> Backend modular para gestão de ordens de serviço em oficina mecânica, cobrindo diagnóstico, orçamento, estoque, faturamento, liberação e acompanhamento de status.
-
----
-
-## 📌 Sumário
-- [Sobre o Projeto](#-sobre-o-projeto)
-- [Objetivos da Fase](#-objetivos-da-fase)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-- [Arquitetura e Estrutura de Pastas](#-arquitetura-e-estrutura-de-pastas)
-- [Funcionalidades Principais](#-funcionalidades-principais)
-- [Infraestrutura, Kubernetes & CI/CD](#-infraestrutura-kubernetes--cicd)
-- [Infraestrutura Provisionada](#-infraestrutura-provisionada)
-- [Fluxo de Deploy](#-fluxo-de-deploy)
-- [Como Executar o Projeto](#-como-executar-o-projeto)
-- [Documentação da API (Swagger)](#-documentação-da-api-swagger)
-- [Rodando os Testes](#-rodando-os-testes)
-- [Licença](#-licença)
-
 ---
 
 ## 📖 Sobre o Projeto
@@ -85,22 +66,34 @@ Os diagramas abaixo apresentam a arquitetura da aplicação, a infraestrutura Ku
 ### Estrutura representativa
 ```text
 src/
-├── modules/                 # Módulos de domínio da aplicação
-│   ├── autenticacao/        # Login e autenticação JWT
-│   ├── os-orcamento/       # Clientes, veículos, serviços, ordens de serviço e orçamentos
-│   ├── estoque/            # Produtos, estoque e reservas
-│   ├── faturamento/        # Faturamento e webhook de pagamento
-│   ├── liberacao/          # Fluxo de liberação e entrega
-│   └── notificacoes/       # Integração de notificações
-├── infra/                  # Camada de infraestrutura
-│   ├── http/               # DTOs, filtros e entradas HTTP
-│   ├── nest/               # Módulo raiz da aplicação NestJS
-│   ├── auth/               # Estratégias e guardas de autenticação
-│   ├── database/           # Configuração de banco e conexão
-    ├── terraform/          # Configuração do terraform
-│   └── main.ts             # Bootstrap da aplicação
-├── generated/              # Cliente Prisma gerado automaticamente
-└── shared/                 # Regras e utilidades compartilhadas
+├── core/                         # Núcleo compartilhado de domínio
+│   ├── entities/                 # Entidades, agregados e listas observadas
+│   ├── errors/                   # Erros de domínio e de casos de uso
+│   ├── events/                   # Eventos de domínio
+│   ├── repositories/             # Contratos de repositórios
+│   ├── types/                    # Tipos compartilhados
+│   └── either.ts                 # Resultado de sucesso ou erro
+├── generated/                    # Código gerado pelo Prisma
+├── infra/                        # Adaptadores e integrações de infraestrutura
+│   ├── auth/                     # Estratégias e guards de autenticação
+│   ├── cryptography/             # Serviços de criptografia
+│   ├── database/                 # Módulo de banco e integração com Prisma
+│   ├── gateways/                 # Gateways para serviços externos
+│   ├── health/                   # Health checks da aplicação
+│   ├── http/                     # Módulo HTTP, DTOs, erros e presenters
+│   ├── nest/                     # Módulo raiz e configuração do NestJS
+│   ├── terraform/                # Infraestrutura como código para o Kind
+│   └── main.ts                   # Bootstrap da aplicação
+├── modules/                      # Módulos e contextos de negócio
+│   ├── autenticacao/             # Login e autenticação JWT
+│   ├── estoque/                  # Produtos, estoque e reservas
+│   ├── faturamento/              # Faturamento e webhook de pagamento
+│   ├── liberacao/                # Termo de liberação e entrega
+│   ├── notificacoes/             # Integração de notificações
+│   └── os-orcamento/             # Clientes, veículos, OS e orçamentos
+├── shared/                       # Componentes compartilhados da aplicação
+│   └── domain/                   # Elementos compartilhados de domínio
+└── teste/                        # Helpers para testes
 ```
 
 ### Padrão de organização
