@@ -66,15 +66,32 @@ jobs:
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: |
           set -euo pipefail
-          database_url="postgresql://${DB_USER}:${DB_PASSWORD}@postgres-service:5432/${DB_NAME}?schema=public"
-
           kubectl apply -f k8s/eks/namespace.yaml
-          kubectl create secret generic oficina-db-secret \
-            --namespace "$K8S_NAMESPACE" \
-            --from-literal=POSTGRES_USER="$DB_USER" \
-            --from-literal=POSTGRES_PASSWORD="$DB_PASSWORD" \
-            --from-literal=POSTGRES_DB="$DB_NAME" \
-            --dry-run=client -o yaml | kubectl apply -f -
+
+          if kubectl get secret oficina-db-secret \
+            --namespace "$K8S_NAMESPACE" >/dev/null 2>&1; then
+            database_user="$(kubectl get secret oficina-db-secret \
+              --namespace "$K8S_NAMESPACE" \
+              -o jsonpath='{.data.POSTGRES_USER}' | base64 --decode)"
+            database_password="$(kubectl get secret oficina-db-secret \
+              --namespace "$K8S_NAMESPACE" \
+              -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 --decode)"
+            database_name="$(kubectl get secret oficina-db-secret \
+              --namespace "$K8S_NAMESPACE" \
+              -o jsonpath='{.data.POSTGRES_DB}' | base64 --decode)"
+          else
+            database_user="$DB_USER"
+            database_password="$DB_PASSWORD"
+            database_name="$DB_NAME"
+            kubectl create secret generic oficina-db-secret \
+              --namespace "$K8S_NAMESPACE" \
+              --from-literal=POSTGRES_USER="$database_user" \
+              --from-literal=POSTGRES_PASSWORD="$database_password" \
+              --from-literal=POSTGRES_DB="$database_name"
+          fi
+
+          database_url="postgresql://${database_user}:${database_password}@postgres-service:5432/${database_name}?schema=public"
+
           kubectl create secret generic oficina-app-secret \
             --namespace "$K8S_NAMESPACE" \
             --from-literal=DATABASE_URL="$database_url" \
