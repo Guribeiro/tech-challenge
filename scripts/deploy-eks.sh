@@ -102,6 +102,8 @@ apply_secrets() {
 }
 
 install_metrics_server() {
+  kubectl delete deployment metrics-server \
+    -n kube-system --ignore-not-found --wait=true
   kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
   if ! kubectl get deployment metrics-server -n kube-system -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -q -- '--kubelet-insecure-tls'; then
     kubectl patch deployment metrics-server -n kube-system --type=json \
