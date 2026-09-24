@@ -21,7 +21,7 @@ jobs:
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY || 'oficina-app' }}
       EKS_CLUSTER: ${{ vars.EKS_CLUSTER || 'oficina-eks' }}
       K8S_NAMESPACE: oficina-mecanica
-      IMAGE_TAG: ${{ github.event.workflow_run.head_sha }}
+      IMAGE_TAG: latest
       DB_USER: ${{ vars.DB_USER || 'postgres' }}
       DB_NAME: ${{ vars.DB_NAME || 'oficina_db' }}
 
