@@ -2,8 +2,17 @@ import { DomainEvents } from '@/core/events/domain-events.js'
 import { EventHandler } from '@/core/events/event-handler.js'
 import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
 import { OrcamentoEnviadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-enviado-event.js'
+import { GerarTokenAprovacaoOrcamentoUseCase } from '@/modules/os-orcamento/application/use-cases/orcamento/gerar-token-aprovacao-orcamento.js'
 import { Injectable, Logger } from '@nestjs/common'
 import { ClienteOrcamentoGateway } from '../gateways/cliente-orcamento-gateway.js'
+
+const formatadorMoedaBRL = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+})
+
+const formatarValor = (valorEmCentavos: number) =>
+  formatadorMoedaBRL.format(valorEmCentavos / 100)
 
 @Injectable()
 export class OnOrcamentoEnviado implements EventHandler {
@@ -11,6 +20,7 @@ export class OnOrcamentoEnviado implements EventHandler {
   constructor(
     private readonly clienteOrcamentoGateway: ClienteOrcamentoGateway,
     private readonly criarNotificacao: CriarNotificacaoUseCase,
+    private readonly gerarTokenAprovacao: GerarTokenAprovacaoOrcamentoUseCase,
   ) {
     this.setupSubscriptions()
   }
@@ -32,17 +42,52 @@ export class OnOrcamentoEnviado implements EventHandler {
       }
       const { nome } = dadosCliente
 
-      const valorTotal = orcamento.getValorTotalGeral()
+      const resultadoToken = await this.gerarTokenAprovacao.execute({ orcamentoId })
+      if (resultadoToken.isLeft()) {
+        throw new Error('Não foi possível gerar o token de aprovação do orçamento.')
+      }
+
+      const token = resultadoToken.value.token.getToken()
+      const appUrl = process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`
+      const linkAprovacao = new URL(
+        `/api/orcamentos/decisoes/${encodeURIComponent(token)}`,
+        appUrl,
+      ).toString()
+
+      const servicos = orcamento.getServicos().getItems().map((servico) => ({
+        nome: servico.getNome(),
+        descricao: servico.getDescricao(),
+        valor: formatarValor(servico.getPrecoUnitario()),
+      }))
+      const componentes = orcamento.getComponentes().getItems().map((componente) => ({
+        nome: componente.getNome(),
+        descricao: componente.getDescricao(),
+        quantidade: componente.getQuantidade(),
+        unidadeMedida: componente.getUnidadeMedida(),
+        valorUnitario: formatarValor(componente.getPrecoUnitario()),
+        subtotal: formatarValor(componente.getSubtotal()),
+      }))
+      const valorBruto = formatarValor(orcamento.getValorBrutoTotal())
+      const valorDesconto = formatarValor(orcamento.getValorDesconto())
+      const descontoPorcentagem = orcamento.getDescontoPorcentagem()
+      const valorTotalFormatado = formatarValor(orcamento.getValorTotalGeral())
 
       await this.criarNotificacao.execute({
         destinatarioId: orcamento.getClienteId().toValue(),
         titulo: 'Orcamento',
-        conteudo: `Olá ${nome}! O orçamento ficou em R$ ${valorTotal}.`,
+        conteudo: `Olá ${nome}! O orçamento ficou em ${valorTotalFormatado}.`,
         template: 'orcamento-enviado',
         contexto: {
           nome,
           ordemServicoId: orcamento.getOrdemServicoId().toValue(),
-          valorTotal
+          servicos,
+          componentes,
+          valorBruto,
+          valorDesconto,
+          descontoPorcentagem,
+          valorTotal: valorTotalFormatado,
+          token,
+          linkAprovacao,
         }
       })
 

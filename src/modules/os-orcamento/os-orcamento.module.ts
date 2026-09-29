@@ -35,6 +35,9 @@ import { IniciarExecucaoController } from './controllers/ordem-servico/iniciar-e
 import { FinalizarExecucaoController } from './controllers/ordem-servico/finalizar-execucao.controller.js'
 import { RecusarOrcamentoController } from './controllers/orcamentos/recusar-orcamento.controller.js'
 import { RenegociarOrcamentoController } from './controllers/orcamentos/renegociar-orcamento.controller.js'
+import { ProcessarDecisaoOrcamentoController } from './controllers/orcamentos/processar-decisao-orcamento.controller.js'
+import { ValidarTokenDecisaoController } from './controllers/orcamentos/validar-token-decisao.controller.js'
+
 
 // Use Cases
 import { CriarMecanicoUseCase } from '@/modules/os-orcamento/application/use-cases/mecanicos/criar-mecanico.js'
@@ -72,6 +75,9 @@ import { IniciarExecucaoUseCase } from './application/use-cases/ordens-servicos/
 import { FinalizarExecucaoUseCase } from './application/use-cases/ordens-servicos/finalizar-execucao.js'
 import { RecusarOrcamentoUseCase } from './application/use-cases/orcamento/recusar-orcamento.js'
 import { RenegociarOrcamentoUseCase } from './application/use-cases/orcamento/renegociar-orcamento.js'
+import { ValidarTokenOrcamentoUseCase } from './application/use-cases/orcamento/validar-token-orcamento.js'
+import { ProcessarDecisaoOrcamentoUseCase } from './application/use-cases/orcamento/processar-decisao-orcamento.js'
+import { GerarTokenAprovacaoOrcamentoUseCase } from './application/use-cases/orcamento/gerar-token-aprovacao-orcamento.js'
 
 import { ReservarProdutosEstoqueUseCase } from '../estoque/application/use-cases/reservar-produtos-estoque.js'
 import { EncerrarOrdemServicoFaturaPagaUseCase } from './application/use-cases/ordens-servicos/encerrar-os-fatura-paga.js'
@@ -86,6 +92,8 @@ import { OrdemServicoRepository } from './domain/repositories/ordem-servico-repo
 import { UsuariosRepository } from '../autenticacao/domain/repositories/usuarios-repository.js'
 import { RecepcionistaRepository } from './domain/repositories/recepcionista-repository.js'
 import { OrcamentoRepository } from './domain/repositories/orcamento-repository.js'
+import { TokenRepository } from './domain/repositories/token-repository.js'
+
 
 
 // Prisma Repositories (Infra Implementations)
@@ -113,6 +121,7 @@ import { ConcluirDiagnosticoService } from './domain/services/concluir-diagnosti
 
 import { ClienteOrcamentoGateway } from './application/gateways/cliente-orcamento-gateway.js'
 import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento-gateway.js'
+import { PrismaTokenRepository } from '@/infra/database/prisma/repositories/prisma-token.repository.js'
 
 
 @Module({
@@ -144,6 +153,8 @@ import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento
     FinalizarExecucaoController,
     RecusarOrcamentoController,
     RenegociarOrcamentoController,
+    ProcessarDecisaoOrcamentoController,
+    ValidarTokenDecisaoController,
     CalcularTempoMedioExecucaoServicosController,
     ConsultarSituacaoOSPublicoController,
     ListarOSAtivasController
@@ -182,6 +193,9 @@ import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento
     EncerrarOrdemServicoUseCase,
     RecusarOrcamentoUseCase,
     RenegociarOrcamentoUseCase,
+    ValidarTokenOrcamentoUseCase,
+    ProcessarDecisaoOrcamentoUseCase,
+    GerarTokenAprovacaoOrcamentoUseCase,
     RenegociarOrcamentoService,
     CalcularTempoMediaExecucaoServicosUseCase,
     ConsultarSituacaoOSPublicoUseCase,
@@ -234,10 +248,16 @@ import { DbClienteOrcamentoGateway } from '@/infra/gateways/db-cliente-orcamento
     {
       provide: ClienteOrcamentoGateway,
       useClass: DbClienteOrcamentoGateway
+    },
+    {
+      provide: TokenRepository,
+      useClass: PrismaTokenRepository
     }
 
   ],
   exports: [
+    TokenRepository,
+    GerarTokenAprovacaoOrcamentoUseCase,
     ClienteRepository,
     OrcamentoRepository,
     OrdemServicoRepository,

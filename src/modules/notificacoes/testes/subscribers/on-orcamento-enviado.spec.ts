@@ -2,12 +2,14 @@ import { Logger } from '@nestjs/common'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { OrcamentoEnviadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-enviado-event.js'
 import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
+import { GerarTokenAprovacaoOrcamentoUseCase } from '@/modules/os-orcamento/application/use-cases/orcamento/gerar-token-aprovacao-orcamento.js'
 import { ClienteOrcamentoGateway } from '../../application/gateways/cliente-orcamento-gateway.js'
 import { OnOrcamentoEnviado } from '../../application/subscribers/on-orcamento-enviado.js'
 
 describe('OnOrcamentoEnviado (Subscriber)', () => {
   let clienteOrcamentoGateway: ClienteOrcamentoGateway
   let criarNotificacao: CriarNotificacaoUseCase
+  let gerarTokenAprovacao: GerarTokenAprovacaoOrcamentoUseCase
   let subscriber: OnOrcamentoEnviado
 
   beforeEach(() => {
@@ -21,18 +23,27 @@ describe('OnOrcamentoEnviado (Subscriber)', () => {
       execute: vi.fn(),
     } as unknown as CriarNotificacaoUseCase
 
+    gerarTokenAprovacao = {
+      execute: vi.fn().mockResolvedValue({
+        isLeft: () => false,
+        isRight: () => true,
+        value: { token: { getToken: () => 'token-aprovacao-123' } },
+      }),
+    } as unknown as GerarTokenAprovacaoOrcamentoUseCase
+
     vi.spyOn(DomainEvents, 'register')
 
     subscriber = new OnOrcamentoEnviado(
       clienteOrcamentoGateway,
       criarNotificacao,
+      gerarTokenAprovacao,
     )
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnOrcamentoEnviado(clienteOrcamentoGateway, criarNotificacao)
+    new OnOrcamentoEnviado(clienteOrcamentoGateway, criarNotificacao, gerarTokenAprovacao)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -70,6 +81,7 @@ describe('OnOrcamentoEnviado (Subscriber)', () => {
     )
 
     expect(criarNotificacao.execute).not.toHaveBeenCalled()
+    expect(gerarTokenAprovacao.execute).not.toHaveBeenCalled()
 
     loggerWarnSpy.mockRestore()
   })
@@ -94,7 +106,27 @@ describe('OnOrcamentoEnviado (Subscriber)', () => {
     const mockEvent = {
       orcamento: {
         getId: () => ({ toValue: () => 'orcamento-uuid-123' }),
-        getValorTotalGeral: () => 1250.75,
+        getValorTotalGeral: () => 125075,
+        getValorBrutoTotal: () => 125075,
+        getValorDesconto: () => 0,
+        getDescontoPorcentagem: () => 0,
+        getServicos: () => ({
+          getItems: () => [{
+            getNome: () => 'Revisão de freios',
+            getDescricao: () => 'Inspeção e ajuste',
+            getPrecoUnitario: () => 75000,
+          }],
+        }),
+        getComponentes: () => ({
+          getItems: () => [{
+            getNome: () => 'Pastilha de freio',
+            getDescricao: () => undefined,
+            getQuantidade: () => 1,
+            getUnidadeMedida: () => 'UN',
+            getPrecoUnitario: () => 50075,
+            getSubtotal: () => 50075,
+          }],
+        }),
         getClienteId: () => ({ toValue: () => 'cli-uuid-123' }),
         getOrdemServicoId: () => ({ toValue: () => 'os-uuid-456' }),
       },
@@ -102,16 +134,42 @@ describe('OnOrcamentoEnviado (Subscriber)', () => {
 
     await handler(mockEvent)
 
+    const appUrl = process.env.APP_URL ?? `http://localhost:${process.env.PORT ?? 3000}`
+
     expect(criarNotificacao.execute).toHaveBeenCalledWith({
       destinatarioId: 'cli-uuid-123',
       titulo: 'Orcamento',
-      conteudo: 'Olá Mariana Costa! O orçamento ficou em R$ 1250.75.',
+      conteudo: 'Olá Mariana Costa! O orçamento ficou em R$ 1.250,75.',
       template: 'orcamento-enviado',
       contexto: {
         nome: 'Mariana Costa',
         ordemServicoId: 'os-uuid-456',
-        valorTotal: 1250.75,
+        servicos: [{
+          nome: 'Revisão de freios',
+          descricao: 'Inspeção e ajuste',
+          valor: 'R$ 750,00',
+        }],
+        componentes: [{
+          nome: 'Pastilha de freio',
+          descricao: undefined,
+          quantidade: 1,
+          unidadeMedida: 'UN',
+          valorUnitario: 'R$ 500,75',
+          subtotal: 'R$ 500,75',
+        }],
+        valorBruto: 'R$ 1.250,75',
+        valorDesconto: 'R$ 0,00',
+        descontoPorcentagem: 0,
+        valorTotal: 'R$ 1.250,75',
+        token: 'token-aprovacao-123',
+        linkAprovacao: new URL(
+          '/api/orcamentos/decisoes/token-aprovacao-123',
+          appUrl,
+        ).toString(),
       },
+    })
+    expect(gerarTokenAprovacao.execute).toHaveBeenCalledWith({
+      orcamentoId: 'orcamento-uuid-123',
     })
 
     expect(loggerLogSpy).toHaveBeenCalledWith(

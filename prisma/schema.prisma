@@ -80,6 +80,10 @@ enum MotivoTermoLiberacao {
   REJEICAO_ORCAMENTO
 }
 
+enum TokenType {
+  APROVACAO_ORCAMENTO
+}
+
 model Usuario {
   id           String        @id
   email        String        @unique
@@ -290,6 +294,7 @@ model Orcamento {
   ordemServico OrdemServico @relation(fields: [ordemServicoId], references: [id])
   cliente      Cliente      @relation(fields: [clienteId], references: [id])
   faturas      Fatura[]
+  tokens       Token[]
 
   @@map("orcamentos")
 }
@@ -380,4 +385,18 @@ model Notificacao {
   criadaEm DateTime  @default(now()) @map("criada_em")
 
   @@map("notificacoes")
+}
+
+model Token {
+  id       String    @id @default(uuid())
+  token    String    @unique
+  tipo     TokenType
+  usado    Boolean   @default(false)
+  expiraEm DateTime  @map("expira_em")
+  criadoEm DateTime  @default(now()) @map("criado_em")
+
+  orcamentoId String?    @map("orcamento_id")
+  orcamento   Orcamento? @relation(fields: [orcamentoId], references: [id], onDelete: Cascade)
+
+  @@map("tokens")
 }

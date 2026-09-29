@@ -2,10 +2,12 @@ import { Logger } from '@nestjs/common'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { OrcamentoRecusadoEvent } from '@/modules/os-orcamento/domain/events/orcamento-recusado-event.js'
 import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
+import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { OnOrcamentoRecusado } from '../../application/subscribers/on-orcamento-recusado.js'
 
 describe('OnOrcamentoRecusado (Subscriber)', () => {
   let criarNotificacao: CriarNotificacaoUseCase
+  let usuariosRepository: UsuariosRepository
   let subscriber: OnOrcamentoRecusado
 
   beforeEach(() => {
@@ -15,18 +17,23 @@ describe('OnOrcamentoRecusado (Subscriber)', () => {
     criarNotificacao = {
       execute: vi.fn(),
     } as unknown as CriarNotificacaoUseCase
+    usuariosRepository = {
+      findByEmail: vi.fn().mockResolvedValue({
+        getId: () => ({ toValue: () => 'usuario-recepcao-123' }),
+      }),
+    } as unknown as UsuariosRepository
 
     // 2. Espia o registro do evento no DomainEvents ANTES da instanciação
     vi.spyOn(DomainEvents, 'register')
 
     // 3. Instancia o subscriber que se auto-registra no construtor
-    subscriber = new OnOrcamentoRecusado(criarNotificacao)
+    subscriber = new OnOrcamentoRecusado(criarNotificacao, usuariosRepository)
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnOrcamentoRecusado(criarNotificacao)
+    new OnOrcamentoRecusado(criarNotificacao, usuariosRepository)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -53,7 +60,7 @@ describe('OnOrcamentoRecusado (Subscriber)', () => {
 
     // Valida se o Use Case de notificação foi acionado com o DTO correto
     expect(criarNotificacao.execute).toHaveBeenCalledWith({
-      destinatarioId: 'recepcao@oficina.com',
+      destinatarioId: 'usuario-recepcao-123',
       conteudo:
         'Atenção! O cliente recusou o orçamento original da OS #os-uuid-456. Inicie o processo de renegociação.',
       titulo: 'Orcamento recusado',
@@ -66,6 +73,23 @@ describe('OnOrcamentoRecusado (Subscriber)', () => {
     )
 
     loggerLogSpy.mockRestore()
+  })
+
+  it('não deve criar notificação se não existir usuário de recepção', async () => {
+    vi.mocked(usuariosRepository.findByEmail).mockResolvedValueOnce(null)
+    const loggerWarnSpy = vi.spyOn(Logger.prototype, 'warn').mockImplementation(() => { })
+    const handler = vi.mocked(DomainEvents.register).mock.calls[0][0]
+
+    await handler({
+      orcamento: {
+        getId: () => ({ toValue: () => 'orcamento-uuid-123' }),
+        getOrdemServicoId: () => ({ toValue: () => 'os-uuid-456' }),
+      },
+    } as unknown as OrcamentoRecusadoEvent)
+
+    expect(criarNotificacao.execute).not.toHaveBeenCalled()
+    expect(loggerWarnSpy).toHaveBeenCalled()
+    loggerWarnSpy.mockRestore()
   })
 
   it('deve capturar exceções não tratadas (catch) e logar erro no Logger sem interromper a execução', async () => {

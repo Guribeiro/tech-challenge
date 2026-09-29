@@ -2,10 +2,12 @@ import { Logger } from '@nestjs/common'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { OSEncerradaPorRejeicaoEvent } from '../../../os-orcamento/domain/events/os-encerrada-por-rejeicao-event.js'
 import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
+import { UsuariosRepository } from '@/modules/autenticacao/domain/repositories/usuarios-repository.js'
 import { OnOrcamentoRenegociadoRecusado } from '../../application/subscribers/on-orcamento-renegociado-recusado.js'
 
 describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
   let criarNotificacao: CriarNotificacaoUseCase
+  let usuariosRepository: UsuariosRepository
   let subscriber: OnOrcamentoRenegociadoRecusado
 
   beforeEach(() => {
@@ -14,16 +16,21 @@ describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
     criarNotificacao = {
       execute: vi.fn(),
     } as unknown as CriarNotificacaoUseCase
+    usuariosRepository = {
+      findByEmail: vi.fn().mockResolvedValue({
+        getId: () => ({ toValue: () => 'usuario-gerencia-123' }),
+      }),
+    } as unknown as UsuariosRepository
 
     vi.spyOn(DomainEvents, 'register')
 
-    subscriber = new OnOrcamentoRenegociadoRecusado(criarNotificacao)
+    subscriber = new OnOrcamentoRenegociadoRecusado(criarNotificacao, usuariosRepository)
   })
 
   it('deve registrar a assinatura do evento no DomainEvents ao instanciar a classe', () => {
     const registerSpy = vi.spyOn(DomainEvents, 'register')
 
-    new OnOrcamentoRenegociadoRecusado(criarNotificacao)
+    new OnOrcamentoRenegociadoRecusado(criarNotificacao, usuariosRepository)
 
     expect(registerSpy).toHaveBeenCalledWith(
       expect.any(Function),
@@ -49,7 +56,7 @@ describe('OnOrcamentoRenegociadoRecusado (Subscriber)', () => {
 
     // Valida se o Use Case foi chamado com a nova estrutura de DTO
     expect(criarNotificacao.execute).toHaveBeenCalledWith({
-      destinatarioId: 'gerencia@oficina.com',
+      destinatarioId: 'usuario-gerencia-123',
       conteudo:
         'O orçamento da OS #os-uuid-123 foi REJEITADO DEFINITIVAMENTE pelo cliente após tentativas de renegociação. O processo foi encerrado.',
       titulo: 'Orcamento renegociado recusado',

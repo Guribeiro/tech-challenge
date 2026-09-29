@@ -29,6 +29,7 @@ async function main() {
   await prisma.cliente.deleteMany();
   await prisma.mecanico.deleteMany();
   await prisma.recepcionista.deleteMany();
+  await prisma.notificacao.deleteMany();
   await prisma.usuario.deleteMany();
 
   console.log('🌱 Populando dados...');
@@ -57,10 +58,11 @@ async function main() {
   });
 
   // Recepcionista
+
   await prisma.usuario.create({
     data: {
       id: recepId,
-      email: 'maria.recepcao@oficina.com',
+      email: 'recepcao@oficina.com',
       senhaHash: passwordHash,
       role: 'RECEPCAO',
     },
@@ -69,7 +71,7 @@ async function main() {
     data: {
       id: recepId,
       nome: 'Maria Oliveira',
-      email: 'maria.recepcao@oficina.com',
+      email: 'recepcao@oficina.com',
       cpf: gerarCpf(),
     },
   });

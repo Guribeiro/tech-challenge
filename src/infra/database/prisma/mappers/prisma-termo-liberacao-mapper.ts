@@ -1,16 +1,14 @@
-// src/infra/database/prisma/mappers/prisma-termo-liberacao.mapper.ts
 import { TermoLiberacao as PrismaTermoLiberacao } from '@/generated/prisma/client.js'
 import { TermoLiberacao } from '@/modules/liberacao/domain/entities/termo-liberacao.js'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 
 export class PrismaTermoLiberacaoMapper {
-  // Transforma o modelo do Prisma (Banco) para a Entidade de Domínio
   static toDomain(raw: PrismaTermoLiberacao): TermoLiberacao {
     return TermoLiberacao.criar(
       {
         ordemServicoId: new UniqueEntityID(raw.ordemServicoId),
         placaVeiculo: raw.placaVeiculo,
-        motivo: raw.motivo, // Certifique-se de que o Enum do Prisma bate com a union do tipo do Domínio
+        motivo: raw.motivo,
       },
       new UniqueEntityID(raw.id)
     )

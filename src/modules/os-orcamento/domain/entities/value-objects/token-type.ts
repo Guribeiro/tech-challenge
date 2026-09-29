@@ -1,0 +1,3 @@
+export enum TokenType {
+  APROVACAO_ORCAMENTO = 'APROVACAO_ORCAMENTO',
+}
