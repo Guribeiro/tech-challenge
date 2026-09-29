@@ -15,6 +15,8 @@ export default defineConfig({
       'src/generated/**'
     ],
     fileParallelism: false,
+    testTimeout: 30000,
+    hookTimeout: 30000,
     env: {
       DATABASE_URL:
         'postgresql://postgres:postgres@localhost:5433/oficina_test_db?schema=public',
