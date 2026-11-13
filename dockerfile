@@ -41,8 +41,13 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/src/generated ./src/generated
 COPY --from=builder /app/src/teste/helpers ./src/teste/helpers
 COPY --from=builder /app/prisma.config.ts ./
+COPY --from=builder /app/newrelic.cjs ./
 
 EXPOSE 3000
 
-# Executa a aplicação compilada em JavaScript
-CMD ["node", "dist/infra/main.js"]
+ENV NEW_RELIC_APP_NAME=oficina-app \
+    NEW_RELIC_HOME=/app
+
+# Executa a aplicação compilada com o agente New Relic pré-carregado (ESM).
+# Sem NEW_RELIC_LICENSE_KEY o agente permanece desativado.
+CMD ["node", "--import", "newrelic/esm-loader.mjs", "-r", "newrelic", "dist/infra/main.js"]

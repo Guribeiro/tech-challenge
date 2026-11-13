@@ -8,12 +8,14 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 import { HttpModule } from '../http/http.module.js';
 import { LoggingModule } from '../logging/logging.module.js';
+import { ObservabilityModule } from '../observability/observability.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // Torna o ConfigModule acessível em todos os módulos sem precisar reimportar
     }),
+    ObservabilityModule,
     LoggingModule,
     HttpModule,
     AutenticacaoModule,
