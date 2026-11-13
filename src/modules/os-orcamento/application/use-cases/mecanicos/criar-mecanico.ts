@@ -64,7 +64,6 @@ export class CriarMecanicoUseCase {
         mecanico
       })
     } catch (error) {
-      console.log({ error })
       if (error instanceof DomainError) {
         return left(error)
       }

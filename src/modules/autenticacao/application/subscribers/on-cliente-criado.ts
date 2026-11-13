@@ -36,7 +36,6 @@ export class OnClienteCriado implements EventHandler {
       this.logger.log(`[Autenticação] Credenciais criadas com sucesso para o ID: ${cliente.getId().toValue()}. Usuário ID: ${usuario.getId().toValue()}`)
 
     } catch (error) {
-      console.log(error)
       this.logger.error(`[Autenticação] Erro inesperado ao criar credenciais para o cliente ID: ${cliente.getId().toValue()}`, error instanceof Error ? error.stack : error)
     }
   }

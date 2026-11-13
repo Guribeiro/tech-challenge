@@ -7,12 +7,14 @@ import { OsOrcamentoModule } from '@/modules/os-orcamento/os-orcamento.module.js
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config'
 import { HttpModule } from '../http/http.module.js';
+import { LoggingModule } from '../logging/logging.module.js';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true, // Torna o ConfigModule acessível em todos os módulos sem precisar reimportar
     }),
+    LoggingModule,
     HttpModule,
     AutenticacaoModule,
     OsOrcamentoModule,
