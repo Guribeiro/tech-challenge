@@ -9,6 +9,8 @@ export { ProdutoJaCadastradoError } from '@/core/errors/produto-ja-cadastrado-er
 export { AcessoNegadoError } from '@/core/errors/acesso-negado-error.js'
 export { EstoqueInsuficienteError } from '@/core/errors/estoque-insuficiente-error.js'
 export { DataInicioMaiorQueDataFimError } from '@/core/errors/data-inicio-maior-data-fim-error.js'
+export { ClienteInativoError } from '@/core/errors/cliente-inativo-error.js'
+export { VeiculoNaoPertenceAoClienteError } from '@/core/errors/veiculo-nao-pertence-ao-cliente-error.js'
 
 
 

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   HttpCode,
@@ -20,6 +21,8 @@ import { JwtAuthGuard } from '@/infra/auth/jwt.guard.js'
 import { OrdemServicoResponseDto } from '../../dto/ordem-servico/ordem-servico-response.dto.js'
 import { RolesGuard } from '@/infra/auth/roles.guard.js'
 import { Roles } from '@/infra/auth/roles.decorator.js'
+import { CurrentUser } from '@/infra/auth/current-user.decorator.js'
+import type { UserPayload } from '@/infra/auth/jwt.strategy.js'
 
 @ApiTags('Ordens de Serviço')
 @ApiBearerAuth()
@@ -29,12 +32,13 @@ export class CriarOrdemServicoController {
   constructor(private readonly criarOrdemServico: CriarOrdemServicoUseCase) { }
 
   @Post()
-  @Roles('RECEPCAO')
+  @Roles('RECEPCAO', 'CLIENTE')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Abrir nova Ordem de Serviço',
     description:
-      'Cria uma nova ordem de serviço associando cliente, veículo, serviços e componentes.',
+      'Cria uma nova ordem de serviço associando cliente, veículo, serviços e componentes. ' +
+      'Clientes autenticados por CPF abrem OS apenas para si e para veículos próprios.',
   })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -64,11 +68,25 @@ export class CriarOrdemServicoController {
     },
   })
   @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'Cliente inativo/bloqueado ou perfil sem permissão.',
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: 'O veículo informado não pertence ao cliente.',
+  })
+  @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
     description: 'Token de autenticação ausente ou inválido.',
   })
-  async handle(@Body() body: CriarOrdemServicoBodyDto) {
-    const result = await this.criarOrdemServico.execute(body)
+  async handle(@Body() body: CriarOrdemServicoBodyDto, @CurrentUser() user: UserPayload) {
+    const clienteId = user.role === 'CLIENTE' ? user.sub : body.clienteId
+
+    if (!clienteId) {
+      throw new BadRequestException('O ID do cliente é obrigatório.')
+    }
+
+    const result = await this.criarOrdemServico.execute({ ...body, clienteId })
     const { ordemServico } = unwrapEither(result)
     return OrdemServicoPresenter.toHTTP(ordemServico)
   }

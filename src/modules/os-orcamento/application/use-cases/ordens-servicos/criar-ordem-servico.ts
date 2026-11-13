@@ -12,7 +12,12 @@ import { ProdutoRepository } from '@/modules/estoque/domain/repositories/produto
 import { CategoriaServico } from '@/modules/os-orcamento/domain/entities/servico.js'
 import { OrdemServicoRepository } from '@/modules/os-orcamento/domain/repositories/ordem-servico-repository.js'
 import { Injectable } from '@nestjs/common'
-import { EstoqueInsuficienteError, RecursoNaoEncontradoError } from '@/core/errors/index.js'
+import {
+  ClienteInativoError,
+  EstoqueInsuficienteError,
+  RecursoNaoEncontradoError,
+  VeiculoNaoPertenceAoClienteError,
+} from '@/core/errors/index.js'
 import { Either, left, right } from '@/core/either.js'
 
 export type ComponenteItemInput = {
@@ -33,7 +38,11 @@ export type CriarOrdemServicoInput = {
   componentes?: Array<ComponenteItemInput>
 }
 
-type Errors = RecursoNaoEncontradoError | EstoqueInsuficienteError
+type Errors =
+  | RecursoNaoEncontradoError
+  | EstoqueInsuficienteError
+  | ClienteInativoError
+  | VeiculoNaoPertenceAoClienteError
 
 export type CriarOrdemServicoOutput = Either<
   Errors,
@@ -57,9 +66,17 @@ export class CriarOrdemServicoUseCase {
       return left(new RecursoNaoEncontradoError('Cliente'))
     }
 
+    if (!cliente.estaAtivo()) {
+      return left(new ClienteInativoError())
+    }
+
     const veiculo = await this.veiculoRepository.findById(input.veiculoId)
     if (!veiculo) {
       return left(new RecursoNaoEncontradoError('Veículo'))
+    }
+
+    if (!veiculo.getClienteId().equals(cliente.getId())) {
+      return left(new VeiculoNaoPertenceAoClienteError())
     }
 
     const ordemServicoId = new UniqueEntityID()
