@@ -8,12 +8,15 @@ import { ClienteCriadoEvent } from '../events/cliente-criado-event.js'
 import { ArgumentoInvalidoError, RegraDeNegocioVioladaError } from '@/core/errors/domain-errors/index.js'
 import { CpfCnpj } from './value-objects/cpf-cnpj.js'
 
+export type StatusCliente = 'ATIVO' | 'INATIVO' | 'BLOQUEADO'
+
 export interface ClienteProps {
   nome: NomeCompleto
   email: Email
   telefone: Telefone
   documento: CpfCnpj
   tipo: 'PF' | 'PJ'
+  status: StatusCliente
   criadoEm: Date
   atualizadoEm?: Date
   deletadoEm?: Date | null
@@ -28,13 +31,14 @@ export type AtualizarClienteProps = Partial<{
 }>
 
 export class Cliente extends AggregateRoot<ClienteProps> {
-  public static criar(props: Optional<ClienteProps, 'criadoEm'>, id?: UniqueEntityID): Cliente {
+  public static criar(props: Optional<ClienteProps, 'criadoEm' | 'status'>, id?: UniqueEntityID): Cliente {
 
     this.validar(props)
 
     const cliente = new Cliente({
       ...props,
       criadoEm: props.criadoEm ?? new Date(),
+      status: props.status ?? (props.deletadoEm ? 'INATIVO' : 'ATIVO'),
       deletadoEm: props.deletadoEm ?? null,
     }, id)
 
@@ -57,7 +61,7 @@ export class Cliente extends AggregateRoot<ClienteProps> {
     this.touch()
   }
 
-  private static validar(props: Optional<ClienteProps, 'criadoEm'>) {
+  private static validar(props: Optional<ClienteProps, 'criadoEm' | 'status'>) {
     if (!props.nome.getValor()?.trim()) {
       throw new ArgumentoInvalidoError('Nome do cliente é obrigatório.')
     }
@@ -81,7 +85,35 @@ export class Cliente extends AggregateRoot<ClienteProps> {
     }
 
     this.props.deletadoEm = new Date()
+    this.props.status = 'INATIVO'
     this.touch()
+  }
+
+  public bloquear(): void {
+    if (this.props.deletadoEm) {
+      throw new RegraDeNegocioVioladaError('Não é possível bloquear um cliente excluído.')
+    }
+
+    this.props.status = 'BLOQUEADO'
+    this.touch()
+  }
+
+  public desbloquear(): void {
+    if (this.props.status !== 'BLOQUEADO') {
+      throw new RegraDeNegocioVioladaError('Somente clientes bloqueados podem ser desbloqueados.')
+    }
+
+    this.props.status = 'ATIVO'
+    this.touch()
+  }
+
+  /** Cliente apto a autenticar e abrir/consultar ordens de serviço. */
+  public estaAtivo(): boolean {
+    return this.props.status === 'ATIVO' && !this.props.deletadoEm
+  }
+
+  public getStatus(): StatusCliente {
+    return this.props.status
   }
 
   public isDeletado(): boolean {
