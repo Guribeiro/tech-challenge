@@ -6,20 +6,26 @@ on:
     types:
       - completed
     branches:
+      - develop
       - main
-      - fase-2
 
 jobs:
   build-and-push:
-    # Garante que lint, unit-tests e e2e-tests passaram sem nenhuma falha
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # Somente após lint, testes unitários e e2e aprovados, e apenas para pushes
+    # (PRs não publicam imagem).
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    environment: ${{ github.event.workflow_run.head_branch == 'main' && 'producao' || 'homologacao' }}
 
     env:
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY || 'oficina-app' }}
+      ENV_TAG: ${{ github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml' }}
+      IMAGE_SHA: ${{ github.event.workflow_run.head_sha }}
 
     steps:
       - name: Checkout do código
@@ -30,13 +36,7 @@ jobs:
       - name: Configurar Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login no Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Configurar credenciais AWS do Learning Lab
+      - name: Configurar credenciais AWS do Learner Lab
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
@@ -48,13 +48,22 @@ jobs:
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build e Push da Imagem Docker
+      - name: Build e push da imagem de produção
         uses: docker/build-push-action@v5
         with:
           context: .
+          target: production
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/oficina-app:latest
-            ${{ secrets.DOCKER_USERNAME }}/oficina-app:${{ github.event.workflow_run.head_sha }}
-            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:latest
-            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.event.workflow_run.head_sha }}
+            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_SHA }}
+            ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.ENV_TAG }}-latest
+
+      - name: Resumo
+        run: |
+          {
+            echo "### Imagem publicada"
+            echo "- Ambiente: \`${ENV_TAG}\`"
+            echo "- Imagem: \`${{ steps.ecr-login.outputs.registry }}/${ECR_REPOSITORY}:${IMAGE_SHA}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

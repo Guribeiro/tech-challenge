@@ -1,4 +1,4 @@
-.PHONY: up down stop start build migrate seed status logs eks-up eks-deploy eks-down help
+.PHONY: up down stop start build migrate seed status logs deploy deploy-dry-run help
 
 DOCKER_USER    = guribeiro
 IMAGE_NAME     = $(DOCKER_USER)/oficina-app:latest
@@ -9,6 +9,7 @@ TERRAFORM_DIR = src/infra/terraform
 AWS_REGION     ?= us-east-1
 EKS_CLUSTER    ?= oficina-eks
 ECR_REPOSITORY ?= oficina-app
+ENV            ?= hml
 
 # Help / Menu de Ajuda
 help:
@@ -21,6 +22,8 @@ help:
 	@echo "  make migrate  - Executa as migrations do Prisma no Kubernetes"
 	@echo "  make status   - Exibe o status atual dos Pods"
 	@echo "  make logs     - Exibe os logs em tempo real da API NestJS"
+	@echo "  make deploy ENV=hml|prd  - Publica a imagem do commit atual no EKS (RDS/Secrets Manager)"
+	@echo "  make deploy-dry-run ENV=hml|prd - Renderiza os manifests sem acessar a AWS"
 
 # Sobe toda a infraestrutura e a aplicação
 up:
@@ -83,12 +86,9 @@ status:
 logs:
 	kubectl logs -l app=oficina-app -n $(NAMESPACE) -f --tail=50
 
-# Deploy acadêmico na AWS EKS via eksctl + ECR
-eks-up:
-	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ECR_REPOSITORY=$(ECR_REPOSITORY) ./scripts/deploy-eks.sh up
+# Deploy no AWS EKS por ambiente (cluster/RDS provisionados pelos repositórios de infra)
+deploy:
+	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ECR_REPOSITORY=$(ECR_REPOSITORY) ./scripts/deploy.sh $(ENV)
 
-eks-deploy:
-	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ECR_REPOSITORY=$(ECR_REPOSITORY) ./scripts/deploy-eks.sh deploy
-
-eks-down:
-	AWS_REGION=$(AWS_REGION) EKS_CLUSTER=$(EKS_CLUSTER) ./scripts/deploy-eks.sh down
+deploy-dry-run:
+	DRY_RUN=1 AWS_REGION=$(AWS_REGION) ECR_REPOSITORY=$(ECR_REPOSITORY) ./scripts/deploy.sh $(ENV)

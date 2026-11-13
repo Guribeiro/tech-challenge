@@ -1,8 +1,8 @@
+# Aplicado separadamente pelo scripts/deploy.sh antes do rollout da API.
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: oficina-prisma-migrate
-  namespace: oficina-mecanica
 spec:
   backoffLimit: 3
   ttlSecondsAfterFinished: 86400
@@ -10,9 +10,9 @@ spec:
     spec:
       restartPolicy: Never
       containers:
-        - name: prisma-migration
-          image: __IMAGE_URI__
-          command: ["sh", "-c", "npx prisma migrate deploy"]
+        - name: prisma-migrate
+          image: oficina-app
+          command: ["npx", "prisma", "migrate", "deploy"]
           envFrom:
             - secretRef:
                 name: oficina-app-secret
