@@ -1,6 +1,6 @@
 import { AppModule } from '@/infra/nest/app.module.js'
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
-import { INestApplication } from '@nestjs/common'
+import { INestApplication, ValidationPipe } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
 import { randomUUID } from 'node:crypto'
 import { generate as gerarCpf } from 'gerador-validador-cpf'
@@ -19,6 +19,8 @@ describe('Consultar Situação OS Público (E2E)', () => {
     }).compile()
 
     app = moduleRef.createNestApplication()
+    // Mesmo pipe global de src/infra/main.ts (a validação da query faz parte do contrato).
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))
     prisma = moduleRef.get(PrismaService)
 
     await app.listen(0)
@@ -109,6 +111,17 @@ describe('Consultar Situação OS Público (E2E)', () => {
         },
       )
       expect(response.status).toBe(404)
+    })
+
+    it.each([
+      ['sem parâmetros', ''],
+      ['sem documento', '?placa=ABC1D23'],
+      ['sem placa', '?documento=52998224725'],
+      ['com documento vazio', '?placa=ABC1D23&documento='],
+    ])('deve retornar 400 (Bad Request) %s', async (_caso, query) => {
+      const response = await fetch(`${baseUrl}/ordens-servicos/rastreio${query}`)
+
+      expect(response.status).toBe(400)
     })
   })
 })

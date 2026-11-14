@@ -7,13 +7,13 @@ import {
 } from '@nestjs/common'
 import {
   ApiOperation,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger'
 import { ConsultarSituacaoOSPublicoUseCase } from '../../application/use-cases/ordens-servicos/consultar-situacao-os-publico.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { OrdemServicoRastreioPresenter } from '../../presenters/ordem-servico-rastreio-presenter.js'
+import { ConsultarSituacaoOSPublicoQueryDto } from '../../dto/ordem-servico/consultar-situacao-os-publico-query.dto.js'
 
 @ApiTags('Ordens de Serviço - Público')
 @Controller('/ordens-servicos/rastreio')
@@ -28,18 +28,6 @@ export class ConsultarSituacaoOSPublicoController {
     summary: 'Consultar situação de Ordem de Serviço publicamente',
     description:
       'Permite que o cliente consulte o status atual e informações essenciais da sua ordem de serviço informando a placa do veículo e o documento (CPF/CNPJ).',
-  })
-  @ApiQuery({
-    name: 'placa',
-    description: 'Placa do veículo cadastrado na ordem de serviço',
-    example: 'ABC1234',
-    required: true,
-  })
-  @ApiQuery({
-    name: 'documento',
-    description: 'Documento (CPF ou CNPJ) do cliente associado',
-    example: '12345678909',
-    required: true,
   })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -60,10 +48,7 @@ export class ConsultarSituacaoOSPublicoController {
       },
     },
   })
-  async handle(
-    @Query('placa') placa: string,
-    @Query('documento') documento: string,
-  ) {
+  async handle(@Query() { placa, documento }: ConsultarSituacaoOSPublicoQueryDto) {
     const result = await this.consultarSituacaoOSPublico.execute({
       placa,
       documento,
