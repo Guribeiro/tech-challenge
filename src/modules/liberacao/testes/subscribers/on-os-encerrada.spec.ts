@@ -111,9 +111,9 @@ describe('OnOrdemServicoEncerrada (Subscriber)', () => {
   })
 
   it('deve capturar exceções não tratadas (catch) e logar no console sem lançar exceção', async () => {
-    // Espia o console.error utilizado no bloco catch desta classe
-    const consoleErrorSpy = vi
-      .spyOn(console, 'error')
+    // Espia o Logger.error utilizado no bloco catch desta classe
+    const loggerErrorSpy = vi
+      .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => { })
 
     const registerSpy = vi.spyOn(DomainEvents, 'register')
@@ -131,12 +131,12 @@ describe('OnOrdemServicoEncerrada (Subscriber)', () => {
     // Garante que o handler resolve sem estourar a exceção
     await expect(handler(mockEvent)).resolves.not.toThrow()
 
-    // Valida a chamada do console.error no bloco catch
-    expect(consoleErrorSpy).toHaveBeenCalledWith(
+    // Valida o log de erro no bloco catch
+    expect(loggerErrorSpy).toHaveBeenCalledWith(
       'Falha no processo automático pós-encerramento da OS #os-uuid-100',
-      erroInesperado,
+      erroInesperado.stack,
     )
 
-    consoleErrorSpy.mockRestore()
+    loggerErrorSpy.mockRestore()
   })
 })

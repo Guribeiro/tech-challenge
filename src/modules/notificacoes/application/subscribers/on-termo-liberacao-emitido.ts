@@ -4,12 +4,14 @@ import { ClienteOrdemServicoGateway } from '@/modules/notificacoes/application/g
 import { TermoLiberacaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-emitido-event.js'
 import { TermoLiberacaoPorRejeicaoEmitidoEvent } from '@/modules/liberacao/domain/events/termo-liberacao-por-rejeicao-emitido-event.js'
 import { CriarNotificacaoUseCase } from '@/modules/notificacoes/application/use-cases/criar-notificacao.js'
-import { Injectable } from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 type TermoLiberacaoEvents = TermoLiberacaoEmitidoEvent | TermoLiberacaoPorRejeicaoEmitidoEvent
 
 @Injectable()
 export class OnTermoLiberacaoEmitido implements EventHandler {
+  private readonly logger = new Logger(OnTermoLiberacaoEmitido.name)
+
   constructor(
     private readonly clienteOrdemServicoGateway: ClienteOrdemServicoGateway,
     private readonly criarNotificacao: CriarNotificacaoUseCase,
@@ -54,11 +56,11 @@ export class OnTermoLiberacaoEmitido implements EventHandler {
         template: 'termo-liberacao'
       })
 
-      console.log(`[Notification Success]: Cliente ${clienteNome} notificado da liberação da OS #${ordemServicoId}`)
+      this.logger.log(`[Notification Success]: Cliente ${clienteNome} notificado da liberação da OS #${ordemServicoId}`)
     } catch (error) {
-      console.error(
+      this.logger.error(
         `[Subscriber Warning]: Falha ao notificar cliente sobre a emissão do termo de liberação #${termo.getId().toValue()}`,
-        error,
+        error instanceof Error ? error.stack : String(error),
       )
     }
   }

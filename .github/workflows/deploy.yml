@@ -1,0 +1,112 @@
+name: Deploy
+
+on:
+  # Deploy automático: develop -> homologação (hml), main -> produção (prd)
+  workflow_run:
+    workflows: ["Docker Build & Push"]
+    types:
+      - completed
+    branches:
+      - develop
+      - main
+  # Deploy manual (reexecução, seed demonstrativo ou redeploy de uma imagem específica)
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Ambiente de destino
+        type: choice
+        options: [hml, prd]
+        required: true
+      image_tag:
+        description: Tag da imagem no ECR (padrão = SHA do commit selecionado)
+        type: string
+        required: false
+      seed:
+        description: Executar o seed demonstrativo (APAGA os dados do ambiente)
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml') }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy (${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml') }})
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    environment:
+      name: ${{ (github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml')) == 'prd' && 'producao' || 'homologacao' }}
+
+    env:
+      TARGET_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml') }}
+      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && (inputs.image_tag || github.sha) || github.event.workflow_run.head_sha }}
+      SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || false }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+      EKS_CLUSTER: ${{ vars.EKS_CLUSTER || 'oficina-eks' }}
+      ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY || 'oficina-app' }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+
+      - name: Configurar credenciais AWS do Learner Lab
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Configurar kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.33.0
+
+      - name: Publicar aplicação no EKS
+        env:
+          NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+        run: ./scripts/deploy.sh "$TARGET_ENV"
+
+      # NEW_RELIC_ENTITY_GUID é uma variable de cada GitHub Environment (homologacao e
+      # producao): oficina-app-hml e oficina-app-prd são entidades APM diferentes.
+      - name: Registrar deployment no New Relic
+        if: success()
+        env:
+          NEW_RELIC_API_KEY: ${{ secrets.NEW_RELIC_API_KEY }}
+          NEW_RELIC_ENTITY_GUID: ${{ vars.NEW_RELIC_ENTITY_GUID }}
+          NERDGRAPH_URL: ${{ vars.NEW_RELIC_NERDGRAPH_URL || 'https://api.newrelic.com/graphql' }}
+          COMMIT_SHA: ${{ env.IMAGE_TAG }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [[ -z "$NEW_RELIC_API_KEY" || -z "$NEW_RELIC_ENTITY_GUID" ]]; then
+            echo "NEW_RELIC_API_KEY/NEW_RELIC_ENTITY_GUID não configurados; marcador de deployment ignorado."
+            exit 0
+          fi
+          payload="$(jq -n \
+            --arg guid "$NEW_RELIC_ENTITY_GUID" \
+            --arg version "$COMMIT_SHA" \
+            --arg user "$GITHUB_ACTOR" \
+            --arg description "Deploy ${TARGET_ENV} via GitHub Actions" \
+            --arg url "$RUN_URL" \
+            '{query: "mutation($guid: EntityGuid!, $version: String!, $user: String, $description: String, $url: String) { changeTrackingCreateDeployment(deployment: {entityGuid: $guid, version: $version, user: $user, description: $description, deepLink: $url, deploymentType: ROLLING}) { deploymentId } }",
+              variables: {guid: $guid, version: $version, user: $user, description: $description, url: $url}}')"
+          curl -fsS "$NERDGRAPH_URL" \
+            -H "Content-Type: application/json" \
+            -H "API-Key: ${NEW_RELIC_API_KEY}" \
+            -d "$payload"
+          echo
+
+      - name: Resumo
+        if: always()
+        run: |
+          {
+            echo "### Deploy ${TARGET_ENV}"
+            echo "- Imagem: \`${ECR_REPOSITORY}:${IMAGE_TAG}\`"
+            echo "- Namespace: \`oficina-${TARGET_ENV}\`"
+            echo "- Seed: \`${SEED}\`"
+          } >> "$GITHUB_STEP_SUMMARY"

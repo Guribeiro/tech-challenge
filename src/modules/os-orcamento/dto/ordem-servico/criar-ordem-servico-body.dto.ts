@@ -43,13 +43,15 @@ export class ComponenteItemDto {
 }
 
 export class CriarOrdemServicoBodyDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: '123e4567-e89b-12d3-a456-426614174002',
-    description: 'ID do cliente proprietário do veículo (UUID v4)',
+    description:
+      'ID do cliente proprietário do veículo (UUID v4). Obrigatório para RECEPCAO; ' +
+      'ignorado quando o token é de um CLIENTE (autenticado por CPF), que só abre OS para si mesmo.',
   })
+  @IsOptional()
   @IsUUID('4', { message: 'O ID do cliente deve ser um UUID válido.' })
-  @IsNotEmpty({ message: 'O ID do cliente é obrigatório.' })
-  clienteId!: string
+  clienteId?: string
 
   @ApiProperty({
     example: '123e4567-e89b-12d3-a456-426614174003',
