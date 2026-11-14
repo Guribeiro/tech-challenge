@@ -190,6 +190,13 @@ run_job oficina-prisma-migrate
 
 log "Publicando a aplicação ($IMAGE_URI)"
 render "$OVERLAY_DIR" | kubectl apply -f -
+
+# Os pods só leem o Secret na inicialização. O checksum no template do pod faz o
+# Kubernetes recriá-los quando um segredo muda (ex.: license key, rotação do JWT),
+# mesmo que a imagem e os manifests sejam os mesmos.
+SECRET_CHECKSUM="$(app_secret_manifest | sha256sum | cut -c1-16)"
+kubectl patch deployment/oficina-app-deployment --namespace "$NAMESPACE" --type merge \
+  -p "{\"spec\":{\"template\":{\"metadata\":{\"annotations\":{\"oficina/secret-checksum\":\"${SECRET_CHECKSUM}\"}}}}}"
 kubectl rollout status deployment/oficina-app-deployment --namespace "$NAMESPACE" --timeout="$TIMEOUT"
 
 if [[ "$SEED" == "true" ]]; then
