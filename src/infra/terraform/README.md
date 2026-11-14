@@ -65,6 +65,6 @@ make down
 cd src/infra/terraform && terraform destroy -auto-approve
 ```
 
-Este Terraform provisiona o ambiente Kubernetes local via Kind. O cluster EKS do Learning Lab é criado separadamente pelo `eksctl`, utilizando os manifests e o script descritos em `docs/INFRASTRUCTURE.md`.
+Este Terraform provisiona apenas o ambiente Kubernetes **local** via Kind, para desenvolvimento. A infraestrutura da AWS (EKS, RDS, API Gateway e Lambdas) fica nos repositórios [oficina-infra-k8s](https://github.com/Guribeiro/oficina-infra-k8s), [oficina-infra-db](https://github.com/Guribeiro/oficina-infra-db) e [oficina-lambda-auth](https://github.com/Guribeiro/oficina-lambda-auth); veja [docs/INFRASTRUCTURE.md](../../../docs/INFRASTRUCTURE.md).
 
 O estado do Terraform e os planos locais não devem ser versionados, pois podem conter dados de infraestrutura e valores sensíveis. Use `terraform.tfvars.example` como referência e forneça os valores reais por arquivo local ou variáveis de ambiente.
