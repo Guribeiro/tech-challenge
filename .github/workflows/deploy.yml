@@ -72,6 +72,8 @@ jobs:
           NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
         run: ./scripts/deploy.sh "$TARGET_ENV"
 
+      # NEW_RELIC_ENTITY_GUID é uma variable de cada GitHub Environment (homologacao e
+      # producao): oficina-app-hml e oficina-app-prd são entidades APM diferentes.
       - name: Registrar deployment no New Relic
         if: success()
         env:
