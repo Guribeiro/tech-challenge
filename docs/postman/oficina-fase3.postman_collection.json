@@ -145,7 +145,7 @@
                   "const corpo = pm.response.json();",
                   "pm.collectionVariables.set('tokenCliente', corpo.accessToken);",
                   "pm.collectionVariables.set('clienteId', corpo.cliente.id);",
-                  "const payload = JSON.parse(atob(corpo.accessToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));",
+                  "const payload = JSON.parse(Buffer.from(corpo.accessToken.split('.')[1], 'base64').toString());",
                   "pm.test('token com perfil CLIENTE', () => pm.expect(payload.role).to.eql('CLIENTE'));"
                 ]
               }
