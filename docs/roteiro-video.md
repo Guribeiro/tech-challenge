@@ -65,7 +65,8 @@ npx newman run docs/postman/oficina-fase3.postman_collection.json -n 5 --env-var
 cd ~/www/tech-challenge
 git switch develop && git pull
 git switch -c demo/video
-sed -i 's/^# 🛠️ FIAP Tech Challenge - Oficina Mecânica$/# 🛠️ FIAP Tech Challenge - Oficina Mecânica (Fase 3)/' README.md
+sed -i '1s/Oficina Mecânica$/Oficina Mecânica (Fase 3)/' README.md
+head -1 README.md                            # deve terminar com "(Fase 3)"
 git commit -am "docs: titulo da fase 3 no README"
 ```
 
@@ -103,10 +104,16 @@ git commit -am "docs: titulo da fase 3 no README"
 > direto para ela, o GitHub recusa."
 
 ```bash
-git push origin demo/video:main
+git fetch origin
+git switch -c demo/protecao origin/main          # o commit precisa partir da main atual
+git commit --allow-empty -m "teste: push direto na main"
+git push origin demo/protecao:main
 ```
 
-**Mostrar:** a mensagem `protected branch hook declined` / `Changes must be made through a pull request`.
+**Mostrar:** `GH006: Protected branch update failed` / `Changes must be made through a pull request`.
+Depois (pode ser fora do vídeo): `git switch demo/video && git branch -D demo/protecao`.
+
+> Não envie o `demo/protecao` para a `develop`: ela não é protegida e aceitaria o push.
 
 > "Toda mudança entra por pull request. Vou abrir um PR para a develop, que é a branch de
 > homologação."
