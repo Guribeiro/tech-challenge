@@ -75,6 +75,7 @@ flowchart LR
 | Secrets Manager | Credenciais do banco e segredo de assinatura JWT por ambiente | [oficina-infra-db](https://github.com/Guribeiro/oficina-infra-db) |
 | EKS, ECR, VPC, VPC Link | Plataforma compartilhada pelos ambientes | [oficina-infra-k8s](https://github.com/Guribeiro/oficina-infra-k8s) |
 | New Relic | APM, logs em contexto, métricas do cluster e das Lambdas, Synthetics, dashboards e alertas | agente na API; `nri-bundle` e dashboards no infra-k8s; layer no lambda-auth |
+| Notificações (e-mail) | Enviadas pela API a partir de eventos de domínio; migração para SNS + Lambda proposta na [RFC 0005](./rfcs/0005-notificacoes-serverless.md) | este repositório |
 
 ## Ambientes
 
