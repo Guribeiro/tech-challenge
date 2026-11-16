@@ -36,9 +36,10 @@ flowchart LR
 | --- | --- |
 | [Arquitetura](./docs/arquitetura.md) | Componentes, ambientes, repositórios, diagramas de sequência (autenticação por CPF e abertura de OS), CI/CD e observabilidade |
 | [Modelo de dados](./docs/modelo-dados.md) | Justificativa do PostgreSQL/RDS, diagrama ER, relacionamentos e ajustes da fase 3 |
-| [RFCs](./docs/rfcs) | [0001 Nuvem (AWS Learner Lab)](./docs/rfcs/0001-nuvem-aws-learner-lab.md) · [0002 Banco (PostgreSQL/RDS)](./docs/rfcs/0002-banco-postgresql-rds.md) · [0003 Autenticação (Lambda + JWT)](./docs/rfcs/0003-autenticacao-lambda-jwt.md) · [0004 Observabilidade (New Relic)](./docs/rfcs/0004-observabilidade-new-relic.md) |
+| [RFCs](./docs/rfcs) | [0001 Nuvem (AWS Learner Lab)](./docs/rfcs/0001-nuvem-aws-learner-lab.md) · [0002 Banco (PostgreSQL/RDS)](./docs/rfcs/0002-banco-postgresql-rds.md) · [0003 Autenticação (Lambda + JWT)](./docs/rfcs/0003-autenticacao-lambda-jwt.md) · [0004 Observabilidade (New Relic)](./docs/rfcs/0004-observabilidade-new-relic.md) · [0005 Notificações serverless (proposta)](./docs/rfcs/0005-notificacoes-serverless.md) |
 | [ADRs](./docs/adrs) | [0001 REST via API Gateway](./docs/adrs/0001-rest-sincrono-via-api-gateway.md) · [0002 HPA](./docs/adrs/0002-escalabilidade-com-hpa.md) · [0003 Um cluster, namespaces por ambiente](./docs/adrs/0003-um-cluster-namespaces-por-ambiente.md) · [0004 State remoto no S3](./docs/adrs/0004-terraform-state-remoto-s3.md) · [0005 Logs JSON com correlation id](./docs/adrs/0005-logs-json-correlation-id.md) · [0006 Rollout por checksum do Secret](./docs/adrs/0006-rollout-por-checksum-do-secret.md) |
 | [Infraestrutura e operação](./docs/INFRASTRUCTURE.md) | Execução local, deploy, pipelines, configuração do GitHub, ciclo de vida no Learner Lab e diagnóstico |
+| [Entrega](./docs/entrega.md) | Links dos repositórios, deploys e documentação, checklist de requisitos e [roteiro do vídeo](./docs/roteiro-video.md) |
 
 ### Repositórios
 
@@ -53,10 +54,10 @@ flowchart LR
 
 | Ambiente | Branch | URL base (API Gateway) |
 | --- | --- | --- |
-| Homologação (`hml`) | `develop` | `https://rmji4h1x6b.execute-api.us-east-1.amazonaws.com` |
-| Produção (`prd`) | `main` | `https://5redxihir2.execute-api.us-east-1.amazonaws.com` |
+| Homologação (`hml`) | `develop` | https://0bagr12oql.execute-api.us-east-1.amazonaws.com |
+| Produção (`prd`) | `main` | https://cvqm7rpmdg.execute-api.us-east-1.amazonaws.com |
 
-Os ambientes rodam no AWS Learner Lab e são destruídos entre sessões para economizar crédito; a cada recriação (`scripts/bringup.sh` do infra-k8s) as URLs mudam e são impressas ao final. Em cada ambiente:
+URLs da sessão de 16/11/2026. Os ambientes rodam no AWS Learner Lab e são destruídos entre sessões para economizar crédito; a cada recriação (`scripts/bringup.sh` do infra-k8s) as URLs mudam e são impressas ao final. Em cada ambiente:
 
 - Swagger: `<URL base>/docs`
 - Health check: `<URL base>/api/health`
