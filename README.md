@@ -1,4 +1,4 @@
-# 🛠️ FIAP Tech Challenge - Oficina Mecânica
+# 🛠️ FIAP Tech Challenge - Oficina Mecânica (Fase 3)
 ---
 
 ## 📖 Sobre o Projeto
