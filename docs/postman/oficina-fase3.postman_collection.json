@@ -7,8 +7,8 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "https://5redxihir2.execute-api.us-east-1.amazonaws.com",
-      "description": "prd; hml: https://rmji4h1x6b.execute-api.us-east-1.amazonaws.com (URLs mudam após teardown/bringup)"
+      "value": "https://cvqm7rpmdg.execute-api.us-east-1.amazonaws.com",
+      "description": "prd; hml: https://0bagr12oql.execute-api.us-east-1.amazonaws.com (URLs mudam após teardown/bringup)"
     },
     {
       "key": "cpfAtivo",
