@@ -1,14 +1,25 @@
 name: Deploy
 
 on:
-  # Deploy automático: develop -> homologação (hml), main -> produção (prd)
-  workflow_run:
-    workflows: ["Docker Build & Push"]
-    types:
-      - completed
-    branches:
-      - develop
-      - main
+  # Deploy automático: chamado pelo docker-build.yml após o build da imagem
+  # (develop -> homologação, main -> produção).
+  workflow_call:
+    inputs:
+      environment:
+        description: Ambiente de destino (hml ou prd)
+        type: string
+        required: true
+      image_tag:
+        description: Tag da imagem no ECR
+        type: string
+        required: true
+      ref:
+        description: Commit com os manifests e o scripts/deploy.sh
+        type: string
+        required: true
+      seed:
+        type: boolean
+        default: false
   # Deploy manual (reexecução, seed demonstrativo ou redeploy de uma imagem específica)
   workflow_dispatch:
     inputs:
@@ -26,24 +37,22 @@ on:
         type: boolean
         default: false
 
-concurrency:
-  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml') }}
-  cancel-in-progress: false
-
 jobs:
   deploy:
-    name: Deploy (${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml') }})
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    name: Deploy (${{ inputs.environment }})
     runs-on: ubuntu-latest
     permissions:
       contents: read
     environment:
-      name: ${{ (github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml')) == 'prd' && 'producao' || 'homologacao' }}
+      name: ${{ inputs.environment == 'prd' && 'producao' || 'homologacao' }}
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
 
     env:
-      TARGET_ENV: ${{ github.event_name == 'workflow_dispatch' && inputs.environment || (github.event.workflow_run.head_branch == 'main' && 'prd' || 'hml') }}
-      IMAGE_TAG: ${{ github.event_name == 'workflow_dispatch' && (inputs.image_tag || github.sha) || github.event.workflow_run.head_sha }}
-      SEED: ${{ github.event_name == 'workflow_dispatch' && inputs.seed || false }}
+      TARGET_ENV: ${{ inputs.environment }}
+      IMAGE_TAG: ${{ inputs.image_tag || github.sha }}
+      SEED: ${{ inputs.seed }}
       AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
       EKS_CLUSTER: ${{ vars.EKS_CLUSTER || 'oficina-eks' }}
       ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY || 'oficina-app' }}
@@ -52,7 +61,7 @@ jobs:
       - name: Checkout do código
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || github.event.workflow_run.head_sha }}
+          ref: ${{ inputs.ref || github.sha }}
 
       - name: Configurar credenciais AWS do Learner Lab
         uses: aws-actions/configure-aws-credentials@v4

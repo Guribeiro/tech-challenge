@@ -78,11 +78,13 @@ make deploy-dry-run ENV=prd    # renderiza os manifests sem acessar a AWS
 | Workflow | Gatilho | O que faz |
 | --- | --- | --- |
 | [`quality.yml`](../.github/workflows/quality.yml) | push e PR em `develop`/`main` | lint, testes unitários e e2e (PostgreSQL de serviço) |
-| [`docker-build.yml`](../.github/workflows/docker-build.yml) | sucesso do Quality em push | build da imagem `production` e push no ECR com as tags `<sha>` e `<env>-latest` |
-| [`deploy.yml`](../.github/workflows/deploy.yml) | sucesso do build, ou manual | `scripts/deploy.sh` no ambiente da branch, marcador de deployment no New Relic e resumo (imagem, namespace, seed) |
+| [`docker-build.yml`](../.github/workflows/docker-build.yml) | sucesso do Quality em push | build da imagem `production`, push no ECR com as tags `<sha>` e `<env>-latest` e, em seguida, o job de deploy no ambiente da branch |
+| [`deploy.yml`](../.github/workflows/deploy.yml) | chamado pelo build (`workflow_call`), ou manual | `scripts/deploy.sh` no ambiente da branch, marcador de deployment no New Relic e resumo (imagem, namespace, seed) |
 
-O deploy manual (`workflow_dispatch`) permite escolher o ambiente, uma tag de imagem e rodar o
-seed. A `main` é protegida: exige pull request com os checks Code Linting, Unit Tests e E2E
+O deploy é um job do próprio workflow de build, que conhece o branch e o commit de origem
+(um segundo encadeamento por `workflow_run` rodaria no contexto da `main` e mandaria tudo para
+prd). O deploy manual (`workflow_dispatch`) permite escolher o ambiente, uma tag de imagem e
+rodar o seed. A `main` é protegida: exige pull request com os checks Code Linting, Unit Tests e E2E
 Tests.
 
 ### Configuração do GitHub
