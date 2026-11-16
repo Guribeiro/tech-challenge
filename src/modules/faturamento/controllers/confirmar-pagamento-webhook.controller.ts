@@ -15,12 +15,14 @@ import { ConfirmarPagamentoUseCase } from '../application/use-cases/confirmar-pa
 import { FaturaPresenter } from '../presenters/fatura-presenter.js'
 import { unwrapEither } from '@/infra/http/presenters/http-presenter.js'
 import { WebhookPayloadDto } from '../dto/webhook-payload.dto.js'
+import { Telemetry } from '@/infra/observability/telemetry.js'
 
 @ApiTags('Webhooks')
 @Controller('/webhooks/pagamentos')
 export class ConfirmarPagamentoController {
   constructor(
     private readonly confirmarPagamento: ConfirmarPagamentoUseCase,
+    private readonly telemetry: Telemetry,
   ) { }
 
   @Post()
@@ -74,10 +76,17 @@ export class ConfirmarPagamentoController {
   async handle(
     @Body() body: WebhookPayloadDto,
   ) {
-    const result = await this.confirmarPagamento.execute({
-      faturaId: body.data.faturaId,
-    })
-    const { fatura } = unwrapEither(result)
+    let fatura
+
+    try {
+      const result = await this.confirmarPagamento.execute({
+        faturaId: body.data.faturaId,
+      })
+      fatura = unwrapEither(result).fatura
+    } catch (error) {
+      this.telemetry.recordIntegrationFailure('webhook-pagamento', 'confirmar-pagamento', error)
+      throw error
+    }
 
     return {
       fatura: FaturaPresenter.toHTTP(fatura),

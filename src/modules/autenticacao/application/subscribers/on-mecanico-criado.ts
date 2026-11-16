@@ -28,7 +28,7 @@ export class OnMecanicoCriado implements EventHandler {
       })
 
       if (result.isLeft()) {
-        console.warn(`[Autenticação] Não foi possível criar credenciais para o mecânico ID: ${mecanico.getId().toValue()}.`)
+        this.logger.warn(`[Autenticação] Não foi possível criar credenciais para o mecânico ID: ${mecanico.getId().toValue()}.`)
         return
       }
 

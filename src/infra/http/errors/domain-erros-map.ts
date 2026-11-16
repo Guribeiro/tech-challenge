@@ -10,7 +10,9 @@ import {
   ProdutoJaCadastradoError,
   AcessoNegadoError,
   EstoqueInsuficienteError,
-  DataInicioMaiorQueDataFimError
+  DataInicioMaiorQueDataFimError,
+  ClienteInativoError,
+  VeiculoNaoPertenceAoClienteError,
 } from '@/core/errors/index.js'
 import { HttpStatus, Type } from '@nestjs/common'
 
@@ -25,5 +27,7 @@ export const DOMAIN_ERROR_MAP = new Map<Type<Error>, HttpStatus>([
   [ProdutoJaCadastradoError, HttpStatus.CONFLICT],
   [EstoqueInsuficienteError, HttpStatus.BAD_REQUEST],
   [RecursoNaoEncontradoError, HttpStatus.NOT_FOUND],
-  [DataInicioMaiorQueDataFimError, HttpStatus.BAD_REQUEST]
+  [DataInicioMaiorQueDataFimError, HttpStatus.BAD_REQUEST],
+  [ClienteInativoError, HttpStatus.FORBIDDEN],
+  [VeiculoNaoPertenceAoClienteError, HttpStatus.UNPROCESSABLE_ENTITY],
 ])

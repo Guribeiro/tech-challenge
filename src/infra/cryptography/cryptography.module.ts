@@ -1,3 +1,4 @@
+import { getJwtSecret } from '@/infra/auth/jwt-secret.js'
 import { Module } from '@nestjs/common'
 import { JwtModule } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
@@ -13,7 +14,7 @@ import { JwtEncrypter } from './jwt-encrypter.js'
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'sua-chave-secreta-default'),
+        secret: getJwtSecret(configService),
         signOptions: { expiresIn: '1d' },
       }),
     }),

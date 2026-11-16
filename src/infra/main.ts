@@ -1,15 +1,15 @@
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './nest/app.module.js'
-import { ConsoleLogger, ValidationPipe } from '@nestjs/common'
+import { ValidationPipe } from '@nestjs/common'
+import { Logger } from 'nestjs-pino'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import helmet from 'helmet';
 
-const app = await NestFactory.create(AppModule, {
-  logger: new ConsoleLogger({
-    prefix: '[Oficina Mecanica NestJS API]',
-    logLevels: ['log', 'error', 'warn', 'verbose'],
-  }),
-})
+const app = await NestFactory.create(AppModule, { bufferLogs: true })
+
+const logger = app.get(Logger)
+app.useLogger(logger)
+app.flushLogs()
 
 app.getHttpAdapter().getInstance().disable('x-powered-by');
 
@@ -56,4 +56,4 @@ app.enableCors({
 const port = process.env.PORT || 3000
 await app.listen(port, '0.0.0.0')
 
-console.log(`🚀 API rodando na porta ${port}`)
+logger.log(`API rodando na porta ${port}`, 'Bootstrap')

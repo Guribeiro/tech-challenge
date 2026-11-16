@@ -5,6 +5,11 @@ import * as bcrypt from 'bcryptjs';
 import { generate as gerarCpf } from 'gerador-validador-cpf'
 import { gerarCNPJ } from '../src/teste/helpers/gerar-cnpj.js'
 
+// CPFs fixos (válidos) para demonstrar a autenticação por CPF via Lambda/API Gateway
+export const CPF_DEMO_ATIVO = '52998224725'
+export const CPF_DEMO_BLOQUEADO = '11144477735'
+export const CPF_DEMO_INATIVO = '93541134780'
+
 const prisma = new PrismaClient({
   adapter: new PrismaPg({
     connectionString: process.env.DATABASE_URL,
@@ -117,9 +122,36 @@ async function main() {
       id: cli1Id,
       nome: 'João da Silva',
       email: 'joao.cliente@gmail.com',
-      documento: gerarCpf(),
+      documento: CPF_DEMO_ATIVO,
       telefone: '(11) 98765-4321',
       tipo: 'PF',
+      status: 'ATIVO',
+    },
+  });
+
+  // Clientes para demonstrar as respostas da autenticação por CPF (403)
+  await prisma.cliente.create({
+    data: {
+      id: randomUUID(),
+      nome: 'Maria Bloqueada',
+      email: 'maria.bloqueada@gmail.com',
+      documento: CPF_DEMO_BLOQUEADO,
+      telefone: '(11) 91234-5678',
+      tipo: 'PF',
+      status: 'BLOQUEADO',
+    },
+  });
+
+  await prisma.cliente.create({
+    data: {
+      id: randomUUID(),
+      nome: 'Carlos Inativo',
+      email: 'carlos.inativo@gmail.com',
+      documento: CPF_DEMO_INATIVO,
+      telefone: '(11) 92345-6789',
+      tipo: 'PF',
+      status: 'INATIVO',
+      deletadoEm: new Date('2026-08-01T12:00:00Z'),
     },
   });
 
@@ -516,6 +548,7 @@ async function main() {
   });
 
   console.log('✅ Seed executado com sucesso!');
+  console.log(`🔐 CPFs de demonstração: ativo=${CPF_DEMO_ATIVO} bloqueado=${CPF_DEMO_BLOQUEADO} inativo=${CPF_DEMO_INATIVO}`);
 }
 
 main()

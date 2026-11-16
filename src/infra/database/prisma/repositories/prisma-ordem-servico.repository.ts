@@ -8,15 +8,51 @@ import { PrismaOrdemServicoComponenteMapper } from "../mappers/prisma-os-compone
 import { DomainEvents } from "@/core/events/domain-events.js";
 import { Prisma } from "@/generated/prisma/client.js";
 import { STATUS_FINALIZADOS, PRIORIDADE_STATUS } from "@/modules/os-orcamento/domain/constants/status-prioridade.js";
+import { Telemetry, TELEMETRY_EVENTS } from "@/infra/observability/telemetry.js";
+
+type StatusRegistrado = { statusNovo: string; alteradoEm: Date } | null
 
 @Injectable()
 export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly telemetry: Telemetry,
+  ) { }
 
   public async create(ordem: OrdemServico): Promise<void> {
     const data = PrismaOrdemServicoMapper.toPrisma(ordem)
     await this.prisma.ordemServico.create({ data })
+    this.registrarMudancaDeStatus(ordem, null)
     await DomainEvents.dispatchEventsForAggregate(ordem)
+  }
+
+  /** Último status registrado pelo trigger de histórico (ordem_servico_historico_status). */
+  private async buscarStatusRegistrado(ordemServicoId: string): Promise<StatusRegistrado> {
+    return this.prisma.ordemServicoHistoricoStatus.findFirst({
+      where: { ordemServicoId },
+      orderBy: { alteradoEm: 'desc' },
+      select: { statusNovo: true, alteradoEm: true },
+    })
+  }
+
+  /**
+   * Emite OrdemServicoStatusAlterada com o tempo de permanência no status anterior,
+   * base dos dashboards de volume diário e tempo médio por status.
+   */
+  private registrarMudancaDeStatus(ordem: OrdemServico, anterior: StatusRegistrado): void {
+    const statusNovo = ordem.getStatus()
+
+    if (anterior?.statusNovo === statusNovo) return
+
+    this.telemetry.recordEvent(TELEMETRY_EVENTS.ORDEM_SERVICO_STATUS_ALTERADA, {
+      ordemServicoId: ordem.getId().toValue(),
+      statusAnterior: anterior?.statusNovo ?? null,
+      statusNovo,
+      duracaoNoStatusAnteriorSeg: anterior
+        ? Math.round((Date.now() - anterior.alteradoEm.getTime()) / 1000)
+        : null,
+      prioridade: ordem.getPrioridade().getTipo(),
+    })
   }
 
   public async findById(id: string): Promise<OrdemServico | null> {
@@ -52,6 +88,8 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
       ordemServicoId,
     }))
     const componentesRemovidos = componentesList.getRemovedItems()
+
+    const statusAnterior = await this.buscarStatusRegistrado(ordemServicoId)
 
     await this.prisma.$transaction([
       this.prisma.ordemServico.update({
@@ -99,6 +137,8 @@ export class PrismaOrdemServicoRepository implements OrdemServicoRepository {
         ]
         : []),
     ])
+
+    this.registrarMudancaDeStatus(ordem, statusAnterior)
 
     await DomainEvents.dispatchEventsForAggregate(ordem)
     ordem.clearEvents()

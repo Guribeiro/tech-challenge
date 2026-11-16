@@ -16,6 +16,7 @@ export class PrismaClienteMapper {
         telefone: Telefone.criar(raw.telefone),
         documento: CpfCnpj.criar(raw.documento),
         tipo: raw.tipo,
+        status: raw.status,
         criadoEm: raw.criadoEm,
         atualizadoEm: raw.atualizadoEm ?? undefined,
         deletadoEm: raw.deletadoEm ?? undefined
@@ -33,6 +34,7 @@ export class PrismaClienteMapper {
       telefone: cliente.getTelefone().getValor(),
       documento: cliente.getDocumento().getValor(),
       tipo: cliente.getTipo(),
+      status: cliente.getStatus(),
       criadoEm: cliente.getCriadoEm(),
       atualizadoEm: cliente.getAtualizadoEm() ?? null,
       deletadoEm: cliente.getDeletadoEm() ?? null

@@ -4,6 +4,7 @@ import * as handlebarsModule from 'handlebars'
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 import { EnviarNotificacaoProps, NotificacaoService } from '../../domain/services/notificacao-service.js'
+import { Telemetry } from '@/infra/observability/telemetry.js'
 
 const Handlebars = (handlebarsModule as unknown as { default?: typeof handlebarsModule }).default ?? handlebarsModule
 
@@ -11,6 +12,8 @@ const Handlebars = (handlebarsModule as unknown as { default?: typeof handlebars
 export class EtherealNotificacaoService implements NotificacaoService, OnModuleInit {
   private transporter!: nodemailer.Transporter
   private readonly logger = new Logger(EtherealNotificacaoService.name)
+
+  constructor(private readonly telemetry: Telemetry) { }
 
   async onModuleInit() {
     // Cria uma conta de teste temporária no Ethereal
@@ -29,7 +32,16 @@ export class EtherealNotificacaoService implements NotificacaoService, OnModuleI
     this.logger.log(`Ethereal SMTP inicializado | Usuário: ${testAccount.user}`)
   }
 
-  async enviar({ destinatario, assunto, mensagem, template, contexto }: EnviarNotificacaoProps): Promise<void> {
+  async enviar(props: EnviarNotificacaoProps): Promise<void> {
+    try {
+      await this.enviarEmail(props)
+    } catch (error) {
+      this.telemetry.recordIntegrationFailure('email', 'enviar-notificacao', error)
+      throw error
+    }
+  }
+
+  private async enviarEmail({ destinatario, assunto, mensagem, template, contexto }: EnviarNotificacaoProps): Promise<void> {
     let htmlContent: string | undefined
 
     if (template) {

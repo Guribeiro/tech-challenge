@@ -9,7 +9,12 @@ import { makeCliente } from '../../factories/make-cliente.js'
 import { makeVeiculo } from '../../factories/make-veiculo.js'
 import { makeServico } from '../../factories/make-servico.js'
 import { makeProduto } from '@/modules/estoque/testes/factories/make-produto.js'
-import { EstoqueInsuficienteError, RecursoNaoEncontradoError } from '@/core/errors/index.js'
+import {
+  ClienteInativoError,
+  EstoqueInsuficienteError,
+  RecursoNaoEncontradoError,
+  VeiculoNaoPertenceAoClienteError,
+} from '@/core/errors/index.js'
 
 let ordemServicoRepository: InMemoryOrdemServicoRepository
 let clienteRepository: InMemoryClienteRepository
@@ -224,5 +229,45 @@ describe('Criar Ordem de Serviço Use Case', () => {
     // Assert
     expect(result.isLeft()).toBe(true)
     expect(result.value).toBeInstanceOf(EstoqueInsuficienteError)
+  })
+
+  it('não deve permitir abrir OS para cliente inativo', async () => {
+    const cliente = makeCliente()
+    cliente.deletar()
+    const veiculo = makeVeiculo({ clienteId: cliente.getId() })
+
+    await clienteRepository.create(cliente)
+    await veiculoRepository.create(veiculo)
+
+    const result = await sut.execute({
+      clienteId: cliente.getId().toValue(),
+      veiculoId: veiculo.getId().toValue(),
+      descricao: 'Revisão',
+      eGarantia: false,
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(ClienteInativoError)
+    expect(ordemServicoRepository.items).toHaveLength(0)
+  })
+
+  it('não deve permitir abrir OS com veículo de outro cliente', async () => {
+    const cliente = makeCliente()
+    const outroCliente = makeCliente()
+    const veiculo = makeVeiculo({ clienteId: outroCliente.getId() })
+
+    await clienteRepository.create(cliente)
+    await clienteRepository.create(outroCliente)
+    await veiculoRepository.create(veiculo)
+
+    const result = await sut.execute({
+      clienteId: cliente.getId().toValue(),
+      veiculoId: veiculo.getId().toValue(),
+      descricao: 'Revisão',
+      eGarantia: false,
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(VeiculoNaoPertenceAoClienteError)
   })
 })

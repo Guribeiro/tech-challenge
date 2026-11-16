@@ -35,7 +35,10 @@ export class OnOrdemServicoEncerrada implements EventHandler {
       const termo = result.value.termo
       this.logger.log(`Termo de liberação emitido com sucesso para a OS #${ordemServico.getId().toValue()}. Termo ID: ${termo.getId().toValue()}`)
     } catch (error) {
-      console.error(`Falha no processo automático pós-encerramento da OS #${ordemServico.getId().toValue()}`, error)
+      this.logger.error(
+        `Falha no processo automático pós-encerramento da OS #${ordemServico.getId().toValue()}`,
+        error instanceof Error ? error.stack : String(error),
+      )
     }
   }
 }

@@ -79,10 +79,10 @@ describe('OnMecanicoCriado (Subscriber)', () => {
     loggerLogSpy.mockRestore()
   })
 
-  it('deve capturar e logar aviso (console.warn) caso o UseCase retorne Left (falha de negócio)', async () => {
-    // Espia o console.warn utilizado nesta classe
+  it('deve capturar e logar aviso (Logger.warn) caso o UseCase retorne Left (falha de negócio)', async () => {
+    // Espia o Logger.warn utilizado nesta classe
     const consoleWarnSpy = vi
-      .spyOn(console, 'warn')
+      .spyOn(Logger.prototype, 'warn')
       .mockImplementation(() => { })
 
     const registerSpy = vi.spyOn(DomainEvents, 'register')
@@ -104,7 +104,7 @@ describe('OnMecanicoCriado (Subscriber)', () => {
 
     await handler(mockEvent)
 
-    // Valida se o aviso (console.warn) foi disparado
+    // Valida se o aviso (Logger.warn) foi disparado
     expect(consoleWarnSpy).toHaveBeenCalledWith(
       '[Autenticação] Não foi possível criar credenciais para o mecânico ID: mecanico-uuid-456.',
     )

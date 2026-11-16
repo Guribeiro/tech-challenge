@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common'
 import { UniqueEntityID } from '@/core/entities/unique-entity-id.js'
 import { DomainEvents } from '@/core/events/domain-events.js'
 import { TermoLiberacao } from '@/modules/liberacao/domain/entities/termo-liberacao.js'
@@ -156,9 +157,9 @@ describe('OnTermoLiberacaoEmitido (Subscriber)', () => {
     })
   })
 
-  it('deve capturar erro e logar no console quando os dados do cliente não forem encontrados', async () => {
+  it('deve capturar erro e logar erro quando os dados do cliente não forem encontrados', async () => {
     const consoleErrorSpy = vi
-      .spyOn(console, 'error')
+      .spyOn(Logger.prototype, 'error')
       .mockImplementation(() => { })
 
     const cliente = makeCliente()
@@ -194,7 +195,7 @@ describe('OnTermoLiberacaoEmitido (Subscriber)', () => {
     await vi.waitFor(() => {
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         `[Subscriber Warning]: Falha ao notificar cliente sobre a emissão do termo de liberação #${termoLiberacao.getId().toValue()}`,
-        expect.any(Error),
+        expect.any(String),
       )
       expect(enviarNotificacao.execute).not.toHaveBeenCalled()
     })

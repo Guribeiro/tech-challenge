@@ -92,6 +92,12 @@ model Usuario {
   @@map("usuarios")
 }
 
+enum StatusCliente {
+  ATIVO
+  INATIVO
+  BLOQUEADO
+}
+
 enum ClienteTipo {
   PJ
   PF
@@ -104,6 +110,7 @@ model Cliente {
   documento     String         @unique
   telefone      String
   tipo          ClienteTipo
+  status        StatusCliente  @default(ATIVO)
   criadoEm      DateTime       @default(now()) @map("criado_em")
   atualizadoEm  DateTime?      @updatedAt @map("atualizado_em")
   deletadoEm    DateTime?      @map("deletado_em")
@@ -111,6 +118,7 @@ model Cliente {
   ordemServicos OrdemServico[]
   orcamentos    Orcamento[]
 
+  @@index([status])
   @@map("clientes")
 }
 
@@ -158,6 +166,7 @@ model Veiculo {
   clienteId     String         @map("cliente_id")
   ordemServicos OrdemServico[]
 
+  @@index([clienteId])
   @@map("veiculos")
 }
 
@@ -220,16 +229,36 @@ model OrdemServico {
   eGarantia Boolean @map("e_garantia")
 
   status          StatusOS
-  criadoEm        DateTime                 @default(now()) @map("criado_em")
-  atualizadoEm    DateTime?                @updatedAt @map("atualizado_em")
-  iniciadoEm      DateTime?                @map("iniciado_em")
-  finalizadoEm    DateTime?                @map("finalizado_em")
+  criadoEm        DateTime                      @default(now()) @map("criado_em")
+  atualizadoEm    DateTime?                     @updatedAt @map("atualizado_em")
+  iniciadoEm      DateTime?                     @map("iniciado_em")
+  finalizadoEm    DateTime?                     @map("finalizado_em")
   servicos        OrdemServicoServico[]
   componentes     OrdemServicoComponente[]
   orcamentos      Orcamento[]
   termoLiberacaos TermoLiberacao[]
+  historicoStatus OrdemServicoHistoricoStatus[]
 
+  @@index([status, prioridadePeso(sort: Desc)])
+  @@index([clienteId, veiculoId])
+  @@index([mecanicoId, status])
+  @@index([criadoEm])
   @@map("ordem_servicos")
+}
+
+/// Histórico de transições de status da OS. Populado por trigger no banco
+/// (ver migration fase3_modelagem) para garantir consistência independente da origem da escrita.
+model OrdemServicoHistoricoStatus {
+  id             String       @id @default(dbgenerated("(gen_random_uuid())::text"))
+  ordemServicoId String       @map("ordem_servico_id")
+  ordemServico   OrdemServico @relation(fields: [ordemServicoId], references: [id], onDelete: Cascade)
+  statusAnterior StatusOS?    @map("status_anterior")
+  statusNovo     StatusOS     @map("status_novo")
+  alteradoEm     DateTime     @default(now()) @map("alterado_em")
+
+  @@index([ordemServicoId, alteradoEm])
+  @@index([statusNovo, alteradoEm])
+  @@map("ordem_servico_historico_status")
 }
 
 model OrdemServicoServico {
@@ -247,6 +276,7 @@ model OrdemServicoServico {
   precoUnitario Int              @map("preco_unitario")
   criadoEm      DateTime         @default(now()) @map("criado_em")
 
+  @@index([ordemServicoId])
   @@map("ordem_servico_servicos")
 }
 
@@ -271,6 +301,7 @@ model OrdemServicoComponente {
   quantidade       Int
   criadoEm         DateTime       @default(now()) @map("criado_em")
 
+  @@index([ordemServicoId])
   @@map("ordem_servico_componentes")
 }
 
@@ -291,6 +322,8 @@ model Orcamento {
   cliente      Cliente      @relation(fields: [clienteId], references: [id])
   faturas      Fatura[]
 
+  @@index([ordemServicoId])
+  @@index([clienteId])
   @@map("orcamentos")
 }
 
@@ -309,6 +342,7 @@ model OrcamentoServico {
   precoUnitario Int              @map("preco_unitario")
   criadoEm      DateTime         @default(now()) @map("criado_em")
 
+  @@index([orcamentoId])
   @@map("orcamento_servicos")
 }
 
@@ -333,6 +367,7 @@ model OrcamentoComponente {
   quantidade       Int
   criadoEm         DateTime       @default(now()) @map("criado_em")
 
+  @@index([orcamentoId])
   @@map("orcamento_componentes")
 }
 
@@ -346,8 +381,10 @@ model Fatura {
   valorTotal Int          @map("valor_total")
 
   emitidaEm DateTime  @default(now()) @map("emitida_em")
-  pagaEm    DateTime? @updatedAt @map("paga_em")
+  pagaEm    DateTime? @map("paga_em")
 
+  @@index([orcamentoId])
+  @@index([status])
   @@map("faturas")
 }
 
@@ -363,6 +400,7 @@ model TermoLiberacao {
 
   emitidoEm DateTime @default(now()) @map("emitido_em")
 
+  @@index([ordemServicoId])
   @@map("termo_liberacoes")
 }
 
@@ -379,5 +417,6 @@ model Notificacao {
   lidaEm   DateTime? @map("lida_em")
   criadaEm DateTime  @default(now()) @map("criada_em")
 
+  @@index([destinatarioId, lidaEm])
   @@map("notificacoes")
 }

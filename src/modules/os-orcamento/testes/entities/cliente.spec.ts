@@ -102,5 +102,56 @@ describe('Entidade: Cliente', () => {
         cliente.deletar()
       }).toThrow(RegraDeNegocioVioladaError)
     })
+
+    it('deve marcar o cliente como INATIVO ao ser excluído', () => {
+      const cliente = makeCliente()
+
+      cliente.deletar()
+
+      expect(cliente.getStatus()).toBe('INATIVO')
+      expect(cliente.estaAtivo()).toBe(false)
+    })
+  })
+
+  describe('Status do cliente', () => {
+    it('deve criar o cliente com status ATIVO por padrão', () => {
+      const cliente = Cliente.criar(makePropsValidas())
+
+      expect(cliente.getStatus()).toBe('ATIVO')
+      expect(cliente.estaAtivo()).toBe(true)
+    })
+
+    it('deve reconstituir cliente excluído como INATIVO quando o status não for informado', () => {
+      const cliente = Cliente.criar(
+        { ...makePropsValidas(), deletadoEm: new Date() },
+        new UniqueEntityID(),
+      )
+
+      expect(cliente.getStatus()).toBe('INATIVO')
+    })
+
+    it('deve bloquear e desbloquear um cliente', () => {
+      const cliente = makeCliente()
+
+      cliente.bloquear()
+      expect(cliente.getStatus()).toBe('BLOQUEADO')
+      expect(cliente.estaAtivo()).toBe(false)
+
+      cliente.desbloquear()
+      expect(cliente.getStatus()).toBe('ATIVO')
+    })
+
+    it('não deve bloquear um cliente excluído', () => {
+      const cliente = makeCliente()
+      cliente.deletar()
+
+      expect(() => cliente.bloquear()).toThrow(RegraDeNegocioVioladaError)
+    })
+
+    it('não deve desbloquear um cliente que não está bloqueado', () => {
+      const cliente = makeCliente()
+
+      expect(() => cliente.desbloquear()).toThrow(RegraDeNegocioVioladaError)
+    })
   })
 })

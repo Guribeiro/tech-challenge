@@ -1,0 +1,18 @@
+# NLB interno: a API não é exposta diretamente na internet. O tráfego externo entra
+# pelo API Gateway (HTTP API) através de um VPC Link, que localiza o NLB pela tag oficina-env.
+apiVersion: v1
+kind: Service
+metadata:
+  name: oficina-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: oficina-app=api,oficina-env=base
+spec:
+  type: LoadBalancer
+  selector:
+    app: oficina-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

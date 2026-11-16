@@ -4,6 +4,7 @@ import { AppModule } from '@/infra/nest/app.module.js'
 import { PrismaService } from '@/infra/database/prisma/prisma.service.js'
 import { INestApplication } from '@nestjs/common'
 import { Test, TestingModule } from '@nestjs/testing'
+import { JwtService } from '@nestjs/jwt'
 import { makeUsuarioAutenticado } from '@/modules/autenticacao/testes/factories/make-usuario-autenticado.js'
 import { OrdemServicoResponseDto } from '@/modules/os-orcamento/dto/ordem-servico/ordem-servico-response.dto.js'
 import { resetDatabase } from '@/teste/helpers/reset-database.js'
@@ -184,6 +185,103 @@ describe('Criar Ordem de Serviço (E2E)', () => {
       })
 
       expect(response.status).toBe(401)
+    })
+
+    describe('Cliente autenticado por CPF (token emitido pela Lambda)', () => {
+      async function criarClienteComVeiculo(status: 'ATIVO' | 'BLOQUEADO' = 'ATIVO') {
+        const clienteId = randomUUID()
+        const cpf = gerarCpf({ format: false })
+        await prisma.cliente.create({
+          data: {
+            id: clienteId,
+            nome: 'Cliente CPF',
+            email: `cliente-${randomUUID().substring(0, 8)}@example.com`,
+            documento: cpf,
+            telefone: '11999999999',
+            tipo: 'PF',
+            status,
+          },
+        })
+
+        const veiculoId = randomUUID()
+        await prisma.veiculo.create({
+          data: {
+            id: veiculoId,
+            placa: `CPF${Math.floor(1000 + Math.random() * 9000)}`,
+            modelo: 'Onix',
+            marca: 'Chevrolet',
+            ano: 2021,
+            clienteId,
+          },
+        })
+
+        // Mesmo formato de payload assinado pela Lambda auth-cpf
+        const accessToken = app.get(JwtService).sign({ sub: clienteId, role: 'CLIENTE', cpf })
+
+        return { clienteId, veiculoId, accessToken }
+      }
+
+      it('deve abrir OS para o próprio cliente ignorando clienteId do corpo e registrar o histórico de status', async () => {
+        const { clienteId, veiculoId, accessToken } = await criarClienteComVeiculo()
+
+        const response = await fetch(`${baseUrl}/ordens-servicos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            clienteId: randomUUID(),
+            veiculoId,
+            descricao: 'Barulho no freio',
+            eGarantia: false,
+          }),
+        })
+
+        const body = await response.json() as OrdemServicoResponseDto
+
+        expect(response.status).toBe(201)
+
+        const osNoBanco = await prisma.ordemServico.findUnique({ where: { id: body.id } })
+        expect(osNoBanco?.clienteId).toBe(clienteId)
+
+        const historico = await prisma.ordemServicoHistoricoStatus.findMany({
+          where: { ordemServicoId: body.id },
+        })
+        expect(historico).toHaveLength(1)
+        expect(historico[0]).toMatchObject({ statusAnterior: null, statusNovo: 'RECEBIDA' })
+      })
+
+      it('deve retornar 403 quando o cliente estiver bloqueado', async () => {
+        const { veiculoId, accessToken } = await criarClienteComVeiculo('BLOQUEADO')
+
+        const response = await fetch(`${baseUrl}/ordens-servicos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ veiculoId, descricao: 'Revisão', eGarantia: false }),
+        })
+
+        expect(response.status).toBe(403)
+      })
+
+      it('deve retornar 422 quando o veículo pertencer a outro cliente', async () => {
+        const { accessToken } = await criarClienteComVeiculo()
+        const { veiculoId: veiculoDeOutroCliente } = await criarClienteComVeiculo()
+
+        const response = await fetch(`${baseUrl}/ordens-servicos`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ veiculoId: veiculoDeOutroCliente, descricao: 'Revisão', eGarantia: false }),
+        })
+
+        expect(response.status).toBe(422)
+      })
     })
   })
 })
